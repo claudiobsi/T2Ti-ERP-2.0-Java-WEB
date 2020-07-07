@@ -1,0 +1,282 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Simples Nacional Cabecalho"
+			rendered="#{!simplesNacionalCabecalhoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel
+				rendered="#{simplesNacionalCabecalhoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Simples Nacional Cabecalho"
+					rendered="#{simplesNacionalCabecalhoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableSimplesNacionalCabecalho" var="obj"
+						value="#{simplesNacionalCabecalhoController.dataModel}"
+						paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{simplesNacionalCabecalhoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{simplesNacionalCabecalhoController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!simplesNacionalCabecalhoController.podeInserir()}" />
+							<p:commandButton process="dataTableSimplesNacionalCabecalho"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{simplesNacionalCabecalhoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableSimplesNacionalCabecalho"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{simplesNacionalCabecalhoController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!simplesNacionalCabecalhoController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Vigencia Inicial">
+							<h:outputLabel value="#{obj.vigenciaInicial}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Vigencia Final">
+							<h:outputLabel value="#{obj.vigenciaFinal}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Anexo">
+							<h:outputLabel value="#{obj.anexo}" />
+						</p:column>
+						<p:column headerText="Tabela">
+							<h:outputLabel value="#{obj.tabela}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel
+				rendered="#{!simplesNacionalCabecalhoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Simples Nacional Cabecalho">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty simplesNacionalCabecalhoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{simplesNacionalCabecalhoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty simplesNacionalCabecalhoController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty simplesNacionalCabecalhoController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="simplesNacionalCabecalhoVigenciaInicial"
+									label="Vigencia Inicial"
+									nomeAtributo="#{simplesNacionalCabecalhoController.objeto.vigenciaInicial}" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="simplesNacionalCabecalhoVigenciaFinal"
+									label="Vigencia Final"
+									nomeAtributo="#{simplesNacionalCabecalhoController.objeto.vigenciaFinal}" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="simplesNacionalCabecalhoAnexo" label="Anexo"
+									nomeAtributo="#{simplesNacionalCabecalhoController.objeto.anexo}"
+									tamanhoMaximo="10" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="simplesNacionalCabecalhoTabela" label="Tabela"
+									nomeAtributo="#{simplesNacionalCabecalhoController.objeto.tabela}"
+									tamanhoMaximo="10" />
+								<p:outputPanel
+									rendered="#{not empty simplesNacionalCabecalhoController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty simplesNacionalCabecalhoController.objeto.id}"
+										actionListener="#{simplesNacionalCabecalhoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!simplesNacionalCabecalhoController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty simplesNacionalCabecalhoController.objeto.id}"
+										actionListener="#{simplesNacionalCabecalhoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!simplesNacionalCabecalhoController.podeAlterar()}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{simplesNacionalCabecalhoController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+
+								</p:outputPanel>
+							</p:tab>
+							<p:tab title="Simples Nacional Detalhe"
+								disabled="#{empty simplesNacionalCabecalhoController.objeto.id}">
+								<p:dataTable id="dataTableSimplesNacionalDetalhe" var="obj"
+									value="#{simplesNacionalCabecalhoController.objeto.listaSimplesNacionalDetalhe}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{simplesNacionalCabecalhoController.simplesNacionalDetalheSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{simplesNacionalCabecalhoController.incluirSimplesNacionalDetalhe}"
+											oncomplete="PF('dialogSimplesNacionalDetalhe').show()"
+											update=":formOutrasTelas:panelSimplesNacionalDetalhe,dataTableSimplesNacionalDetalhe" />
+										<p:commandButton process="dataTableSimplesNacionalDetalhe"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{simplesNacionalCabecalhoController.alterarSimplesNacionalDetalhe}"
+											oncomplete="PF('dialogSimplesNacionalDetalhe').show()"
+											update=":formOutrasTelas:panelSimplesNacionalDetalhe,dataTableSimplesNacionalDetalhe" />
+										<p:commandButton process="dataTableSimplesNacionalDetalhe"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableSimplesNacionalDetalhe"
+											actionListener="#{simplesNacionalCabecalhoController.excluirSimplesNacionalDetalhe}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Faixa">
+										<h:outputLabel value="#{obj.faixa}" />
+									</p:column>
+									<p:column headerText="Valor Inicial">
+										<h:outputLabel value="#{obj.valorInicial}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Valor Final">
+										<h:outputLabel value="#{obj.valorFinal}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Aliquota">
+										<h:outputLabel value="#{obj.aliquota}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+						</p:tabView>
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogSimplesNacionalDetalhe"
+				header="Inclusão/Alteração Simples Nacional Detalhe"
+				widgetVar="dialogSimplesNacionalDetalhe" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+
+				<p:outputPanel id="panelSimplesNacionalDetalhe">
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="simplesNacionalDetalheFaixa" label="Faixa"
+						nomeAtributo="#{simplesNacionalCabecalhoController.simplesNacionalDetalhe.faixa}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="simplesNacionalDetalheValorInicial"
+						label="Valor Inicial"
+						nomeAtributo="#{simplesNacionalCabecalhoController.simplesNacionalDetalhe.valorInicial}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="simplesNacionalDetalheValorFinal"
+						label="Valor Final"
+						nomeAtributo="#{simplesNacionalCabecalhoController.simplesNacionalDetalhe.valorFinal}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="simplesNacionalDetalheAliquota" label="Aliquota"
+						nomeAtributo="#{simplesNacionalCabecalhoController.simplesNacionalDetalhe.aliquota}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="simplesNacionalDetalheIrpj" label="Irpj"
+						nomeAtributo="#{simplesNacionalCabecalhoController.simplesNacionalDetalhe.irpj}" />
+
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="simplesNacionalDetalheCsll" label="Csll"
+						nomeAtributo="#{simplesNacionalCabecalhoController.simplesNacionalDetalhe.csll}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="simplesNacionalDetalheCofins" label="Cofins"
+						nomeAtributo="#{simplesNacionalCabecalhoController.simplesNacionalDetalhe.cofins}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="simplesNacionalDetalhePisPasep" label="Pis Pasep"
+						nomeAtributo="#{simplesNacionalCabecalhoController.simplesNacionalDetalhe.pisPasep}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="simplesNacionalDetalheCpp" label="Cpp"
+						nomeAtributo="#{simplesNacionalCabecalhoController.simplesNacionalDetalhe.cpp}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="simplesNacionalDetalheIcms" label="Icms"
+						nomeAtributo="#{simplesNacionalCabecalhoController.simplesNacionalDetalhe.icms}" />
+
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="simplesNacionalDetalheIpi" label="Ipi"
+						nomeAtributo="#{simplesNacionalCabecalhoController.simplesNacionalDetalhe.ipi}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="simplesNacionalDetalheIss" label="Iss"
+						nomeAtributo="#{simplesNacionalCabecalhoController.simplesNacionalDetalhe.iss}" />
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{simplesNacionalCabecalhoController.salvarSimplesNacionalDetalhe}"
+						update=":formOutrasTelas:panelSimplesNacionalDetalhe,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogSimplesNacionalDetalhe').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogSimplesNacionalDetalhe').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+</ui:composition>

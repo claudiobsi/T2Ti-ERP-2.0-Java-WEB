@@ -1,0 +1,227 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="WMS Armazenamento"
+			rendered="#{!wmsArmazenamentoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{wmsArmazenamentoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="WMS Armazenamento"
+					rendered="#{wmsArmazenamentoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableWmsRecebimentoCabecalho" var="obj"
+						value="#{wmsArmazenamentoController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{wmsArmazenamentoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton process="dataTableWmsRecebimentoCabecalho"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{wmsArmazenamentoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+						</f:facet>
+
+						<p:column headerText="Data Recebimento">
+							<h:outputLabel value="#{obj.dataRecebimento}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Hora Inicio">
+							<h:outputLabel value="#{obj.horaInicio}" />
+						</p:column>
+						<p:column headerText="Hora Fim">
+							<h:outputLabel value="#{obj.horaFim}" />
+						</p:column>
+						<p:column headerText="Volume Recebido">
+							<h:outputLabel value="#{obj.volumeRecebido}" />
+						</p:column>
+						<p:column headerText="Peso Recebido">
+							<h:outputLabel value="#{obj.pesoRecebido}" />
+						</p:column>
+						<p:column headerText="Inconsistencia">
+							<h:outputLabel
+								value="#{wmsRecebimentoCabecalhoController.keyFromValue(wmsRecebimentoCabecalhoController.simNao, obj.inconsistencia)}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!wmsArmazenamentoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="WMS Armazenamento">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty wmsArmazenamentoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{wmsArmazenamentoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty wmsArmazenamentoController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty wmsArmazenamentoController.objeto}">
+
+
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="wmsRecebimentoCabecalhoDataAgendamento"
+							label="Data Agendamento"
+							nomeAtributo="#{wmsArmazenamentoController.objeto.wmsAgendamento.dataOperacao}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="wmsRecebimentoCabecalhoWmsHoraAgendamento"
+							label="Hora Agendamento"
+							nomeAtributo="#{wmsArmazenamentoController.objeto.wmsAgendamento.horaOperacao}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-60"
+							idComponente="wmsRecebimentoCabecalhoWmsHoraAgendamento"
+							label="Local Agendamento"
+							nomeAtributo="#{wmsArmazenamentoController.objeto.wmsAgendamento.localOperacao}" />
+
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="wmsRecebimentoCabecalhoDataRecebimento"
+							label="Data Recebimento" somenteLeitura="true"
+							nomeAtributo="#{wmsArmazenamentoController.objeto.dataRecebimento}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="wmsRecebimentoCabecalhoHoraInicio"
+							label="Hora Inicio"
+							nomeAtributo="#{wmsArmazenamentoController.objeto.horaInicio}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="wmsRecebimentoCabecalhoHoraFim" label="Hora Fim"
+							nomeAtributo="#{wmsArmazenamentoController.objeto.horaFim}" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-20"
+							idComponente="wmsRecebimentoCabecalhoVolumeRecebido"
+							label="Volume Recebido" somenteLeitura="true"
+							nomeAtributo="#{wmsArmazenamentoController.objeto.volumeRecebido}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-20"
+							idComponente="wmsRecebimentoCabecalhoPesoRecebido"
+							label="Peso Recebido" somenteLeitura="true"
+							nomeAtributo="#{wmsArmazenamentoController.objeto.pesoRecebido}" />
+
+						<t2ti:separador label="Caixa" />
+
+						<p:outputPanel id="panelWmsCaixa" styleClass="t2ti-campo-100">
+							<div class="t2ti-campo-100">
+								<p:outputLabel value="Wms Caixa" for="wmsArmazenamentoWmsCaixa" />
+								<br />
+								<p:autoComplete id="wmsArmazenamentoWmsCaixa"
+									value="#{wmsArmazenamentoController.wmsCaixa}"
+									completeMethod="#{wmsArmazenamentoController.getListaWmsCaixa}"
+									var="wmsCaixa" itemLabel="#{wmsCaixa.codigo}"
+									itemValue="#{wmsCaixa}"
+									converter="com.t2tierp.model.bean.converter.defaultConverter"
+									forceSelection="true" minQueryLength="3" maxResults="10"
+									required="true" style="width: 100%"
+									emptyMessage="Nenhum registro encontrado">
+
+									<p:column headerText="Codigo">
+										<p:outputLabel value="#{wmsCaixa.codigo}" />
+									</p:column>
+									<p:column headerText="Altura">
+										<p:outputLabel value="#{wmsCaixa.altura}" />
+									</p:column>
+									<p:column headerText="Largura">
+										<p:outputLabel value="#{wmsCaixa.largura}" />
+									</p:column>
+									<p:column headerText="Profundidade">
+										<p:outputLabel value="#{wmsCaixa.profundidade}" />
+									</p:column>
+									<p:column headerText="Estante">
+										<p:outputLabel value="#{wmsCaixa.wmsEstante.codigo}" />
+									</p:column>
+								</p:autoComplete>
+							</div>
+							<t2ti:campoInteiro styleClass="t2ti-campo-20"
+								idComponente="wmsArmazenamentoQuantidade" label="Quantidade"
+								nomeAtributo="#{wmsArmazenamentoController.quantidade}" />
+
+						</p:outputPanel>
+
+						<t2ti:separador label="Itens a serem armazenados" />
+
+						<p:dataTable id="dataTableWmsRecebimentoDetalhe" var="obj"
+							value="#{wmsArmazenamentoController.objeto.listaWmsRecebimentoDetalhe}"
+							paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+							selection="#{wmsArmazenamentoController.listaRecebimentoDetalhe}"
+							selectionMode="multiple" resizableColumns="true"
+							rowKey="#{obj.id}" styleClass="t2ti-campo-100">
+
+							<f:facet name="header">
+								<p:commandButton title="Armazenar" icon="ui-icon-plus"
+									actionListener="#{wmsArmazenamentoController.armazenarItens}"
+									update=":form1:growl,dataTableWmsRecebimentoDetalhe" />
+							</f:facet>
+
+							<p:column headerText="Produto">
+								<h:outputLabel value="#{obj.produto.nome}" />
+							</p:column>
+							<p:column headerText="Qtde Volume">
+								<h:outputLabel value="#{obj.quantidadeVolume}" />
+							</p:column>
+							<p:column headerText="Qtde Item Por Volume">
+								<h:outputLabel value="#{obj.quantidadeItemPorVolume}" />
+							</p:column>
+							<p:column headerText="Qtde Recebida">
+								<h:outputLabel value="#{obj.quantidadeRecebida}" />
+							</p:column>
+							<p:column headerText="Destino">
+								<h:outputLabel
+									value="#{wmsArmazenamentoController.keyFromValue(wmsArmazenamentoController.wmsDestino, obj.destino)}" />
+							</p:column>
+						</p:dataTable>
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+</ui:composition>

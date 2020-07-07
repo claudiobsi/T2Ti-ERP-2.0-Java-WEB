@@ -1,0 +1,247 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Cliente"
+			rendered="#{!clienteController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{clienteController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none" header="Cliente"
+					rendered="#{clienteController.podeConsultar()}">
+
+					<p:dataTable id="dataTableCliente" var="obj"
+						value="#{clienteController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{clienteController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{clienteController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!clienteController.podeInserir()}" />
+							<p:commandButton process="dataTableCliente" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{clienteController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableCliente" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{clienteController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!clienteController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Pessoa" width="150">
+							<h:outputLabel value="#{obj.pessoa.nome}" />
+						</p:column>
+						<p:column headerText="Atividade For Cli">
+							<h:outputLabel value="#{obj.atividadeForCli.nome}" />
+						</p:column>
+						<p:column headerText="Situacao For Cli">
+							<h:outputLabel value="#{obj.situacaoForCli.nome}" />
+						</p:column>
+						<p:column headerText="Desde">
+							<h:outputLabel value="#{obj.desde}" />
+						</p:column>
+						<p:column headerText="Data Cadastro">
+							<h:outputLabel value="#{obj.dataCadastro}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!clienteController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Cliente">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty clienteController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{clienteController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty clienteController.objeto}" />
+
+					<p:outputPanel rendered="#{not empty clienteController.objeto}">
+
+						<div class="t2ti-campo-100">
+							<p:outputLabel value="Pessoa" for="clientePessoa" />
+							<br />
+							<p:autoComplete id="clientePessoa"
+								value="#{clienteController.objeto.pessoa}"
+								completeMethod="#{clienteController.getListaPessoa}"
+								var="pessoa" itemLabel="#{pessoa.nome}" itemValue="#{pessoa}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="true" style="width: 100%" />
+						</div>
+
+						<div class="t2ti-campo-50">
+							<p:outputLabel value="Situacao For Cli"
+								for="clienteSituacaoForCli" />
+							<br />
+							<p:autoComplete id="clienteSituacaoForCli"
+								value="#{clienteController.objeto.situacaoForCli}"
+								completeMethod="#{clienteController.getListaSituacaoForCli}"
+								var="situacaoForCli" itemLabel="#{situacaoForCli.nome}"
+								itemValue="#{situacaoForCli}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="true" style="width: 100%" />
+						</div>
+						<div class="t2ti-campo-50">
+							<p:outputLabel value="Atividade For Cli"
+								for="clienteAtividadeForCli" />
+							<br />
+							<p:autoComplete id="clienteAtividadeForCli"
+								value="#{clienteController.objeto.atividadeForCli}"
+								completeMethod="#{clienteController.getListaAtividadeForCli}"
+								var="atividadeForCli" itemLabel="#{atividadeForCli.nome}"
+								itemValue="#{atividadeForCli}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="true" style="width: 100%" />
+						</div>
+
+						<div class="t2ti-campo-50">
+							<p:outputLabel value="Contabil Conta" for="clienteContabilConta" />
+							<br />
+							<p:autoComplete id="clienteContabilConta"
+								value="#{clienteController.objeto.contabilConta}"
+								completeMethod="#{clienteController.getListaContabilConta}"
+								var="contabilConta" itemLabel="#{contabilConta.descricao}"
+								itemValue="#{contabilConta}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="false" style="width: 100%" />
+						</div>
+						<div class="t2ti-campo-50">
+							<p:outputLabel value="Operacao Fiscal"
+								for="clienteOperacaoFiscal" />
+							<br />
+							<p:autoComplete id="clienteOperacaoFiscal"
+								value="#{clienteController.objeto.tributOperacaoFiscal}"
+								completeMethod="#{clienteController.getListaTributOperacaoFiscal}"
+								var="operacaoFiscal" itemLabel="#{operacaoFiscal.descricao}"
+								itemValue="#{operacaoFiscal}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="false" style="width: 100%" />
+						</div>
+
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="clienteDesde" label="Desde"
+							nomeAtributo="#{clienteController.objeto.desde}" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="clienteGeraFinanceiro" label="Gera Financeiro"
+							nomeAtributo="#{clienteController.objeto.geraFinanceiro}"
+							itens="#{clienteController.simNao}" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="clienteIndicadorPreco" label="Indicador Preco"
+							nomeAtributo="#{clienteController.objeto.indicadorPreco}"
+							itens="#{clienteController.clienteIndicadorPreco}" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="clienteTipoFrete" label="Tipo Frete"
+							nomeAtributo="#{clienteController.objeto.tipoFrete}"
+							itens="#{clienteController.clienteTipoFrete}" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="clienteFormaDesconto" label="Forma Desconto"
+							nomeAtributo="#{clienteController.objeto.formaDesconto}"
+							itens="#{clienteController.clienteFormaDesconto}" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="clienteContaTomador" label="Conta Tomador"
+							nomeAtributo="#{clienteController.objeto.contaTomador}"
+							tamanhoMaximo="30" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="clientePorcentoDesconto" label="Porcento Desconto"
+							nomeAtributo="#{clienteController.objeto.porcentoDesconto}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="clienteLimiteCredito" label="Limite Credito"
+							nomeAtributo="#{clienteController.objeto.limiteCredito}" />
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="clienteDataCadastro" label="Data Cadastro"
+							nomeAtributo="#{clienteController.objeto.dataCadastro}"
+							somenteLeitura="true" />
+
+						<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+							idComponente="clienteObservacao" label="Observacao"
+							nomeAtributo="#{clienteController.objeto.observacao}" />
+					</p:outputPanel>
+					<p:outputPanel rendered="#{not empty clienteController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty clienteController.objeto.id}"
+							actionListener="#{clienteController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!clienteController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty clienteController.objeto.id}"
+							actionListener="#{clienteController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!clienteController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{clienteController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" 
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+</ui:composition>

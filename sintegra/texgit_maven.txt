@@ -1,0 +1,1 @@
+mvn install:install-file -Dfile=C:\Projetos\netbeans\libs\texgit\JRimum-Texgit-Utilix-0.2.0-SNAPSHOT-20101207.jar -DgroupId=org.jrimum -DartifactId=texgit-utilix -Dversion=0.2.0-SNAPSHOT-20101207 -Dpackaging=jar

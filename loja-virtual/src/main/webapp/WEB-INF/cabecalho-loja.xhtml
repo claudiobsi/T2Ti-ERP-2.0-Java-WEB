@@ -1,0 +1,68 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+	<h:form id="formCabecalho">
+		<p:outputPanel id="panelCabecalho">
+			<div style="width: 100%; display: block; position: relative;">
+				<div style="width: 20%; float: left;">
+					<p:graphicImage value="/imagens/logo_t2ti.png"
+						style="heigth: auto;" />
+				</div>
+
+				<div style="width: 58%; float: left;">
+					<p:imageSwitch effect="shuffle">
+						<p:graphicImage name="images/banner/banner1.jpg"
+							height="auto" width="100%" />
+						<p:graphicImage name="images/banner/banner2.jpg"
+							height="auto" width="100%" />
+					</p:imageSwitch>
+				</div>
+
+				<div style="width: 22%; float: right;">
+					<div style="float: right; clear: both;">
+						<p:commandLink id="linkLogin" value="Login"
+							update=":formLoginCliente:panelLoginCliente"
+							oncomplete="PF('dialogLoginCliente').show()"
+							style="padding-right: 3%;float: right;"
+							rendered="#{empty lojaVirtualController.cliente.id}" />
+						<h:outputLabel id="nomeCliente"
+							value="Olá #{lojaVirtualController.nomeCliente}"
+							style="padding-right: 3%;float: right;"
+							rendered="#{not empty lojaVirtualController.cliente.id}" />
+						<p:commandLink value="Contato" update=":formContato:panelContato"
+							oncomplete="PF('dialogContato').show()"
+							style="padding-right: 3%;float: right;" />
+						<p:commandLink value="Chat" action="chat.xhtml" ajax="false" 
+							style="padding-right: 3%;float: right;" />
+
+						<div style="padding: 3%; float: right;">
+							<p:inputText id="campoPesquisa"
+								value="#{lojaVirtualController.termoPesquisa}" />
+							<p:watermark for="campoPesquisa" value="Pesquisar..." />
+							<p:commandButton icon="ui-icon-search"
+								actionListener="#{lojaVirtualController.pesquisa}"
+								update=":form1:panelListaProduto,:form1:panelDetalheProduto" />
+						</div>
+					</div>
+
+					<div
+						style="float: right; clear: both; width: 100%; text-align: right;">
+
+						<p:outputLabel id="labelCarrinho" style="padding: 2%"
+							value="#{lojaVirtualController.listaCarrinho.size()} iten(s) no carrinho" />
+
+						<br />
+
+						<p:commandLink update=":formCarrinho:panelCarrinho"
+							oncomplete="PF('dialogCarrinho').show()" value="Finalizar Compra"
+							title="Finalizar compra" style="padding: 2%" />
+
+					</div>
+				</div>
+			</div>
+		</p:outputPanel>
+	</h:form>
+</ui:composition>

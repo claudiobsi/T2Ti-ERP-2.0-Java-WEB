@@ -1,0 +1,280 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewParam name="compraSugerida" value="#{compraRequisicaoController.parametroCompraSugerida}" />
+			<f:viewAction action="#{compraRequisicaoController.carregaCompraSugerida()}" />
+		</f:metadata>	
+	</ui:define>
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Compra Requisicao"
+			rendered="#{!compraRequisicaoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{compraRequisicaoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Compra Requisicao"
+					rendered="#{compraRequisicaoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableCompraRequisicao" var="obj"
+						value="#{compraRequisicaoController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{compraRequisicaoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{compraRequisicaoController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!compraRequisicaoController.podeInserir()}" />
+							<p:commandButton process="dataTableCompraRequisicao"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{compraRequisicaoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableCompraRequisicao"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{compraRequisicaoController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!compraRequisicaoController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Data Requisicao">
+							<h:outputLabel value="#{obj.dataRequisicao}" />
+						</p:column>
+						<p:column headerText="Compra Tipo Requisicao">
+							<h:outputLabel value="#{obj.compraTipoRequisicao.nome}" />
+						</p:column>
+						<p:column headerText="Colaborador">
+							<h:outputLabel value="#{obj.colaborador.pessoa.nome}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!compraRequisicaoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Compra Requisicao">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty compraRequisicaoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{compraRequisicaoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty compraRequisicaoController.objeto}" />
+
+					<p:tabView id="telasCompraRequisicao" style="border: 0px;">
+						<p:tab title="Dados Principais">
+							<p:outputPanel
+								rendered="#{not empty compraRequisicaoController.objeto}">
+
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="compraRequisicaoDataRequisicao"
+									label="Data Requisicao"
+									nomeAtributo="#{compraRequisicaoController.objeto.dataRequisicao}"
+									somenteLeitura="true" />
+								<div class="t2ti-campo-80">
+									<p:outputLabel value="Compra Tipo Requisicao"
+										for="compraRequisicaoCompraTipoRequisicao" />
+									<br />
+									<p:autoComplete id="compraRequisicaoCompraTipoRequisicao"
+										value="#{compraRequisicaoController.objeto.compraTipoRequisicao}"
+										completeMethod="#{compraRequisicaoController.getListaCompraTipoRequisicao}"
+										var="compraTipoRequisicao"
+										itemLabel="#{compraTipoRequisicao.nome}"
+										itemValue="#{compraTipoRequisicao}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="100"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<div class="t2ti-campo-100">
+									<p:outputLabel value="Colaborador"
+										for="compraRequisicaoColaborador" />
+									<br />
+									<p:autoComplete id="compraRequisicaoColaborador"
+										value="#{compraRequisicaoController.objeto.colaborador}"
+										completeMethod="#{compraRequisicaoController.getListaColaborador}"
+										var="colaborador" itemLabel="#{colaborador.pessoa.nome}"
+										itemValue="#{colaborador}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="100"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+									idComponente="compraRequisicaoObservacao" label="Observacao"
+									nomeAtributo="#{compraRequisicaoController.objeto.observacao}" />
+							</p:outputPanel>
+						</p:tab>
+
+						<p:tab title="Itens da Requisição"
+							disabled="#{empty compraRequisicaoController.objeto.id}">
+
+							<p:dataTable id="dataTableCompraRequisicaoDetalhe" var="obj"
+								value="#{compraRequisicaoController.objeto.listaCompraRequisicaoDetalhe}"
+								paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+								selection="#{compraRequisicaoController.detalheSelecionado}"
+								selectionMode="single" resizableColumns="true"
+								rowKey="#{obj.id}">
+
+								<f:facet name="header">
+									<p:commandButton title="Novo" icon="ui-icon-plus"
+										actionListener="#{compraRequisicaoController.incluirItemRequisicao()}"
+										oncomplete="PF('dialogCompraRequisicaoDetalhe').show()"
+										update=":formOutrasTelas:panelCompraRequisicaoDetalhe,dataTableCompraRequisicaoDetalhe" />
+									<p:commandButton process="dataTableCompraRequisicaoDetalhe"
+										title="Detalhes" icon="ui-icon-zoomin"
+										actionListener="#{compraRequisicaoController.alterarItemRequisicao()}"
+										oncomplete="PF('dialogCompraRequisicaoDetalhe').show()"
+										update=":formOutrasTelas:panelCompraRequisicaoDetalhe,dataTableCompraRequisicaoDetalhe" />
+									<p:commandButton process="dataTableCompraRequisicaoDetalhe"
+										title="Excluir" icon="ui-icon-trash"
+										actionListener="#{compraRequisicaoController.excluirItemRequisicao()}"
+										update="dataTableCompraRequisicaoDetalhe">
+										<p:confirm header="Confirmação" message="Confirma Exclusão?"
+											icon="ui-icon-alert" />
+									</p:commandButton>
+								</f:facet>
+
+								<p:column headerText="Produto" width="250" >
+									<h:outputLabel value="#{obj.produto.nome}" />
+								</p:column>
+								<p:column headerText="Quantidade">
+									<h:outputLabel value="#{obj.quantidade}" />
+								</p:column>
+								<p:column headerText="Quantidade Cotada">
+									<h:outputLabel value="#{obj.quantidadeCotada}" />
+								</p:column>
+								<p:column headerText="Item Cotado">
+									<h:outputLabel
+										value="#{compraRequisicaoController.keyFromValue(compraRequisicaoController.simNao, obj.itemCotado)}" />
+								</p:column>
+							</p:dataTable>
+						</p:tab>
+					</p:tabView>
+
+					<p:outputPanel
+						rendered="#{not empty compraRequisicaoController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty compraRequisicaoController.objeto.id}"
+							actionListener="#{compraRequisicaoController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!compraRequisicaoController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty compraRequisicaoController.objeto.id}"
+							actionListener="#{compraRequisicaoController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!compraRequisicaoController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{compraRequisicaoController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogCompraRequisicaoDetalhe"
+				header="Inclusão/Alteração de Item"
+				widgetVar="dialogCompraRequisicaoDetalhe" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false" width="800">
+
+				<p:outputPanel id="panelCompraRequisicaoDetalhe">
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="compraRequisicaoDetalheQuantidade"
+						label="Quantidade"
+						nomeAtributo="#{compraRequisicaoController.compraRequisicaoDetalhe.quantidade}"
+						requerido="true" />
+					<div class="t2ti-campo-80">
+						<p:outputLabel value="Produto"
+							for="compraRequisicaoDetalheProduto" />
+						<br />
+						<p:autoComplete id="compraRequisicaoDetalheProduto"
+							value="#{compraRequisicaoController.compraRequisicaoDetalhe.produto}"
+							completeMethod="#{compraRequisicaoController.getListaProduto}"
+							var="produto" itemLabel="#{produto.nome}" itemValue="#{produto}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="100"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{compraRequisicaoController.salvarItemRequisicao()}"
+						update=":formOutrasTelas:panelCompraRequisicaoDetalhe,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogCompraRequisicaoDetalhe').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogCompraRequisicaoDetalhe').hide();" />
+
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

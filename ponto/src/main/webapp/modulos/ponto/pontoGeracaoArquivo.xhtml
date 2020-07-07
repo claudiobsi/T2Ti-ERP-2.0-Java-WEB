@@ -1,0 +1,141 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Ponto Marcacao"
+			rendered="#{!pontoGeracaoArquivoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:panel id="panelCentroGrid" style="border: none"
+				rendered="#{pontoGeracaoArquivoController.podeConsultar()}">
+
+				<f:facet name="header">
+					<p:outputLabel value="Geração de Arquivos" />
+					<p:commandButton title="Carregar Dados" icon="ui-icon-refresh"
+						actionListener="#{pontoGeracaoArquivoController.carregarDados()}"
+						update=":form1:tabViewGeracaoArquivo:dataTablePontoMarcacao,:form1:tabViewGeracaoArquivo:dataTablePontoFechamentoJornada" />
+					<p:commandButton title="Gerar Arquivo AFDT"
+						icon="ui-icon-document-b"
+						actionListener="#{pontoGeracaoArquivoController.geraArquivoAFDT}"
+						ajax="false" />
+					<p:commandButton title="Gerar Arquivo ACJEF"
+						icon="ui-icon-document-b"
+						actionListener="#{pontoGeracaoArquivoController.geraArquivoACJEF}"
+						ajax="false" />
+				</f:facet>
+
+				<p:tabView id="tabViewGeracaoArquivo" style="border: 0px;">
+					<p:tab title="Marcações">
+						<p:dataTable id="dataTablePontoMarcacao" var="obj"
+							value="#{pontoGeracaoArquivoController.listaPontoMarcacao}"
+							paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
+
+							<p:column headerText="Colaborador">
+								<h:outputLabel value="#{obj.colaborador.pessoa.nome}" />
+							</p:column>
+
+							<p:column headerText="Data Marcacao">
+								<h:outputLabel value="#{obj.dataMarcacao}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Hora Marcacao">
+								<h:outputLabel value="#{obj.horaMarcacao}" />
+							</p:column>
+							<p:column headerText="Tipo Registro">
+								<h:outputLabel
+									value="#{pontoGeracaoArquivoController.keyFromValue(pontoGeracaoArquivoController.tipoRegistroPonto, obj.tipoRegistro)}" />
+							</p:column>
+							<p:column headerText="Justificativa">
+								<h:outputLabel value="#{obj.justificativa}" />
+							</p:column>
+						</p:dataTable>
+
+						<p:outputPanel>
+							<t2ti:campoData styleClass="t2ti-campo-20"
+								idComponente="dataInicial" label="Data Inicial"
+								nomeAtributo="#{pontoGeracaoArquivoController.dataInicial}"
+								requerido="true" />
+							<t2ti:campoData styleClass="t2ti-campo-20"
+								idComponente="dataFinal" label="Data Final"
+								nomeAtributo="#{pontoGeracaoArquivoController.dataFinal}"
+								requerido="true" />
+						</p:outputPanel>
+
+					</p:tab>
+
+					<p:tab title="Fechamento Jornada">
+						<p:dataTable id="dataTablePontoFechamentoJornada" var="obj"
+							value="#{pontoGeracaoArquivoController.listaFechamentoJornada}"
+							paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
+
+							<p:column headerText="Colaborador">
+								<h:outputLabel value="#{obj.colaborador.pessoa.nome}" />
+							</p:column>
+							<p:column headerText="Data Fechamento">
+								<h:outputLabel value="#{obj.dataFechamento}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Dia Semana">
+								<h:outputLabel value="#{obj.diaSemana}" />
+							</p:column>
+							<p:column headerText="Carga Horaria Esperada">
+								<h:outputLabel value="#{obj.cargaHorariaEsperada}" />
+							</p:column>
+							<p:column headerText="Carga Horaria Total">
+								<h:outputLabel value="#{obj.cargaHorariaTotal}" />
+							</p:column>
+							<p:column headerText="Observacao">
+								<h:outputLabel value="#{obj.observacao}" />
+							</p:column>
+						</p:dataTable>
+
+					</p:tab>
+				</p:tabView>
+			</p:panel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+</ui:composition>

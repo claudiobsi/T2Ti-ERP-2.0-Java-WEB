@@ -1,0 +1,102 @@
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+
+	<ui:define name="gridDados">
+		<c:set var="podeConsultar"
+			value="#{request.isUserInRole('ADMIN') or request.isUserInRole('SPED_FISCAL_CONSULTA')}"
+			scope="request" />
+
+		<p:panel style="border: none" header="Sped Fiscal"
+			rendered="#{!podeConsultar}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:panel id="panelCentro" style="border: none" header="Sped Fiscal"
+			rendered="#{podeConsultar}">
+
+			<h:panelGrid columns="2" cellpadding="5">
+				<p:outputLabel for="versaoLeiaute" value="Versão de Leiaute:" />
+				<p:selectOneMenu id="versaoLeiaute"
+					value="#{spedFiscalController.versao}">
+					<f:selectItem itemLabel="008 - Versão 1.07 Ato COTEPE 01/01/2014"
+						itemValue="008" />
+					<f:selectItem itemLabel="007 - Versão 1.06 Ato COTEPE 01/01/2013"
+						itemValue="007" />
+					<f:selectItem itemLabel="006 - Versão 1.05 Ato COTEPE 01/07/2012"
+						itemValue="006" />
+					<f:selectItem itemLabel="005 - Versão 1.04 Ato COTEPE 01/01/2012"
+						itemValue="005" />
+					<f:selectItem itemLabel="004 - Versão 1.03 Ato COTEPE 01/01/2011"
+						itemValue="004" />
+					<f:selectItem itemLabel="003 - Versão 1.02 Ato COTEPE 01/01/2010"
+						itemValue="003" />
+					<f:selectItem itemLabel="002 - Versão 1.01 Ato COTEPE 01/01/2009"
+						itemValue="002" />
+					<f:selectItem itemLabel="001 - Versão 1.00 Ato COTEPE 01/01/2008"
+						itemValue="001" />
+				</p:selectOneMenu>
+
+				<p:outputLabel for="finalidadeArquivo"
+					value="Finalidade do Arquivo:" />
+				<p:selectOneMenu id="finalidadeArquivo"
+					value="#{spedFiscalController.finalidadeArquivo}">
+					<f:selectItem itemLabel="0 - Remessa do arquivo original"
+						itemValue="0" />
+					<f:selectItem itemLabel="1 - Remessa do arquivo substituto"
+						itemValue="1" />
+				</p:selectOneMenu>
+
+				<p:outputLabel for="perfil"
+					value="Perfil de Apresentação do Arquivo:" />
+				<p:selectOneMenu id="perfil" value="#{spedFiscalController.perfil}">
+					<f:selectItem itemLabel="A - Perfil A" itemValue="A" />
+					<f:selectItem itemLabel="B - Perfil B" itemValue="B" />
+					<f:selectItem itemLabel="C - Perfil C" itemValue="C" />
+				</p:selectOneMenu>
+
+				<p:outputLabel for="inventario" value="Inventário:" />
+				<p:selectOneMenu id="inventario"
+					value="#{spedFiscalController.inventario}">
+					<f:selectItem itemLabel="00 - Sem Inventário" itemValue="0" />
+					<f:selectItem itemLabel="01 - No final no período" itemValue="1" />
+					<f:selectItem
+						itemLabel="02 - Na mudança de forma de tributação da mercadoria (ICMS)"
+						itemValue="2" />
+					<f:selectItem
+						itemLabel="03 - Na solicitação da baixa cadastral, paralisação temporária e outras situações"
+						itemValue="3" />
+					<f:selectItem
+						itemLabel="04 - Na alteração de regime de pagamento - condição do contribuinte"
+						itemValue="4" />
+					<f:selectItem itemLabel="05 - Por determinação dos fiscos"
+						itemValue="5" />
+				</p:selectOneMenu>
+
+				<p:outputLabel for="contador" value="Contador:" />
+				<p:selectOneMenu id="contador"
+					value="#{spedFiscalController.idContador}">
+					<f:selectItems value="#{spedFiscalController.contadores}" />
+				</p:selectOneMenu>
+
+				<p:outputLabel for="dataInicial" value="Data Inicial:" />
+				<p:calendar id="dataInicial"
+					value="#{spedFiscalController.dataInicial}" required="true" />
+
+				<p:outputLabel for="dataFinal" value="Data Final:" />
+				<p:calendar id="dataFinal" value="#{spedFiscalController.dataFinal}"
+					required="true" />
+
+				<p:commandButton action="#{spedFiscalController.geraSpedFiscal}"
+					value="Gerar Arquivo" ajax="false" />
+
+			</h:panelGrid>
+		</p:panel>
+	</ui:define>
+
+</ui:composition>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<h:outputStylesheet name="css/t2tierp.css" />
+	<title><ui:insert name="titulo">Projeto T2Ti ERP</ui:insert></title>
+</h:head>
+<h:body>
+
+	<p:ajaxStatus onstart="PF('statusDialog').show();"
+		onsuccess="PF('statusDialog').hide();" />
+
+	<p:dialog modal="true" widgetVar="statusDialog" header="Carregando..."
+		draggable="false" closable="false" resizable="false">
+		<p:graphicImage value="/imagens/ajax_loading_bar.gif" />
+	</p:dialog>
+
+	<p:layout fullPage="true" id="principal" widgetVar="layoutPrincipal">
+		<p:layoutUnit id="top" position="north">
+			<ui:include src="cabecalho.xhtml" />
+			<p:messages closable="true" autoUpdate="true" globalOnly="true"
+				showDetail="true" />
+		</p:layoutUnit>
+
+		<p:layoutUnit id="left" position="west" size="200" resizable="true"
+			collapsible="true" header="Funções">
+			<ui:include src="menuEsquerda.xhtml" />
+		</p:layoutUnit>
+
+		<p:layoutUnit id="centro" position="center">
+			<h:form id="form1" >
+				<p:confirmDialog global="true" showEffect="fade"
+					hideEffect="explode">
+					<p:commandButton value="Sim" type="button"
+						styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+					<p:commandButton value="Não" type="button"
+						styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+				</p:confirmDialog>
+
+				<p:growl id="growl" life="3000" />
+
+				<ui:insert name="gridDados" />
+				
+				<ui:insert name="telaInclusaoAlteracao" />
+				
+			</h:form>
+		</p:layoutUnit>
+
+		<p:layoutUnit id="bottom" position="south">
+			<ui:include src="rodape.xhtml" />
+		</p:layoutUnit>
+	</p:layout>
+
+	<ui:insert name="outrasTelas" />
+
+	<ui:insert name="outrasTelas1" />
+
+	<ui:insert name="outrasTelas2" />
+
+	<ui:insert name="outrasTelas3" />
+	
+	<ui:insert name="outrasTelas4" />
+	
+	<ui:insert name="outrasTelas5" />
+
+</h:body>
+</html>

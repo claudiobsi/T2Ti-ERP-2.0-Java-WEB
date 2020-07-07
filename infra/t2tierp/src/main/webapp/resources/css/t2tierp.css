@@ -1,0 +1,29 @@
+.ui-layout-north {
+	z-index: 20 !important;
+	overflow: visible !important;;
+}
+
+.ui-layout-north .ui-layout-unit-content {
+	overflow: visible !important;
+}
+
+.ui-layout-south {
+	z-index: 20 !important;
+	overflow: visible !important;;
+}
+
+.ui-layout-south .ui-layout-unit-content {
+	overflow: visible !important;
+}
+
+.ui-panel .ui-panel-content {
+	padding: 0 !important;
+}
+
+.ui-widget {
+	font-size: 90% !important;
+}
+
+.ui-datatable .ui-datatable-header {
+	text-align: left !important;
+}

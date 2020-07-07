@@ -1,0 +1,265 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Conciliacao Bancaria"
+			rendered="#{!conciliacaoBancariaController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{conciliacaoBancariaController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Conciliacao Bancaria"
+					rendered="#{conciliacaoBancariaController.podeConsultar()}">
+
+					<p:dataTable id="dataTableContaCaixa" var="obj"
+						value="#{conciliacaoBancariaController.dataModel}"
+						paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{conciliacaoBancariaController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton process="dataTableContaCaixa" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{conciliacaoBancariaController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+						</f:facet>
+
+						<p:column headerText="Agencia Banco">
+							<h:outputLabel value="#{obj.agenciaBanco.nome}" />
+						</p:column>
+						<p:column headerText="Codigo">
+							<h:outputLabel value="#{obj.codigo}" />
+						</p:column>
+						<p:column headerText="Nome">
+							<h:outputLabel value="#{obj.nome}" />
+						</p:column>
+						<p:column headerText="Tipo">
+							<h:outputLabel
+								value="#{conciliacaoBancariaController.keyFromValue(conciliacaoBancariaController.tipoContaCaixa, obj.tipo)}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!conciliacaoBancariaController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Conciliacao Bancaria">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty conciliacaoBancariaController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{conciliacaoBancariaController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty conciliacaoBancariaController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty conciliacaoBancariaController.objeto}">
+
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="contaCaixaCodigo" label="Codigo Conta"
+							nomeAtributo="#{conciliacaoBancariaController.objeto.codigo}"
+							tamanhoMaximo="20" somenteLeitura="true" />
+						<t2ti:campoTexto styleClass="t2ti-campo-80"
+							idComponente="contaCaixaNome" label="Nome Conta"
+							nomeAtributo="#{conciliacaoBancariaController.objeto.nome}"
+							tamanhoMaximo="50" somenteLeitura="true" />
+
+						<p:dataTable id="dataTableFinExtratoContaBanco" var="obj"
+							value="#{conciliacaoBancariaController.extratoContaBanco}"
+							paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+							resizableColumns="true" styleClass="t2ti-campo-50">
+
+							<f:facet name="header">
+								<h:outputLabel value="Lancamentos Extrato" />
+							</f:facet>
+
+							<p:column headerText="Mes">
+								<h:outputLabel value="#{obj.mes}" />
+							</p:column>
+							<p:column headerText="Ano">
+								<h:outputLabel value="#{obj.ano}" />
+							</p:column>
+							<p:column headerText="Data Movimento">
+								<h:outputLabel value="#{obj.dataMovimento}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Data Balancete">
+								<h:outputLabel value="#{obj.dataBalancete}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Historico">
+								<h:outputLabel value="#{obj.historico}" />
+							</p:column>
+							<p:column headerText="Valor">
+								<h:outputLabel value="#{obj.valor}">
+									<f:convertNumber pattern="#,##0.00" />
+								</h:outputLabel>
+							</p:column>
+						</p:dataTable>
+
+						<p:dataTable id="dataTableContabilLancamentoDetalhe" var="obj"
+							value="#{conciliacaoBancariaController.contabilLancamentoDetalhe}"
+							paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+							resizableColumns="true" styleClass="t2ti-campo-50">
+
+							<f:facet name="header">
+								<h:outputLabel value="Lancamentos Contabeis" />
+							</f:facet>
+
+							<p:column headerText="Conta">
+								<h:outputLabel value="#{obj.contabilConta.classificacao}" />
+							</p:column>
+							<p:column headerText="Historico">
+								<h:outputLabel value="#{obj.contabilHistorico.historico}" />
+							</p:column>
+							<p:column headerText="Valor">
+								<h:outputLabel value="#{obj.valor}">
+									<f:convertNumber pattern="#,##0.00" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Tipo">
+								<h:outputLabel
+									value="#{contabilLancamentoCabecalhoController.keyFromValue(contabilLancamentoCabecalhoController.tipoLancamento, obj.tipo)}" />
+							</p:column>
+						</p:dataTable>
+
+						<div class="t2ti-campo-100" />
+
+						<p:dataTable id="dataTableConciliacaoBancaria" var="obj"
+							value="#{conciliacaoBancariaController.conciliacaoBancaria}"
+							paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+							resizableColumns="true" styleClass="t2ti-campo-100">
+
+							<f:facet name="header">
+								<h:outputLabel value="Lancamentos Conciliados" />
+							</f:facet>
+
+							<p:column headerText="Mes">
+								<h:outputLabel value="#{obj.extratoMes}" />
+							</p:column>
+							<p:column headerText="Ano">
+								<h:outputLabel value="#{obj.extratoAno}" />
+							</p:column>
+							<p:column headerText="Data Movimento">
+								<h:outputLabel value="#{obj.extratoDataMovimento}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Data Balancete">
+								<h:outputLabel value="#{obj.extratoDataBalancete}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Historico Extrato">
+								<h:outputLabel value="#{obj.extratoHistorico}" />
+							</p:column>
+							<p:column headerText="Valor Extrato">
+								<h:outputLabel value="#{obj.extratoValor}">
+									<f:convertNumber pattern="#,##0.00" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Conta">
+								<h:outputLabel value="#{obj.lancamentoContabilConta.descricao}" />
+							</p:column>
+							<p:column headerText="Historico Lancamento">
+								<h:outputLabel value="#{obj.lancamentoHistorico}" />
+							</p:column>
+							<p:column headerText="Valor Lancamento">
+								<h:outputLabel value="#{obj.lancamentoValor}">
+									<f:convertNumber pattern="#,##0.00" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Tipo">
+								<h:outputLabel
+									value="#{contabilLancamentoCabecalhoController.keyFromValue(contabilLancamentoCabecalhoController.tipoLancamento, obj.lancamentoTipo)}" />
+							</p:column>
+						</p:dataTable>
+
+						<div class="t2ti-campo-100" />
+
+						<p:outputPanel
+							rendered="#{not empty conciliacaoBancariaController.objeto}"
+							styleClass="t2ti-campo-100">
+
+							<t2ti:campoData idComponente="dataInicial" label="Data Inicial"
+								nomeAtributo="#{conciliacaoBancariaController.dataInicial}"
+								requerido="true" styleClass="t2ti-campo-20" />
+
+							<t2ti:campoData idComponente="dataFinal" label="Data Final"
+								nomeAtributo="#{conciliacaoBancariaController.dataFinal}"
+								requerido="true" styleClass="t2ti-campo-20" />
+							
+							<br />
+
+							<p:commandButton value="Atualizar"
+								actionListener="#{conciliacaoBancariaController.carregaDados}"
+								update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton value="Conciliar"
+								actionListener="#{conciliacaoBancariaController.conciliaLancamentos}"
+								update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton value="Fechar"
+								actionListener="#{conciliacaoBancariaController.voltar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								process="@this" />
+
+						</p:outputPanel>
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+</ui:composition>

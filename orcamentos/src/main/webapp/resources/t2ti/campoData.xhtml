@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:composite="http://java.sun.com/jsf/composite">
+
+<composite:interface>
+	<composite:attribute name="idComponente" />
+	<composite:attribute name="label" />
+	<composite:attribute name="nomeAtributo" />
+	<composite:attribute name="requerido" />
+	<composite:attribute name="styleClass" />
+	<composite:attribute name="somenteLeitura"  default="false"/>
+	<composite:attribute name="formato"  default="dd/MM/yyyy"/>
+</composite:interface>
+
+<composite:implementation>
+	<div class="#{cc.attrs.styleClass}">
+		<p:outputLabel value="#{cc.attrs.label}"
+			for="#{cc.attrs.idComponente}" />
+		<br />
+		<p:calendar id="#{cc.attrs.idComponente}" 
+			value="#{cc.attrs.nomeAtributo}" style="width: 100%"
+			required="#{cc.attrs.requerido}" pattern="#{cc.attrs.formato}"  readonly="#{cc.attrs.somenteLeitura}" />
+	</div>
+</composite:implementation>
+
+</html>

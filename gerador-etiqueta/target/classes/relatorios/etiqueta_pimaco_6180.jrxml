@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="etiqueta_pimaco_6180" columnCount="3" printOrder="Horizontal" pageWidth="612" pageHeight="1030" columnWidth="198" leftMargin="13" rightMargin="4" topMargin="35" bottomMargin="35" uuid="6ba85328-94e6-458e-a1ee-d671d11c1b29">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="IMAGEM_CODIGO_BARRAS" class="java.awt.Image"/>
+	<field name="nome" class="java.lang.String"/>
+	<field name="valorVenda" class="java.math.BigDecimal"/>
+	<field name="ncm" class="java.lang.String"/>
+	<field name="gtin" class="java.lang.String"/>
+	<field name="codigoBarra" class="java.awt.Image"/>
+	<detail>
+		<band height="96" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="189" height="20" uuid="5770bd12-5654-4caf-a4cc-933eab12d7ca"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nome}]]></textFieldExpression>
+			</textField>
+			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle">
+				<reportElement x="0" y="20" width="189" height="76" uuid="e2c670cb-b031-445c-a8e9-7c04400ee979"/>
+				<imageExpression><![CDATA[$F{codigoBarra}]]></imageExpression>
+			</image>
+		</band>
+	</detail>
+</jasperReport>

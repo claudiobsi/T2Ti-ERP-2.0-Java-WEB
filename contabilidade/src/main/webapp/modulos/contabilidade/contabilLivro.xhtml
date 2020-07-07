@@ -1,0 +1,282 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Contabil Livro"
+			rendered="#{!contabilLivroController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{contabilLivroController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Contabil Livro"
+					rendered="#{contabilLivroController.podeConsultar()}">
+
+					<p:dataTable id="dataTableContabilLivro" var="obj"
+						value="#{contabilLivroController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{contabilLivroController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{contabilLivroController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!contabilLivroController.podeInserir()}" />
+							<p:commandButton process="dataTableContabilLivro"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{contabilLivroController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableContabilLivro" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{contabilLivroController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!contabilLivroController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Descricao">
+							<h:outputLabel value="#{obj.descricao}" />
+						</p:column>
+						<p:column headerText="Competencia">
+							<h:outputLabel value="#{obj.competencia}" />
+						</p:column>
+						<p:column headerText="Forma Escrituracao">
+							<h:outputLabel
+								value="#{contabilLivroController.keyFromValue(contabilLivroController.contabilLivroFormaEscrituracao, obj.formaEscrituracao)}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!contabilLivroController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Contabil Livro">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty contabilLivroController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{contabilLivroController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty contabilLivroController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty contabilLivroController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="contabilLivroDescricao" label="Descricao"
+									nomeAtributo="#{contabilLivroController.objeto.descricao}"
+									tamanhoMaximo="50" />
+								<t2ti:campoMascara styleClass="t2ti-campo-20"
+									idComponente="contabilLivroCompetencia" label="Competencia"
+									nomeAtributo="#{contabilLivroController.objeto.competencia}"
+									mascara="99/9999" />
+								<t2ti:campoSelect styleClass="t2ti-campo-40"
+									idComponente="contabilLivroFormaEscrituracao"
+									label="Forma Escrituracao"
+									nomeAtributo="#{contabilLivroController.objeto.formaEscrituracao}"
+									itens="#{contabilLivroController.contabilLivroFormaEscrituracao}" />
+								<p:outputPanel
+									rendered="#{not empty contabilLivroController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty contabilLivroController.objeto.id}"
+										actionListener="#{contabilLivroController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!contabilLivroController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty contabilLivroController.objeto.id}"
+										actionListener="#{contabilLivroController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!contabilLivroController.podeAlterar()}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{contabilLivroController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+
+								</p:outputPanel>
+							</p:tab>
+							<p:tab title="Contabil Termo"
+								disabled="#{empty contabilLivroController.objeto.id}">
+								<p:dataTable id="dataTableContabilTermo" var="obj"
+									value="#{contabilLivroController.objeto.listaContabilTermo}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{contabilLivroController.contabilTermoSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{contabilLivroController.incluirContabilTermo}"
+											oncomplete="PF('dialogContabilTermo').show()"
+											update=":formOutrasTelas:panelContabilTermo,dataTableContabilTermo" />
+										<p:commandButton process="dataTableContabilTermo"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{contabilLivroController.alterarContabilTermo}"
+											oncomplete="PF('dialogContabilTermo').show()"
+											update=":formOutrasTelas:panelContabilTermo,dataTableContabilTermo" />
+										<p:commandButton process="dataTableContabilTermo"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableContabilTermo"
+											actionListener="#{contabilLivroController.excluirContabilTermo}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Abertura Encerramento">
+										<h:outputLabel
+											value="#{contabilLivroController.keyFromValue(contabilLivroController.aberturaFechamento, obj.aberturaEncerramento)}" />
+									</p:column>
+									<p:column headerText="Numero">
+										<h:outputLabel value="#{obj.numero}" />
+									</p:column>
+									<p:column headerText="Pagina Inicial">
+										<h:outputLabel value="#{obj.paginaInicial}" />
+									</p:column>
+									<p:column headerText="Pagina Final">
+										<h:outputLabel value="#{obj.paginaFinal}" />
+									</p:column>
+									<p:column headerText="Registrado">
+										<h:outputLabel value="#{obj.registrado}" />
+									</p:column>
+									<p:column headerText="Numero Registro">
+										<h:outputLabel value="#{obj.numeroRegistro}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+						</p:tabView>
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogContabilTermo"
+				header="Inclusão/Alteração Contabil Termo"
+				widgetVar="dialogContabilTermo" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+
+				<p:outputPanel id="panelContabilTermo">
+
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="contabilTermoAberturaEncerramento"
+						label="Abertura/Encerramento"
+						nomeAtributo="#{contabilLivroController.contabilTermo.aberturaEncerramento}"
+						itens="#{contabilLivroController.aberturaFechamento}" />
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="contabilTermoNumero" label="Numero"
+						nomeAtributo="#{contabilLivroController.contabilTermo.numero}" />
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="contabilTermoPaginaInicial" label="Pagina Inicial"
+						nomeAtributo="#{contabilLivroController.contabilTermo.paginaInicial}" />
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="contabilTermoPaginaFinal" label="Pagina Final"
+						nomeAtributo="#{contabilLivroController.contabilTermo.paginaFinal}" />
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="contabilTermoRegistrado" label="Registrado"
+						nomeAtributo="#{contabilLivroController.contabilTermo.registrado}"
+						tamanhoMaximo="100" />
+
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="contabilTermoNumeroRegistro" label="Numero Registro"
+						nomeAtributo="#{contabilLivroController.contabilTermo.numeroRegistro}"
+						tamanhoMaximo="50" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="contabilTermoDataDespacho" label="Data Despacho"
+						nomeAtributo="#{contabilLivroController.contabilTermo.dataDespacho}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="contabilTermoDataAbertura" label="Data Abertura"
+						nomeAtributo="#{contabilLivroController.contabilTermo.dataAbertura}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="contabilTermoDataEncerramento"
+						label="Data Encerramento"
+						nomeAtributo="#{contabilLivroController.contabilTermo.dataEncerramento}" />
+
+					<div class="t2ti-campo-100" />
+
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="contabilTermoEscrituracaoInicio"
+						label="Escrituracao Inicio"
+						nomeAtributo="#{contabilLivroController.contabilTermo.escrituracaoInicio}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="contabilTermoEscrituracaoFim"
+						label="Escrituracao Fim"
+						nomeAtributo="#{contabilLivroController.contabilTermo.escrituracaoFim}" />
+
+					<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+						idComponente="contabilTermoTexto" label="Texto"
+						nomeAtributo="#{contabilLivroController.contabilTermo.texto}" />
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{contabilLivroController.salvarContabilTermo}"
+						update=":formOutrasTelas:panelContabilTermo,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogContabilTermo').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogContabilTermo').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

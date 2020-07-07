@@ -1,0 +1,550 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Folha Ppp"
+			rendered="#{!folhaPppController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{folhaPppController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Folha Ppp" rendered="#{folhaPppController.podeConsultar()}">
+
+					<p:dataTable id="dataTableFolhaPpp" var="obj"
+						value="#{folhaPppController.dataModel}" paginator="true" rows="10"
+						rowsPerPageTemplate="5,10,15,20"
+						selection="#{folhaPppController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{folhaPppController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!folhaPppController.podeInserir()}" />
+							<p:commandButton process="dataTableFolhaPpp" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{folhaPppController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableFolhaPpp" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{folhaPppController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!folhaPppController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Colaborador">
+							<h:outputLabel value="#{obj.colaborador.pessoa.nome}" />
+						</p:column>
+						<p:column headerText="Observacao">
+							<h:outputLabel value="#{obj.observacao}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!folhaPppController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Folha Ppp">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty folhaPppController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{folhaPppController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty folhaPppController.objeto}" />
+
+					<p:outputPanel rendered="#{not empty folhaPppController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+
+								<div class="t2ti-campo-100">
+									<p:outputLabel value="Colaborador" for="folhaPppColaborador" />
+									<br />
+									<p:autoComplete id="folhaPppColaborador"
+										value="#{folhaPppController.objeto.colaborador}"
+										completeMethod="#{folhaPppController.getListaColaborador}"
+										var="colaborador" itemLabel="#{colaborador.pessoa.nome}"
+										itemValue="#{colaborador}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+									idComponente="folhaPppObservacao" label="Observacao"
+									nomeAtributo="#{folhaPppController.objeto.observacao}" />
+
+								<p:outputPanel rendered="#{not empty folhaPppController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty folhaPppController.objeto.id}"
+										actionListener="#{folhaPppController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!folhaPppController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty folhaPppController.objeto.id}"
+										actionListener="#{folhaPppController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!folhaPppController.podeAlterar()}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{folhaPppController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+
+								</p:outputPanel>
+							</p:tab>
+
+							<p:tab title="CAT"
+								disabled="#{empty folhaPppController.objeto.id}">
+								<p:dataTable id="dataTableFolhaPppCat" var="obj"
+									value="#{folhaPppController.objeto.listaFolhaPppCat}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{folhaPppController.folhaPppCatSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{folhaPppController.incluirFolhaPppCat}"
+											oncomplete="PF('dialogFolhaPppCat').show()"
+											update=":formOutrasTelas:panelFolhaPppCat,dataTableFolhaPppCat" />
+										<p:commandButton process="dataTableFolhaPppCat"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{folhaPppController.alterarFolhaPppCat}"
+											oncomplete="PF('dialogFolhaPppCat').show()"
+											update=":formOutrasTelas:panelFolhaPppCat,dataTableFolhaPppCat" />
+										<p:commandButton process="dataTableFolhaPppCat"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableFolhaPppCat"
+											actionListener="#{folhaPppController.excluirFolhaPppCat}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Numero">
+										<h:outputLabel value="#{obj.numeroCat}" />
+									</p:column>
+									<p:column headerText="Data Afastamento">
+										<h:outputLabel value="#{obj.dataAfastamento}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Data Registro">
+										<h:outputLabel value="#{obj.dataRegistro}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+
+							<p:tab title="Atividade"
+								disabled="#{empty folhaPppController.objeto.id}">
+								<p:dataTable id="dataTableFolhaPppAtividade" var="obj"
+									value="#{folhaPppController.objeto.listaFolhaPppAtividade}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{folhaPppController.folhaPppAtividadeSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{folhaPppController.incluirFolhaPppAtividade}"
+											oncomplete="PF('dialogFolhaPppAtividade').show()"
+											update=":formOutrasTelas2:panelFolhaPppAtividade,dataTableFolhaPppAtividade" />
+										<p:commandButton process="dataTableFolhaPppAtividade"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{folhaPppController.alterarFolhaPppAtividade}"
+											oncomplete="PF('dialogFolhaPppAtividade').show()"
+											update=":formOutrasTelas2:panelFolhaPppAtividade,dataTableFolhaPppAtividade" />
+										<p:commandButton process="dataTableFolhaPppAtividade"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableFolhaPppAtividade"
+											actionListener="#{folhaPppController.excluirFolhaPppAtividade}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Data Inicio">
+										<h:outputLabel value="#{obj.dataInicio}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Data Fim">
+										<h:outputLabel value="#{obj.dataFim}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Descricao">
+										<h:outputLabel value="#{obj.descricao}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+
+							<p:tab title="Fator de Risco"
+								disabled="#{empty folhaPppController.objeto.id}">
+								<p:dataTable id="dataTableFolhaPppFatorRisco" var="obj"
+									value="#{folhaPppController.objeto.listaFolhaPppFatorRisco}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{folhaPppController.folhaPppFatorRiscoSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{folhaPppController.incluirFolhaPppFatorRisco}"
+											oncomplete="PF('dialogFolhaPppFatorRisco').show()"
+											update=":formOutrasTelas3:panelFolhaPppFatorRisco,dataTableFolhaPppFatorRisco" />
+										<p:commandButton process="dataTableFolhaPppFatorRisco"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{folhaPppController.alterarFolhaPppFatorRisco}"
+											oncomplete="PF('dialogFolhaPppFatorRisco').show()"
+											update=":formOutrasTelas3:panelFolhaPppFatorRisco,dataTableFolhaPppFatorRisco" />
+										<p:commandButton process="dataTableFolhaPppFatorRisco"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableFolhaPppFatorRisco"
+											actionListener="#{folhaPppController.excluirFolhaPppFatorRisco}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Data Inicio">
+										<h:outputLabel value="#{obj.dataInicio}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Data Fim">
+										<h:outputLabel value="#{obj.dataFim}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Tipo">
+										<h:outputLabel
+											value="#{folhaPppController.keyFromValue(folhaPppController.tipoFatorRiscoPpp, obj.tipo)}" />
+									</p:column>
+									<p:column headerText="Fator Risco">
+										<h:outputLabel value="#{obj.fatorRisco}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+
+							<p:tab title="Exame Medico"
+								disabled="#{empty folhaPppController.objeto.id}">
+								<p:dataTable id="dataTableFolhaPppExameMedico" var="obj"
+									value="#{folhaPppController.objeto.listaFolhaPppExameMedico}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{folhaPppController.folhaPppExameMedicoSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{folhaPppController.incluirFolhaPppExameMedico}"
+											oncomplete="PF('dialogFolhaPppExameMedico').show()"
+											update=":formOutrasTelas4:panelFolhaPppExameMedico,dataTableFolhaPppExameMedico" />
+										<p:commandButton process="dataTableFolhaPppExameMedico"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{folhaPppController.alterarFolhaPppExameMedico}"
+											oncomplete="PF('dialogFolhaPppExameMedico').show()"
+											update=":formOutrasTelas4:panelFolhaPppExameMedico,dataTableFolhaPppExameMedico" />
+										<p:commandButton process="dataTableFolhaPppExameMedico"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableFolhaPppExameMedico"
+											actionListener="#{folhaPppController.excluirFolhaPppExameMedico}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Data Ultimo">
+										<h:outputLabel value="#{obj.dataUltimo}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Tipo">
+										<h:outputLabel
+											value="#{folhaPppController.keyFromValue(folhaPppController.tipoExameMedicoPpp, obj.tipo)}" />
+									</p:column>
+									<p:column headerText="Natureza">
+										<h:outputLabel value="#{obj.natureza}" />
+									</p:column>
+									<p:column headerText="Exame">
+										<h:outputLabel
+											value="#{folhaPppController.keyFromValue(folhaPppController.exameMedicoPpp, obj.exame)}" />
+									</p:column>
+									<p:column headerText="Indicacao Resultados">
+										<h:outputLabel value="#{obj.indicacaoResultados}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+						</p:tabView>
+
+					</p:outputPanel>
+
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogFolhaPppCat"
+				header="Inclusão/Alteração Folha Ppp Cat"
+				widgetVar="dialogFolhaPppCat" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="false" width="700">
+
+				<p:outputPanel id="panelFolhaPppCat">
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="folhaPppCatNumeroCat" label="Numero"
+						nomeAtributo="#{folhaPppController.folhaPppCat.numeroCat}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="folhaPppCatDataAfastamento" label="Data Afastamento"
+						nomeAtributo="#{folhaPppController.folhaPppCat.dataAfastamento}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="folhaPppCatDataRegistro" label="Data Registro"
+						nomeAtributo="#{folhaPppController.folhaPppCat.dataRegistro}" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{folhaPppController.salvarFolhaPppCat}"
+						update=":formOutrasTelas:panelFolhaPppCat,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogFolhaPppCat').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogFolhaPppCat').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas2">
+		<h:form id="formOutrasTelas2">
+
+			<p:dialog id="dialogFolhaPppAtividade"
+				header="Inclusão/Alteração Folha Ppp Atividade"
+				widgetVar="dialogFolhaPppAtividade" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="700">
+
+				<p:outputPanel id="panelFolhaPppAtividade">
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="folhaPppAtividadeDataInicio" label="Data Inicio"
+						nomeAtributo="#{folhaPppController.folhaPppAtividade.dataInicio}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="folhaPppAtividadeDataFim" label="Data Fim"
+						nomeAtributo="#{folhaPppController.folhaPppAtividade.dataFim}" />
+
+					<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+						idComponente="folhaPppAtividadeDescricao" label="Descricao"
+						nomeAtributo="#{folhaPppController.folhaPppAtividade.descricao}" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{folhaPppController.salvarFolhaPppAtividade}"
+						update=":formOutrasTelas2:panelFolhaPppAtividade,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogFolhaPppAtividade').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogFolhaPppAtividade').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas3">
+		<h:form id="formOutrasTelas3">
+
+			<p:dialog id="dialogFolhaPppFatorRisco"
+				header="Inclusão/Alteração Folha Ppp Fator Risco"
+				widgetVar="dialogFolhaPppFatorRisco" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="700">
+
+				<p:outputPanel id="panelFolhaPppFatorRisco">
+
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="folhaPppFatorRiscoDataInicio" label="Data Inicio"
+						nomeAtributo="#{folhaPppController.folhaPppFatorRisco.dataInicio}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="folhaPppFatorRiscoDataFim" label="Data Fim"
+						nomeAtributo="#{folhaPppController.folhaPppFatorRisco.dataFim}" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="folhaPppFatorRiscoTipo" label="Tipo"
+						nomeAtributo="#{folhaPppController.folhaPppFatorRisco.tipo}"
+						itens="#{folhaPppController.tipoFatorRiscoPpp}" />
+					<t2ti:campoTexto styleClass="t2ti-campo-40"
+						idComponente="folhaPppFatorRiscoFatorRisco" label="Fator Risco"
+						nomeAtributo="#{folhaPppController.folhaPppFatorRisco.fatorRisco}"
+						tamanhoMaximo="40" />
+
+					<div class="t2ti-campo-100" />
+
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="folhaPppFatorRiscoIntensidade" label="Intensidade"
+						nomeAtributo="#{folhaPppController.folhaPppFatorRisco.intensidade}"
+						tamanhoMaximo="15" />
+					<t2ti:campoTexto styleClass="t2ti-campo-30"
+						idComponente="folhaPppFatorRiscoTecnicaUtilizada"
+						label="Tecnica Utilizada"
+						nomeAtributo="#{folhaPppController.folhaPppFatorRisco.tecnicaUtilizada}"
+						tamanhoMaximo="40" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="folhaPppFatorRiscoEpcEficaz" label="Epc Eficaz"
+						nomeAtributo="#{folhaPppController.folhaPppFatorRisco.epcEficaz}"
+						itens="#{folhaPppController.simNao}" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="folhaPppFatorRiscoEpiEficaz" label="Epi Eficaz"
+						nomeAtributo="#{folhaPppController.folhaPppFatorRisco.epiEficaz}"
+						itens="#{folhaPppController.simNao}" />
+
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="folhaPppFatorRiscoCaEpi" label="Ca Epi"
+						nomeAtributo="#{folhaPppController.folhaPppFatorRisco.caEpi}" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="folhaPppFatorRiscoAtendimentoNr061"
+						label="Atendimento Nr06 1"
+						nomeAtributo="#{folhaPppController.folhaPppFatorRisco.atendimentoNr061}"
+						itens="#{folhaPppController.simNao}" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="folhaPppFatorRiscoAtendimentoNr062"
+						label="Atendimento Nr06 2"
+						nomeAtributo="#{folhaPppController.folhaPppFatorRisco.atendimentoNr062}"
+						itens="#{folhaPppController.simNao}" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="folhaPppFatorRiscoAtendimentoNr063"
+						label="Atendimento Nr06 3"
+						nomeAtributo="#{folhaPppController.folhaPppFatorRisco.atendimentoNr063}"
+						itens="#{folhaPppController.simNao}" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="folhaPppFatorRiscoAtendimentoNr064"
+						label="Atendimento Nr06 4"
+						nomeAtributo="#{folhaPppController.folhaPppFatorRisco.atendimentoNr064}"
+						itens="#{folhaPppController.simNao}" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="folhaPppFatorRiscoAtendimentoNr065"
+						label="Atendimento Nr06 5"
+						nomeAtributo="#{folhaPppController.folhaPppFatorRisco.atendimentoNr065}"
+						itens="#{folhaPppController.simNao}" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{folhaPppController.salvarFolhaPppFatorRisco}"
+						update=":formOutrasTelas3:panelFolhaPppFatorRisco,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogFolhaPppFatorRisco').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogFolhaPppFatorRisco').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas4">
+		<h:form id="formOutrasTelas4">
+
+			<p:dialog id="dialogFolhaPppExameMedico"
+				header="Inclusão/Alteração Folha Ppp Exame Medico"
+				widgetVar="dialogFolhaPppExameMedico" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="700">
+
+				<p:outputPanel id="panelFolhaPppExameMedico">
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="folhaPppExameMedicoDataUltimo" label="Data Ultimo"
+						nomeAtributo="#{folhaPppController.folhaPppExameMedico.dataUltimo}" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="folhaPppExameMedicoTipo" label="Tipo"
+						nomeAtributo="#{folhaPppController.folhaPppExameMedico.tipo}"
+						itens="#{folhaPppController.tipoExameMedicoPpp}" />
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="folhaPppExameMedicoNatureza" label="Natureza"
+						nomeAtributo="#{folhaPppController.folhaPppExameMedico.natureza}"
+						tamanhoMaximo="50" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="folhaPppExameMedicoExame" label="Exame"
+						nomeAtributo="#{folhaPppController.folhaPppExameMedico.exame}"
+						itens="#{folhaPppController.exameMedicoPpp}" />
+					<t2ti:campoTexto styleClass="t2ti-campo-40"
+						idComponente="folhaPppExameMedicoIndicacaoResultados"
+						label="Indicacao Resultados"
+						nomeAtributo="#{folhaPppController.folhaPppExameMedico.indicacaoResultados}"
+						tamanhoMaximo="50" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{folhaPppController.salvarFolhaPppExameMedico}"
+						update=":formOutrasTelas4:panelFolhaPppExameMedico,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogFolhaPppExameMedico').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogFolhaPppExameMedico').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+
+</ui:composition>

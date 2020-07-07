@@ -1,0 +1,21 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+	<h:form>
+		<p:toolbar>
+			<f:facet name="left">
+				<h:outputLabel value="Projeto T2Ti ERP 2.0" />
+			</f:facet>
+
+			<f:facet name="right">
+				<p:menubar>
+					<p:menuitem value="Sair" url="/j_spring_security_logout"
+						icon="ui-icon-close" ajax="false" />
+				</p:menubar>
+			</f:facet>
+		</p:toolbar>
+	</h:form>
+</ui:composition>

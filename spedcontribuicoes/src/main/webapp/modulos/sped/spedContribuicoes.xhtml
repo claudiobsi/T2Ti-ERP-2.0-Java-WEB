@@ -1,0 +1,67 @@
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+
+	<ui:define name="gridDados">
+		<c:set var="podeConsultar"
+			value="#{request.isUserInRole('ADMIN') or request.isUserInRole('SPED_CONTRIBUICOES_CONSULTA')}"
+			scope="request" />
+
+		<p:panel style="border: none" header="Sped Contribuições"
+			rendered="#{!podeConsultar}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:panel id="panelCentro" style="border: none" header="Sped Contribuições"
+			rendered="#{podeConsultar}">
+
+			<h:panelGrid columns="2" cellpadding="5">
+				<p:outputLabel for="versaoLeiaute" value="Versão de Leiaute:" />
+				<p:selectOneMenu id="versaoLeiaute"
+					value="#{spedContribuicoesController.versao}">
+					<f:selectItem itemLabel="003 - Versão 2.01A ADE Cofis nº 20/2012"
+						itemValue="003" />
+					<f:selectItem itemLabel="002 - Versão 2.00 ADE Cofis nº 20/2012"
+						itemValue="002" />
+					<f:selectItem
+						itemLabel="002 - Versão 1.01 ADE Cofis nº 34/2010, atualizado pleo ADE Cofis nº 37/2010"
+						itemValue="002" />
+					<f:selectItem itemLabel="001 - Versão 1.00 ADE Cofis nº 31/2010"
+						itemValue="001" />
+				</p:selectOneMenu>
+
+				<p:outputLabel for="tipoEscrituracao" value="Tipo de Escrituração:" />
+				<p:selectOneMenu id="tipoEscrituracao"
+					value="#{spedContribuicoesController.tipoEscrituracao}">
+					<f:selectItem itemLabel="0 - Original" itemValue="0" />
+					<f:selectItem itemLabel="1 - Retificadora" itemValue="1" />
+				</p:selectOneMenu>
+
+				<p:outputLabel for="contador" value="Contador:" />
+				<p:selectOneMenu id="contador"
+					value="#{spedContribuicoesController.idContador}">
+					<f:selectItems value="#{spedContribuicoesController.contadores}" />
+				</p:selectOneMenu>
+
+				<p:outputLabel for="dataInicial" value="Data Inicial:" />
+				<p:calendar id="dataInicial"
+					value="#{spedContribuicoesController.dataInicial}" required="true" />
+
+				<p:outputLabel for="dataFinal" value="Data Final:" />
+				<p:calendar id="dataFinal" value="#{spedContribuicoesController.dataFinal}"
+					required="true" />
+
+				<p:commandButton
+					action="#{spedContribuicoesController.geraSpedContribuicoes}"
+					value="Gerar Arquivo" ajax="false" />
+
+			</h:panelGrid>
+		</p:panel>
+	</ui:define>
+
+</ui:composition>

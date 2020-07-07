@@ -1,0 +1,203 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Template"
+			rendered="#{!contratoTemplateController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{contratoTemplateController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none" header="Template"
+					rendered="#{contratoTemplateController.podeConsultar()}">
+
+					<p:dataTable id="dataTableContratoTemplate" var="obj"
+						value="#{contratoTemplateController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{contratoTemplateController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{contratoTemplateController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!contratoTemplateController.podeInserir()}" />
+							<p:commandButton process="dataTableContratoTemplate"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{contratoTemplateController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableContratoTemplate"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{contratoTemplateController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!contratoTemplateController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Nome">
+							<h:outputLabel value="#{obj.nome}" />
+						</p:column>
+						<p:column headerText="Descricao">
+							<h:outputLabel value="#{obj.descricao}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!contratoTemplateController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Template">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty contratoTemplateController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{contratoTemplateController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty contratoTemplateController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty contratoTemplateController.objeto}">
+
+						<t2ti:campoTexto styleClass="t2ti-campo-100"
+							idComponente="contratoTemplateNome" label="Nome"
+							nomeAtributo="#{contratoTemplateController.objeto.nome}"
+							tamanhoMaximo="100" requerido="true" />
+						<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+							idComponente="contratoTemplateDescricao" label="Descricao"
+							nomeAtributo="#{contratoTemplateController.objeto.descricao}" />
+
+						<t2ti:separador label="Template" />
+
+						<p:editor id="contratoTemplate" styleClass="t2ti-campo-100"
+							value="#{contratoTemplateController.template}" required="true" />
+					</p:outputPanel>
+					<p:outputPanel
+						rendered="#{not empty contratoTemplateController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty contratoTemplateController.objeto.id}"
+							actionListener="#{contratoTemplateController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!contratoTemplateController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty contratoTemplateController.objeto.id}"
+							actionListener="#{contratoTemplateController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!contratoTemplateController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{contratoTemplateController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+						<p:commandButton value="Termos"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							oncomplete="PF('dialogTermosTemplate').show()"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+	</ui:define>
+	
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogTermosTemplate"
+				header="Termos Template"
+				widgetVar="dialogTermosTemplate" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false" width="800">
+
+				<p:outputPanel id="panelRequisicaoInternaDetalhe">
+					<div class="t2ti-campo-100">
+						Utilize os seguintes termos (incluindo o caracter #) para substituição quando da geração do contrato:
+						<br/>
+						<br/>
+						Dados da Contratada
+						<br/>
+						<b>#CONTRATADA#</b> <br/>
+						<b>#CNPJ_CONTRATADA#</b>  <br/> 
+						<b>#ENDERECO_CONTRATADA#</b>  <br/>
+						<b>#CIDADE_CONTRATADA#</b>  <br/>
+						<b>#UF_CONTRATADA#</b>  <br/>
+						<b>#BAIRRO_CONTRATADA#</b>  <br/>
+						<b>#CEP_CONTRATADA#</b>  <br/>
+						
+						<br/>
+						Dados do Contratante
+						<br/>
+						<b>#CONTRATANTE#</b>  <br/>
+						<b>#CNPJ_CONTRATANTE#</b>  <br/>
+						<b>#ENDERECO_CONTRATANTE#</b>  <br/>
+						<b>#CIDADE_CONTRATANTE#</b>  <br/>
+						<b>#UF_CONTRATANTE#</b>  <br/>
+						<b>#BAIRRO_CONTRATANTE#</b>  <br/>
+						<b>#CEP_CONTRATANTE#</b>  <br/>
+						
+						<br/>
+						Outros
+						<br/>
+						<b>#VALOR_MENSAL#</b>  <br/>
+						<b>#DATA_EXTENSO#</b>  <br/>
+					</div>
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Fechar"
+						oncomplete="PF('dialogTermosTemplate').hide();" />
+				</f:facet>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+	
+	
+</ui:composition>

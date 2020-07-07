@@ -1,0 +1,192 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+    <ui:define name="gridDados">
+        <p:panel style="border: none" header="Contabil Lancamento Orcado"
+            rendered="#{!contabilLancamentoOrcadoController.podeConsultar()}">
+            <p:outputLabel value="Você não possui acesso a esta função" />
+        </p:panel>
+
+        <p:outputPanel id="outputPanelGrid">
+
+            <p:outputPanel rendered="#{contabilLancamentoOrcadoController.telaGrid}">
+
+                <p:panel id="panelCentroGrid" style="border: none" header="Contabil Lancamento Orcado"
+                     rendered="#{contabilLancamentoOrcadoController.podeConsultar()}">
+
+                    <p:dataTable id="dataTableContabilLancamentoOrcado" var="obj"
+                        value="#{contabilLancamentoOrcadoController.dataModel}" paginator="true"
+                        rows="10" rowsPerPageTemplate="5,10,15,20"
+                        selection="#{contabilLancamentoOrcadoController.objetoSelecionado}"
+                        selectionMode="single" resizableColumns="true" lazy="true">
+
+                        <f:facet name="header">
+                            <p:commandButton title="Novo" icon="ui-icon-plus"
+                                actionListener="#{contabilLancamentoOrcadoController.incluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!contabilLancamentoOrcadoController.podeInserir()}" />
+                            <p:commandButton process="dataTableContabilLancamentoOrcado" title="Detalhes"
+                                icon="ui-icon-zoomin"
+                                actionListener="#{contabilLancamentoOrcadoController.alterar()}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+                            <p:commandButton process="dataTableContabilLancamentoOrcado" title="Excluir"
+                                icon="ui-icon-trash"
+                                actionListener="#{contabilLancamentoOrcadoController.excluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!contabilLancamentoOrcadoController.podeExcluir()}">
+                                <p:confirm header="Confirmação" message="Confirma Exclusão?"
+                                    icon="ui-icon-alert" />
+                            </p:commandButton>
+                        </f:facet>
+
+                        <p:column headerText="Contabil Conta" width="80%" >
+                            <h:outputLabel value="#{obj.contabilConta.descricao}" />
+                        </p:column>
+                        <p:column headerText="Ano">
+                            <h:outputLabel value="#{obj.ano}" />
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+
+    <ui:define name="telaInclusaoAlteracao">
+
+        <p:outputPanel id="outputPanelDetalhe">
+
+            <p:outputPanel rendered="#{!contabilLancamentoOrcadoController.telaGrid}">
+                <p:panel id="panelCentroDetalhe" style="border: none" header="Contabil Lancamento Orcado">
+
+                    <p:outputLabel value="Nenhum registro selecionado."
+                        rendered="#{empty contabilLancamentoOrcadoController.objeto}" />
+                    <p:commandButton value="Voltar"
+                        actionListener="#{contabilLancamentoOrcadoController.voltar()}"
+                        update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                        rendered="#{empty contabilLancamentoOrcadoController.objeto}" />
+
+                    <p:outputPanel rendered="#{not empty contabilLancamentoOrcadoController.objeto}">
+
+                        <div class="t2ti-campo-80">
+                            <p:outputLabel value="Contabil Conta" for="contabilLancamentoOrcadoContabilConta" />
+                            <br />
+                            <p:autoComplete id="contabilLancamentoOrcadoContabilConta"
+                                value="#{contabilLancamentoOrcadoController.objeto.contabilConta}"
+                                completeMethod="#{contabilLancamentoOrcadoController.getListaContabilConta}" var="contabilConta"
+                                itemLabel="#{contabilConta.descricao}" itemValue="#{contabilConta}"
+                                converter="com.t2tierp.model.bean.converter.defaultConverter" forceSelection="true"
+                                minQueryLength="3" maxResults="100"
+                                required="false" style="width: 100%"
+                                emptyMessage="Nenhum registro encontrado" />
+                        </div>
+                        <t2ti:campoMascara styleClass="t2ti-campo-20"
+                            idComponente="contabilLancamentoOrcadoAno" label="Ano"
+                            nomeAtributo="#{contabilLancamentoOrcadoController.objeto.ano}"
+                            mascara="9999" />
+                            
+                        <t2ti:campoDecimal styleClass="t2ti-campo-30"
+                            idComponente="contabilLancamentoOrcadoJaneiro" label="Janeiro"
+                            nomeAtributo="#{contabilLancamentoOrcadoController.objeto.janeiro}" />
+                        <t2ti:campoDecimal styleClass="t2ti-campo-30"
+                            idComponente="contabilLancamentoOrcadoFevereiro" label="Fevereiro"
+                            nomeAtributo="#{contabilLancamentoOrcadoController.objeto.fevereiro}" />
+                        <t2ti:campoDecimal styleClass="t2ti-campo-30"
+                            idComponente="contabilLancamentoOrcadoMarco" label="Marco"
+                            nomeAtributo="#{contabilLancamentoOrcadoController.objeto.marco}" />
+                        
+                        
+                        <t2ti:campoDecimal styleClass="t2ti-campo-30"
+                            idComponente="contabilLancamentoOrcadoAbril" label="Abril"
+                            nomeAtributo="#{contabilLancamentoOrcadoController.objeto.abril}" />
+                        <t2ti:campoDecimal styleClass="t2ti-campo-30"
+                            idComponente="contabilLancamentoOrcadoMaio" label="Maio"
+                            nomeAtributo="#{contabilLancamentoOrcadoController.objeto.maio}" />
+                        <t2ti:campoDecimal styleClass="t2ti-campo-30"
+                            idComponente="contabilLancamentoOrcadoJunho" label="Junho"
+                            nomeAtributo="#{contabilLancamentoOrcadoController.objeto.junho}" />
+                       
+                       
+                        <t2ti:campoDecimal styleClass="t2ti-campo-30"
+                            idComponente="contabilLancamentoOrcadoJulho" label="Julho"
+                            nomeAtributo="#{contabilLancamentoOrcadoController.objeto.julho}" />
+                        <t2ti:campoDecimal styleClass="t2ti-campo-30"
+                            idComponente="contabilLancamentoOrcadoAgosto" label="Agosto"
+                            nomeAtributo="#{contabilLancamentoOrcadoController.objeto.agosto}" />
+                        <t2ti:campoDecimal styleClass="t2ti-campo-30"
+                            idComponente="contabilLancamentoOrcadoSetembro" label="Setembro"
+                            nomeAtributo="#{contabilLancamentoOrcadoController.objeto.setembro}" />
+                       
+                       
+                        <t2ti:campoDecimal styleClass="t2ti-campo-30"
+                            idComponente="contabilLancamentoOrcadoOutubro" label="Outubro"
+                            nomeAtributo="#{contabilLancamentoOrcadoController.objeto.outubro}" />
+                        <t2ti:campoDecimal styleClass="t2ti-campo-30"
+                            idComponente="contabilLancamentoOrcadoNovembro" label="Novembro"
+                            nomeAtributo="#{contabilLancamentoOrcadoController.objeto.novembro}" />
+                        <t2ti:campoDecimal styleClass="t2ti-campo-30"
+                            idComponente="contabilLancamentoOrcadoDezembro" label="Dezembro"
+                            nomeAtributo="#{contabilLancamentoOrcadoController.objeto.dezembro}" />
+                    </p:outputPanel>
+                    <p:outputPanel rendered="#{not empty contabilLancamentoOrcadoController.objeto}" styleClass="t2ti-campo-100" >
+
+                        <p:commandButton value="Incluir"
+                            rendered="#{empty contabilLancamentoOrcadoController.objeto.id}"
+                            actionListener="#{contabilLancamentoOrcadoController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!contabilLancamentoOrcadoController.podeInserir()}" />
+                        <p:commandButton value="Alterar"
+                            rendered="#{not empty contabilLancamentoOrcadoController.objeto.id}"
+                            actionListener="#{contabilLancamentoOrcadoController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!contabilLancamentoOrcadoController.podeAlterar()}" />
+                        <p:commandButton value="Fechar"
+                            actionListener="#{contabilLancamentoOrcadoController.voltar()}"
+                            update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            process="@this" />
+
+                    </p:outputPanel>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+</ui:composition>

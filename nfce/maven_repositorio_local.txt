@@ -1,0 +1,1 @@
+mvn install:install-file -Dfile=C:\Projetos\eclipse\fontes_jasper_arial_courier.jar -DgroupId=com.t2tierp -DartifactId=jasperreports-fonts -Dversion=1.1.0 -Dpackaging=jar

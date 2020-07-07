@@ -1,0 +1,496 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Emissão NFS-e"
+			rendered="#{!nfseEmissaoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{nfseEmissaoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Emissao NFS-e"
+					rendered="#{nfseEmissaoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableNfseCabecalho" var="obj"
+						value="#{nfseEmissaoController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{nfseEmissaoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{nfseEmissaoController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!nfseEmissaoController.podeInserir()}" />
+							<p:commandButton process="dataTableNfseCabecalho"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{nfseEmissaoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableNfseCabecalho" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{nfseEmissaoController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!nfseEmissaoController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Nr. OS">
+							<h:outputLabel value="#{obj.osAbertura.numero}" />
+						</p:column>
+						<p:column headerText="Cliente">
+							<h:outputLabel value="#{obj.cliente.pessoa.nome}" />
+						</p:column>
+						<p:column headerText="Numero">
+							<h:outputLabel value="#{obj.numero}" />
+						</p:column>
+						<p:column headerText="Data Emissao">
+							<h:outputLabel value="#{obj.dataHoraEmissao}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Natureza Operacao">
+							<h:outputLabel value="#{obj.naturezaOperacao}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!nfseEmissaoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Emissao NFS-e">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty nfseEmissaoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{nfseEmissaoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty nfseEmissaoController.objeto}" />
+
+					<p:outputPanel rendered="#{not empty nfseEmissaoController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+
+								<div class="t2ti-campo-20">
+									<p:outputLabel value="Nr. Os" for="nfseCabecalhoOsAbertura" />
+									<br />
+									<p:autoComplete id="nfseCabecalhoOsAbertura"
+										value="#{nfseEmissaoController.objeto.osAbertura}"
+										completeMethod="#{nfseEmissaoController.getListaOsAbertura}"
+										var="osAbertura" itemLabel="#{osAbertura.numero}"
+										itemValue="#{osAbertura}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+								<t2ti:campoTexto styleClass="t2ti-campo-80"
+									idComponente="nfseCabecalhoCliente" label="Cliente"
+									nomeAtributo="#{nfseEmissaoController.objeto.cliente.pessoa.nome}"
+									somenteLeitura="true" />
+
+								<t2ti:campoTexto styleClass="t2ti-campo-40"
+									idComponente="nfseCabecalhoNumero" label="Numero"
+									nomeAtributo="#{nfseEmissaoController.objeto.numero}"
+									somenteLeitura="true" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfseCabecalhoCodigoVerificacao"
+									label="Codigo Verificacao"
+									nomeAtributo="#{nfseEmissaoController.objeto.codigoVerificacao}"
+									somenteLeitura="true" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="nfseCabecalhoDataHoraEmissao"
+									label="Data Hora Emissao"
+									nomeAtributo="#{nfseEmissaoController.objeto.dataHoraEmissao}"
+									formato="dd/MM/yyyy HH:mm:ss" somenteLeitura="true" />
+								<t2ti:campoMascara styleClass="t2ti-campo-20"
+									idComponente="nfseCabecalhoCompetencia" label="Competencia"
+									nomeAtributo="#{nfseEmissaoController.objeto.competencia}"
+									mascara="9999/99" />
+
+								<t2ti:campoTexto styleClass="t2ti-campo-40"
+									idComponente="nfseCabecalhoNumeroSubstituida"
+									label="Numero Substituida"
+									nomeAtributo="#{nfseEmissaoController.objeto.numeroSubstituida}"
+									tamanhoMaximo="15" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="nfseCabecalhoNaturezaOperacao"
+									label="Natureza Operacao"
+									nomeAtributo="#{nfseEmissaoController.objeto.naturezaOperacao}"
+									itens="#{nfseEmissaoController.nfseNaturezaOperacao}" />
+								<t2ti:campoSelect styleClass="t2ti-campo-40"
+									idComponente="nfseCabecalhoRegimeEspecialTributacao"
+									label="Regime Especial Tributacao"
+									nomeAtributo="#{nfseEmissaoController.objeto.regimeEspecialTributacao}"
+									itens="#{nfseEmissaoController.nfseRegimeEspecialTributacao}" />
+
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfseCabecalhoNumeroRps" label="Numero Rps"
+									nomeAtributo="#{nfseEmissaoController.objeto.numeroRps}"
+									tamanhoMaximo="15" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfseCabecalhoSerieRps" label="Serie Rps"
+									nomeAtributo="#{nfseEmissaoController.objeto.serieRps}"
+									tamanhoMaximo="5" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="nfseCabecalhoTipoRps" label="Tipo Rps"
+									nomeAtributo="#{nfseEmissaoController.objeto.tipoRps}"
+									itens="#{nfseEmissaoController.nfseTipoRPS}" />
+								<t2ti:campoData styleClass="t2ti-campo-40"
+									idComponente="nfseCabecalhoDataEmissaoRps"
+									label="Data Emissao Rps"
+									nomeAtributo="#{nfseEmissaoController.objeto.dataEmissaoRps}" />
+
+								<div class="t2ti-campo-100" />
+
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfseCabecalhoCodigoObra" label="Codigo Obra"
+									nomeAtributo="#{nfseEmissaoController.objeto.codigoObra}"
+									tamanhoMaximo="15" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfseCabecalhoNumeroArt" label="Numero Art"
+									nomeAtributo="#{nfseEmissaoController.objeto.numeroArt}"
+									tamanhoMaximo="15" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="nfseCabecalhoOptanteSimplesNacional"
+									label="Optante Simples Nacional"
+									nomeAtributo="#{nfseEmissaoController.objeto.optanteSimplesNacional}"
+									itens="#{nfseEmissaoController.simNao}" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="nfseCabecalhoIncentivadorCultural"
+									label="Incentivador Cultural"
+									nomeAtributo="#{nfseEmissaoController.objeto.incentivadorCultural}"
+									itens="#{nfseEmissaoController.simNao}" />
+
+								<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+									idComponente="nfseCabecalhoOutrasInformacoes"
+									label="Outras Informacoes"
+									nomeAtributo="#{nfseEmissaoController.objeto.outrasInformacoes}" />
+								<p:outputPanel
+									rendered="#{not empty nfseEmissaoController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty nfseEmissaoController.objeto.id}"
+										actionListener="#{nfseEmissaoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!nfseEmissaoController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty nfseEmissaoController.objeto.id}"
+										actionListener="#{nfseEmissaoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!nfseEmissaoController.podeAlterar()}" />
+									<p:commandButton value="Enviar NFS-e"
+										actionListener="#{nfseEmissaoController.enviaNfse}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+									<p:commandButton value="Consultar Envio NFS-e"
+										actionListener="#{nfseEmissaoController.consultaEnvioNfse}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+									<p:commandButton value="Imprimir NFS-e"
+										actionListener="#{nfseEmissaoController.imprimirNfse}" ajax="false"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+									<p:commandButton value="Fechar"
+										actionListener="#{nfseEmissaoController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+
+								</p:outputPanel>
+							</p:tab>
+							<p:tab title="Serviços"
+								disabled="#{empty nfseEmissaoController.objeto.id}">
+
+								<p:dataTable id="dataTableNfseDetalhe" var="obj"
+									value="#{nfseEmissaoController.objeto.listaNfseDetalhe}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{nfseEmissaoController.nfseDetalheSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{nfseEmissaoController.incluirNfseDetalhe}"
+											oncomplete="PF('dialogNfseDetalhe').show()"
+											update=":formOutrasTelas:panelNfseDetalhe,dataTableNfseDetalhe" />
+										<p:commandButton process="dataTableNfseDetalhe"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{nfseEmissaoController.alterarNfseDetalhe}"
+											oncomplete="PF('dialogNfseDetalhe').show()"
+											update=":formOutrasTelas:panelNfseDetalhe,dataTableNfseDetalhe" />
+										<p:commandButton process="dataTableNfseDetalhe"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableNfseDetalhe"
+											actionListener="#{nfseEmissaoController.excluirNfseDetalhe}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Servico">
+										<h:outputLabel value="#{obj.nfseListaServico.descricao}" />
+									</p:column>
+									<p:column headerText="Valor Servicos">
+										<h:outputLabel value="#{obj.valorServicos}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Aliquota">
+										<h:outputLabel value="#{obj.aliquota}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Valor Iss">
+										<h:outputLabel value="#{obj.valorIss}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Valor Desconto">
+										<h:outputLabel value="#{obj.valorDescontoIncondicionado}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Valor Liquido">
+										<h:outputLabel value="#{obj.valorLiquido}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+							<p:tab title="Intermediarios"
+								disabled="#{empty nfseEmissaoController.objeto.id}">
+
+								<p:dataTable id="dataTableNfseIntermediario" var="obj"
+									value="#{nfseEmissaoController.objeto.listaNfseIntermediario}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{nfseEmissaoController.nfseIntermediarioSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{nfseEmissaoController.incluirNfseIntermediario}"
+											oncomplete="PF('dialogNfseIntermediario').show()"
+											update=":formOutrasTelas2:panelNfseIntermediario,dataTableNfseIntermediario" />
+										<p:commandButton process="dataTableNfseIntermediario"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{nfseEmissaoController.alterarNfseIntermediario}"
+											oncomplete="PF('dialogNfseIntermediario').show()"
+											update=":formOutrasTelas2:panelNfseIntermediario,dataTableNfseIntermediario" />
+										<p:commandButton process="dataTableNfseIntermediario"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableNfseIntermediario"
+											actionListener="#{nfseEmissaoController.excluirNfseIntermediario}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Razao">
+										<h:outputLabel value="#{obj.razao}" />
+									</p:column>
+									<p:column headerText="Cnpj">
+										<h:outputLabel value="#{obj.cnpj}" />
+									</p:column>
+									<p:column headerText="Inscricao Municipal">
+										<h:outputLabel value="#{obj.inscricaoMunicipal}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+						</p:tabView>
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogNfseDetalhe"
+				header="Inclusão/Alteração NFS-e Detalhe"
+				widgetVar="dialogNfseDetalhe" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="false" width="800">
+
+				<p:outputPanel id="panelNfseDetalhe">
+
+					<t2ti:campoTexto styleClass="t2ti-campo-100"
+						idComponente="nfseDetalheNfseListaServico"
+						label="Item Lista Servico"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.nfseListaServico.descricao}" />
+
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfseDetalheValorServicos" label="Valor Servicos"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.valorServicos}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfseDetalheValorDeducoes" label="Valor Deducoes"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.valorDeducoes}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfseDetalheValorPis" label="Valor Pis"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.valorPis}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfseDetalheValorCofins" label="Valor Cofins"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.valorCofins}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfseDetalheValorInss" label="Valor Inss"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.valorInss}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfseDetalheValorIr" label="Valor Ir"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.valorIr}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfseDetalheValorCsll" label="Valor Csll"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.valorCsll}" />
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="nfseDetalheCodigoCnae" label="Codigo Cnae"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.codigoCnae}"
+						tamanhoMaximo="7" />
+					<t2ti:campoTexto styleClass="t2ti-campo-40"
+						idComponente="nfseDetalheCodigoTributacaoMunicipio"
+						label="Codigo Tributacao Municipio"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.codigoTributacaoMunicipio}"
+						tamanhoMaximo="20" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfseDetalheValorBaseCalculo"
+						label="Valor Base Calculo"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.valorBaseCalculo}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfseDetalheAliquota" label="Aliquota"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.aliquota}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfseDetalheValorIss" label="Valor Iss"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.valorIss}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfseDetalheValorLiquido" label="Valor Liquido"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.valorLiquido}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfseDetalheOutrasRetencoes" label="Outras Retencoes"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.outrasRetencoes}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfseDetalheValorCredito" label="Valor Credito"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.valorCredito}" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="nfseDetalheIssRetido" label="Iss Retido"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.issRetido}"
+						itens="#{nfseEmissaoController.simNao}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfseDetalheValorIssRetido" label="Valor Iss Retido"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.valorIssRetido}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-40"
+						idComponente="nfseDetalheValorDescontoCondicionado"
+						label="Valor Desconto Condicionado"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.valorDescontoCondicionado}" />
+
+					<div class="t2ti-campo-100" />
+
+					<t2ti:campoDecimal styleClass="t2ti-campo-40"
+						idComponente="nfseDetalheValorDescontoIncondicionado"
+						label="Valor Desconto Incondicionado"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.valorDescontoIncondicionado}" />
+					<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+						idComponente="nfseDetalheDiscriminacao" label="Discriminacao"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.discriminacao}" />
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="nfseDetalheMunicipioPrestacao"
+						label="Municipio Prestacao"
+						nomeAtributo="#{nfseEmissaoController.nfseDetalhe.municipioPrestacao}" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Fechar"
+						oncomplete="PF('dialogNfseDetalhe').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas2">
+		<h:form id="formOutrasTelas2">
+
+			<p:dialog id="dialogNfseIntermediario"
+				header="Inclusão/Alteração NFS-e Intermediario"
+				widgetVar="dialogNfseIntermediario" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+
+				<p:outputPanel id="panelNfseIntermediario">
+					<t2ti:campoTexto styleClass="t2ti-campo-60"
+						idComponente="nfseIntermediarioRazao" label="Razao"
+						nomeAtributo="#{nfseEmissaoController.nfseIntermediario.razao}"
+						tamanhoMaximo="150" />
+
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="nfseIntermediarioCnpj" label="Cnpj"
+						nomeAtributo="#{nfseEmissaoController.nfseIntermediario.cnpj}"
+						tamanhoMaximo="14" />
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="nfseIntermediarioInscricaoMunicipal"
+						label="Inscricao Municipal"
+						nomeAtributo="#{nfseEmissaoController.nfseIntermediario.inscricaoMunicipal}"
+						tamanhoMaximo="15" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{nfseEmissaoController.salvarNfseIntermediario}"
+						update=":formOutrasTelas2:panelNfseIntermediario,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogNfseIntermediario').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogNfseIntermediario').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

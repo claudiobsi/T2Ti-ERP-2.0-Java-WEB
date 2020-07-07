@@ -1,0 +1,45 @@
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+	<ui:define name="gridDados">
+		<c:set var="podeConsultar"
+			value="#{request.isUserInRole('ADMIN') or request.isUserInRole('AGENCIA_BANCO_CONSULTA')}"
+			scope="request" />
+		<c:set var="podeInserir"
+			value="#{request.isUserInRole('ADMIN') or request.isUserInRole('AGENCIA_BANCO_INSERE')}"
+			scope="request" />
+		<c:set var="podeAlterar"
+			value="#{request.isUserInRole('ADMIN') or request.isUserInRole('AGENCIA_BANCO_ALTERA')}"
+			scope="request" />
+		<c:set var="podeExcluir"
+			value="#{request.isUserInRole('ADMIN') or request.isUserInRole('AGENCIA_BANCO_EXCLUI')}"
+			scope="request" />
+
+		<p:panel style="border: none" header="Agência Banco"
+			rendered="#{!podeConsultar}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:panel id="panelCentro" style="border: none" header="Agência Banco"
+			rendered="#{podeConsultar}">
+
+			<p:dataTable var="a" value="#{agenciaBancoController.agencias}">
+				<p:column headerText="Nome">
+					<h:outputLabel value="#{a.nome}" />
+				</p:column>
+				<p:column headerText="Código">
+					<h:outputLabel value="#{a.codigo}" />
+				</p:column>
+				<p:column headerText="Banco">
+					<h:outputLabel value="#{a.banco.nome}" />
+				</p:column>
+			</p:dataTable>
+		</p:panel>
+	</ui:define>
+
+</ui:composition>

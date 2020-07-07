@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<h:outputStylesheet name="css/t2tierp.css" />
+	<h:outputScript name="js/t2ti.js" />
+	<title><ui:insert name="titulo">Projeto T2Ti ERP - Loja Virtual</ui:insert></title>
+</h:head>
+<h:body>
+
+	<p:ajaxStatus onstart="PF('statusDialog').show();"
+		onsuccess="PF('statusDialog').hide();" />
+
+	<p:dialog modal="true" widgetVar="statusDialog" header="Carregando..."
+		draggable="false" closable="false" resizable="false">
+		<p:graphicImage value="/imagens/ajax_loading_bar.gif" />
+	</p:dialog>
+
+	<h:form>
+		<p:growl id="growl" life="3000" autoUpdate="true" />
+	</h:form>
+
+	<div style="width: 100%">
+		<ui:include src="cabecalho-loja.xhtml" />
+	</div>
+
+	<div style="width: 20%; float: left; clear: left; padding-top: 2%">
+		<ui:include src="menuEsquerda-loja.xhtml" />
+	</div>
+
+	<div style="width: 80%; float: right; padding-top: 2%">
+		<h:form id="form1">
+			<ui:insert name="listaProduto" />
+
+			<ui:insert name="detalheProduto" />
+		</h:form>
+	</div>
+
+	<ui:insert name="carrinho" />
+
+	<ui:insert name="loginCliente" />
+	
+	<ui:insert name="contato" />
+
+</h:body>
+</html>

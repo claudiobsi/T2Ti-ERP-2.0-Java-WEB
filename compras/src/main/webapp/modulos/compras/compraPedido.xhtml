@@ -1,0 +1,441 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewParam name="compraSugerida" value="#{compraPedidoController.parametroCompraSugerida}" />
+			<f:viewAction action="#{compraPedidoController.carregaCompraSugerida()}" />
+		</f:metadata>	
+	</ui:define>
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Compra Pedido"
+			rendered="#{!compraPedidoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{compraPedidoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Compra Pedido"
+					rendered="#{compraPedidoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableCompraPedido" var="obj"
+						value="#{compraPedidoController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{compraPedidoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{compraPedidoController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!compraPedidoController.podeInserir()}" />
+							<p:commandButton process="dataTableCompraPedido" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{compraPedidoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableCompraPedido" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{compraPedidoController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!compraPedidoController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Tipo Pedido">
+							<h:outputLabel value="#{obj.compraTipoPedido.nome}" />
+						</p:column>
+						<p:column headerText="Fornecedor">
+							<h:outputLabel value="#{obj.fornecedor.pessoa.nome}" />
+						</p:column>
+						<p:column headerText="Data Pedido">
+							<h:outputLabel value="#{obj.dataPedido}" />
+						</p:column>
+						<p:column headerText="Previsao Entrega">
+							<h:outputLabel value="#{obj.dataPrevistaEntrega}" />
+						</p:column>
+						<p:column headerText="Valor Total">
+							<h:outputLabel value="#{obj.valorTotalPedido}">
+								<f:convertNumber pattern="#,##0.00" />
+							</h:outputLabel>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!compraPedidoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Compra Pedido">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty compraPedidoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{compraPedidoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty compraPedidoController.objeto}" />
+
+					<p:tabView id="tabviewCompraCotacao" style="border: 0px;"
+						rendered="#{not empty compraPedidoController.objeto}">
+						<p:tab title="Dados Principais">
+							<p:outputPanel>
+
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Tipo Pedido"
+										for="compraPedidoCompraTipoPedido" />
+									<br />
+									<p:autoComplete id="compraPedidoCompraTipoPedido"
+										value="#{compraPedidoController.objeto.compraTipoPedido}"
+										completeMethod="#{compraPedidoController.getListaCompraTipoPedido}"
+										var="compraTipoPedido" itemLabel="#{compraTipoPedido.nome}"
+										itemValue="#{compraTipoPedido}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="100"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Fornecedor" for="compraPedidoFornecedor" />
+									<br />
+									<p:autoComplete id="compraPedidoFornecedor"
+										value="#{compraPedidoController.objeto.fornecedor}"
+										completeMethod="#{compraPedidoController.getListaFornecedor}"
+										var="fornecedor" itemLabel="#{fornecedor.pessoa.nome}"
+										itemValue="#{fornecedor}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="100"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="compraPedidoDataPedido" label="Data Pedido"
+									nomeAtributo="#{compraPedidoController.objeto.dataPedido}" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="compraPedidoDataPrevistaEntrega"
+									label="Previsao Entrega"
+									nomeAtributo="#{compraPedidoController.objeto.dataPrevistaEntrega}" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="compraPedidoDataPrevisaoPagamento"
+									label="Previsao Pagamento"
+									nomeAtributo="#{compraPedidoController.objeto.dataPrevisaoPagamento}" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="compraPedidoFormaPagamento"
+									label="Forma Pagamento"
+									nomeAtributo="#{compraPedidoController.objeto.formaPagamento}"
+									itens="#{compraPedidoController.compraFormaPagamento}" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="compraPedidoTipoFrete" label="Tipo Frete"
+									nomeAtributo="#{compraPedidoController.objeto.tipoFrete}"
+									itens="#{compraPedidoController.compraTipoFrete}" />
+
+
+								<t2ti:campoTexto styleClass="t2ti-campo-40"
+									idComponente="compraPedidoLocalEntrega" label="Local Entrega"
+									nomeAtributo="#{compraPedidoController.objeto.localEntrega}"
+									tamanhoMaximo="100" />
+								<t2ti:campoTexto styleClass="t2ti-campo-40"
+									idComponente="compraPedidoLocalCobranca" label="Local Cobranca"
+									nomeAtributo="#{compraPedidoController.objeto.localCobranca}"
+									tamanhoMaximo="100" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="compraPedidoContato" label="Contato"
+									nomeAtributo="#{compraPedidoController.objeto.contato}"
+									tamanhoMaximo="30" />
+
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="compraPedidoValorSubtotal" label="Subtotal"
+									nomeAtributo="#{compraPedidoController.objeto.valorSubtotal}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="compraPedidoTaxaDesconto" label="Taxa Desconto"
+									nomeAtributo="#{compraPedidoController.objeto.taxaDesconto}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="compraPedidoValorDesconto" label="Valor Desconto"
+									nomeAtributo="#{compraPedidoController.objeto.valorDesconto}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-40"
+									idComponente="compraPedidoValorTotalPedido"
+									label="Valor Total Pedido"
+									nomeAtributo="#{compraPedidoController.objeto.valorTotalPedido}" />
+
+								<t2ti:campoDecimal styleClass="t2ti-campo-30"
+									idComponente="compraPedidoBaseCalculoIcms"
+									label="Base Calculo Icms"
+									nomeAtributo="#{compraPedidoController.objeto.baseCalculoIcms}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="compraPedidoValorIcms" label="Valor Icms"
+									nomeAtributo="#{compraPedidoController.objeto.valorIcms}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-30"
+									idComponente="compraPedidoBaseCalculoIcmsSt"
+									label="Base Calculo Icms St"
+									nomeAtributo="#{compraPedidoController.objeto.baseCalculoIcmsSt}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="compraPedidoValorIcmsSt" label="Valor Icms St"
+									nomeAtributo="#{compraPedidoController.objeto.valorIcmsSt}" />
+
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="compraPedidoValorTotalProdutos"
+									label="Total Produtos"
+									nomeAtributo="#{compraPedidoController.objeto.valorTotalProdutos}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="compraPedidoValorFrete" label="Frete"
+									nomeAtributo="#{compraPedidoController.objeto.valorFrete}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="compraPedidoValorOutrasDespesas"
+									label="Outras Despesas"
+									nomeAtributo="#{compraPedidoController.objeto.valorOutrasDespesas}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="compraPedidoValorSeguro" label="Seguro"
+									nomeAtributo="#{compraPedidoController.objeto.valorSeguro}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="compraPedidoValorIpi" label="Valor Ipi"
+									nomeAtributo="#{compraPedidoController.objeto.valorIpi}" />
+
+
+								<t2ti:campoDecimal styleClass="t2ti-campo-30"
+									idComponente="compraPedidoValorTotalNf" label="Valor Total Nf"
+									nomeAtributo="#{compraPedidoController.objeto.valorTotalNf}" />
+								<t2ti:campoInteiro styleClass="t2ti-campo-20"
+									idComponente="compraPedidoQuantidadeParcelas"
+									label="Quantidade Parcelas"
+									nomeAtributo="#{compraPedidoController.objeto.quantidadeParcelas}" />
+								<t2ti:campoInteiro styleClass="t2ti-campo-30"
+									idComponente="compraPedidoDiasPrimeiroVencimento"
+									label="Dias Primeiro Vencimento"
+									nomeAtributo="#{compraPedidoController.objeto.diasPrimeiroVencimento}" />
+								<t2ti:campoInteiro styleClass="t2ti-campo-20"
+									idComponente="compraPedidoDiasIntervalo" label="Dias Intervalo"
+									nomeAtributo="#{compraPedidoController.objeto.diasIntervalo}" />
+							</p:outputPanel>
+						</p:tab>
+
+						<p:tab title="Itens"
+							disabled="#{empty compraPedidoController.objeto.id}">
+							<p:outputPanel>
+								<p:dataTable id="dataTableCompraPedidoDetalhe" var="obj"
+									value="#{compraPedidoController.objeto.listaCompraPedidoDetalhe}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{compraPedidoController.compraPedidoDetalheSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{compraPedidoController.incluirItem}"
+											oncomplete="PF('dialogPedidoDetalhe').show()"
+											update=":formOutrasTelas:panelPedidoDetalhe,dataTableCompraPedidoDetalhe" />
+										<p:commandButton process="dataTableCompraPedidoDetalhe"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{compraPedidoController.alterarItem}"
+											oncomplete="PF('dialogPedidoDetalhe').show()"
+											update=":formOutrasTelas:panelPedidoDetalhe,dataTableCompraPedidoDetalhe" />
+										<p:commandButton process="dataTableCompraPedidoDetalhe"
+											title="Excluir" icon="ui-icon-trash"
+											actionListener="#{compraPedidoController.excluirItem}"
+											update="dataTableCompraPedidoDetalhe">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Produto" width="30%">
+										<h:outputLabel value="#{obj.produto.nome}" />
+									</p:column>
+									<p:column headerText="Quantidade">
+										<h:outputLabel value="#{obj.quantidade}">
+											<f:convertNumber pattern="#,##0.000" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Valor Unitario">
+										<h:outputLabel value="#{obj.valorUnitario}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Valor Desconto">
+										<h:outputLabel value="#{obj.valorDesconto}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Valor Total">
+										<h:outputLabel value="#{obj.valorTotal}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+								</p:dataTable>
+							</p:outputPanel>
+
+						</p:tab>
+
+					</p:tabView>
+
+					<p:outputPanel
+						rendered="#{not empty compraPedidoController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty compraPedidoController.objeto.id}"
+							actionListener="#{compraPedidoController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!compraPedidoController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty compraPedidoController.objeto.id}"
+							actionListener="#{compraPedidoController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!compraPedidoController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{compraPedidoController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogPedidoDetalhe"
+				header="Inclusão/Alteração de item" widgetVar="dialogPedidoDetalhe"
+				showEffect="slide" hideEffect="slide" resizable="true" modal="true"
+				closable="false" width="800">
+
+				<p:outputPanel id="panelPedidoDetalhe">
+
+					<div class="t2ti-campo-80">
+						<p:outputLabel value="Produto" for="compraPedidoDetalheProduto" />
+						<br />
+						<p:autoComplete id="compraPedidoDetalheProduto"
+							value="#{compraPedidoController.compraPedidoDetalhe.produto}"
+							completeMethod="#{compraPedidoController.getListaProduto}"
+							var="produto" itemLabel="#{produto.nome}" itemValue="#{produto}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="100"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="compraPedidoDetalheQuantidade" label="Quantidade"
+						nomeAtributo="#{compraPedidoController.compraPedidoDetalhe.quantidade}" />
+
+					<div class="t2ti-campo-100" />
+
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="compraPedidoDetalheValorUnitario"
+						label="Valor Unitario"
+						nomeAtributo="#{compraPedidoController.compraPedidoDetalhe.valorUnitario}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="compraPedidoDetalheValorSubtotal"
+						label="Valor Subtotal" somenteLeitura="true"
+						nomeAtributo="#{compraPedidoController.compraPedidoDetalhe.valorSubtotal}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="compraPedidoDetalheTaxaDesconto"
+						label="Taxa Desconto"
+						nomeAtributo="#{compraPedidoController.compraPedidoDetalhe.taxaDesconto}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="compraPedidoDetalheValorDesconto"
+						label="Valor Desconto" somenteLeitura="true"
+						nomeAtributo="#{compraPedidoController.compraPedidoDetalhe.valorDesconto}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="compraPedidoDetalheValorTotal" label="Valor Total"
+						somenteLeitura="true"
+						nomeAtributo="#{compraPedidoController.compraPedidoDetalhe.valorTotal}" />
+
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="compraPedidoDetalheCstCsosn" label="Cst Csosn"
+						nomeAtributo="#{compraPedidoController.compraPedidoDetalhe.cstCsosn}"
+						tamanhoMaximo="3" />
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="compraPedidoDetalheCfop" label="Cfop"
+						nomeAtributo="#{compraPedidoController.compraPedidoDetalhe.cfop}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="compraPedidoDetalheBaseCalculoIcms"
+						label="Base Calculo Icms" somenteLeitura="true"
+						nomeAtributo="#{compraPedidoController.compraPedidoDetalhe.baseCalculoIcms}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="compraPedidoDetalheValorIcms" label="Valor Icms"
+						somenteLeitura="true"
+						nomeAtributo="#{compraPedidoController.compraPedidoDetalhe.valorIcms}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="compraPedidoDetalheValorIpi" label="Valor Ipi"
+						somenteLeitura="true"
+						nomeAtributo="#{compraPedidoController.compraPedidoDetalhe.valorIpi}" />
+
+					<div class="t2ti-campo-100" />
+
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="compraPedidoDetalheAliquotaIcms"
+						label="Aliquota Icms"
+						nomeAtributo="#{compraPedidoController.compraPedidoDetalhe.aliquotaIcms}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="compraPedidoDetalheAliquotaIpi" label="Aliquota Ipi"
+						nomeAtributo="#{compraPedidoController.compraPedidoDetalhe.aliquotaIpi}" />
+
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{compraPedidoController.salvarItem}"
+						update=":formOutrasTelas:panelPedidoDetalhe,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogPedidoDetalhe').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogPedidoDetalhe').hide();" />
+
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

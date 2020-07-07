@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<b:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:b="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+						http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/security
+                        http://www.springframework.org/schema/security/spring-security-3.2.xsd">
+
+	<http auto-config="true" use-expressions="true">
+		<form-login login-page="/login.jsf"
+			authentication-failure-url="/login.jsf?erro=true" authentication-success-handler-ref="successHandler" />
+		<intercept-url pattern="/login*" access="permitAll" />
+		<intercept-url pattern="/resources/**" access="permitAll" />
+		<intercept-url pattern="/imagens/**" access="permitAll" />
+		<intercept-url pattern="/index*" access="isFullyAuthenticated()" />
+		<intercept-url pattern="/modulos/**" access="isFullyAuthenticated()" />
+	</http>
+
+	<authentication-manager>
+		<authentication-provider ref="loginController" />
+	</authentication-manager>
+
+	<b:bean name="loginController" class="com.t2tierp.controller.LoginController" />
+	
+	<b:bean name="successHandler" class="com.t2tierp.controller.T2TiSuccessHandler" />
+
+	<b:bean id="roleVoter" class="org.springframework.security.access.vote.RoleVoter">
+		<b:property name="rolePrefix" value="" />
+	</b:bean>
+</b:beans>

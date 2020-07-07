@@ -1,0 +1,273 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Folha Lancamento Cabecalho"
+			rendered="#{!folhaLancamentoCabecalhoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel
+				rendered="#{folhaLancamentoCabecalhoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Folha Lancamento Cabecalho"
+					rendered="#{folhaLancamentoCabecalhoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableFolhaLancamentoCabecalho" var="obj"
+						value="#{folhaLancamentoCabecalhoController.dataModel}"
+						paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{folhaLancamentoCabecalhoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{folhaLancamentoCabecalhoController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!folhaLancamentoCabecalhoController.podeInserir()}" />
+							<p:commandButton process="dataTableFolhaLancamentoCabecalho"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{folhaLancamentoCabecalhoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableFolhaLancamentoCabecalho"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{folhaLancamentoCabecalhoController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!folhaLancamentoCabecalhoController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Colaborador">
+							<h:outputLabel value="#{obj.colaborador.pessoa.nome}" />
+						</p:column>
+						<p:column headerText="Competencia">
+							<h:outputLabel value="#{obj.competencia}" />
+						</p:column>
+						<p:column headerText="Tipo">
+							<h:outputLabel
+								value="#{folhaLancamentoCabecalhoController.keyFromValue(folhaLancamentoCabecalhoController.tipoLancamentoFolha, obj.tipo)}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel
+				rendered="#{!folhaLancamentoCabecalhoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Folha Lancamento Cabecalho">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty folhaLancamentoCabecalhoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{folhaLancamentoCabecalhoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty folhaLancamentoCabecalhoController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty folhaLancamentoCabecalhoController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+
+								<div class="t2ti-campo-100">
+									<p:outputLabel value="Colaborador"
+										for="folhaLancamentoCabecalhoColaborador" />
+									<br />
+									<p:autoComplete id="folhaLancamentoCabecalhoColaborador"
+										value="#{folhaLancamentoCabecalhoController.objeto.colaborador}"
+										completeMethod="#{folhaLancamentoCabecalhoController.getListaColaborador}"
+										var="colaborador" itemLabel="#{colaborador.pessoa.nome}"
+										itemValue="#{colaborador}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<t2ti:campoMascara styleClass="t2ti-campo-20"
+									idComponente="folhaLancamentoCabecalhoCompetencia"
+									label="Competencia"
+									nomeAtributo="#{folhaLancamentoCabecalhoController.objeto.competencia}"
+									mascara="99/9999" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="folhaLancamentoCabecalhoTipo" label="Tipo"
+									nomeAtributo="#{folhaLancamentoCabecalhoController.objeto.tipo}"
+									itens="#{folhaLancamentoCabecalhoController.tipoEventoFolha}" />
+								<p:outputPanel
+									rendered="#{not empty folhaLancamentoCabecalhoController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty folhaLancamentoCabecalhoController.objeto.id}"
+										actionListener="#{folhaLancamentoCabecalhoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!folhaLancamentoCabecalhoController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty folhaLancamentoCabecalhoController.objeto.id}"
+										actionListener="#{folhaLancamentoCabecalhoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!folhaLancamentoCabecalhoController.podeAlterar()}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{folhaLancamentoCabecalhoController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+
+								</p:outputPanel>
+							</p:tab>
+							<p:tab title="Folha Lancamento Detalhe"
+								disabled="#{empty folhaLancamentoCabecalhoController.objeto.id}">
+								<p:dataTable id="dataTableFolhaLancamentoDetalhe" var="obj"
+									value="#{folhaLancamentoCabecalhoController.objeto.listaFolhaLancamentoDetalhe}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{folhaLancamentoCabecalhoController.folhaLancamentoDetalheSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{folhaLancamentoCabecalhoController.incluirFolhaLancamentoDetalhe}"
+											oncomplete="PF('dialogFolhaLancamentoDetalhe').show()"
+											update=":formOutrasTelas:panelFolhaLancamentoDetalhe,dataTableFolhaLancamentoDetalhe" />
+										<p:commandButton process="dataTableFolhaLancamentoDetalhe"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{folhaLancamentoCabecalhoController.alterarFolhaLancamentoDetalhe}"
+											oncomplete="PF('dialogFolhaLancamentoDetalhe').show()"
+											update=":formOutrasTelas:panelFolhaLancamentoDetalhe,dataTableFolhaLancamentoDetalhe" />
+										<p:commandButton process="dataTableFolhaLancamentoDetalhe"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableFolhaLancamentoDetalhe"
+											actionListener="#{folhaLancamentoCabecalhoController.excluirFolhaLancamentoDetalhe}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Evento">
+										<h:outputLabel value="#{obj.folhaEvento.nome}" />
+									</p:column>
+									<p:column headerText="Origem">
+										<h:outputLabel value="#{obj.origem}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Provento">
+										<h:outputLabel value="#{obj.provento}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Desconto">
+										<h:outputLabel value="#{obj.desconto}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+						</p:tabView>
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogFolhaLancamentoDetalhe"
+				header="Inclusão/Alteração Folha Lancamento Detalhe"
+				widgetVar="dialogFolhaLancamentoDetalhe" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false">
+
+				<p:outputPanel id="panelFolhaLancamentoDetalhe">
+					<div class="t2ti-campo-100">
+						<p:outputLabel value="Folha Evento"
+							for="folhaLancamentoDetalheFolhaEvento" />
+						<br />
+						<p:autoComplete id="folhaLancamentoDetalheFolhaEvento"
+							value="#{folhaLancamentoCabecalhoController.folhaLancamentoDetalhe.folhaEvento}"
+							completeMethod="#{folhaLancamentoCabecalhoController.getListaFolhaEvento}"
+							var="folhaEvento" itemLabel="#{folhaEvento.nome}"
+							itemValue="#{folhaEvento}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="10"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="folhaLancamentoDetalheOrigem" label="Origem"
+						nomeAtributo="#{folhaLancamentoCabecalhoController.folhaLancamentoDetalhe.origem}"
+						somenteLeitura="true" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="folhaLancamentoDetalheProvento" label="Provento"
+						nomeAtributo="#{folhaLancamentoCabecalhoController.folhaLancamentoDetalhe.provento}"
+						somenteLeitura="true" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="folhaLancamentoDetalheDesconto" label="Desconto"
+						nomeAtributo="#{folhaLancamentoCabecalhoController.folhaLancamentoDetalhe.desconto}"
+						somenteLeitura="true" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{folhaLancamentoCabecalhoController.salvarFolhaLancamentoDetalhe}"
+						update=":formOutrasTelas:panelFolhaLancamentoDetalhe,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogFolhaLancamentoDetalhe').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogFolhaLancamentoDetalhe').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

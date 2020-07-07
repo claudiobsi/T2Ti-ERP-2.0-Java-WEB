@@ -1,0 +1,65 @@
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+
+	<ui:define name="gridDados">
+		<c:set var="podeConsultar"
+			value="#{request.isUserInRole('ADMIN') or request.isUserInRole('SINTEGRA_CONSULTA')}"
+			scope="request" />
+
+		<p:panel style="border: none" header="Sintegra"
+			rendered="#{!podeConsultar}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:panel id="panelCentro" style="border: none" header="Sintegra"
+			rendered="#{podeConsultar}">
+
+			<h:panelGrid columns="2" cellpadding="5">
+				<p:outputLabel for="codigoConvenio" value="Código do Convênio:" />
+				<p:selectOneMenu id="codigoConvenio" value="#{sintegraController.codigoConvenio}">
+					<f:selectItem itemLabel="3 - Convênio 57/95 Alt. 76/03"
+						itemValue="3" />
+					<f:selectItem
+						itemLabel="2 - Convênio 57/95 Versão 69/02 Alt. 142/02"
+						itemValue="2" />
+					<f:selectItem
+						itemLabel="1 - Convênio 57/95 Versão 31/99 Alt. 30/02"
+						itemValue="1" />
+				</p:selectOneMenu>
+
+				<p:outputLabel for="naturezaInformacao"
+					value="Natureza das Informações:" />
+				<p:selectOneMenu id="naturezaInformacao" value="#{sintegraController.naturezaOperacao}">
+					<f:selectItem itemLabel="3 - Totalidade das operações do informante" itemValue="3" />
+					<f:selectItem itemLabel="2 - Interestaduais - Operações com ou sem Substituição Tributária" itemValue="2" />
+					<f:selectItem itemLabel="1 - Interestaduais - Somente operações sujeitas ao regime de Substituição Tributária" itemValue="1" />
+				</p:selectOneMenu>
+
+				<p:outputLabel for="finalidadeArquivo"
+					value="Finalidade do Arquivo:" />
+				<p:selectOneMenu id="finalidadeArquivo" value="#{sintegraController.finalidadeArquivo}">
+					<f:selectItem itemLabel="1 - Normal" itemValue="1" />
+					<f:selectItem itemLabel="2 - Retificação total de arquivo" itemValue="2" />
+					<f:selectItem itemLabel="3 - Retificação aditiva de arquivo" itemValue="3" />
+					<f:selectItem itemLabel="5 - Desfazimento" itemValue="5" />
+				</p:selectOneMenu>
+
+				<p:outputLabel for="dataInicial" value="Data Inicial:" />
+				<p:calendar id="dataInicial"  value="#{sintegraController.dataInicio}" required="true"/>
+
+				<p:outputLabel for="dataFinal" value="Data Final:" />
+				<p:calendar id="dataFinal" value="#{sintegraController.dataFim}" required="true" />
+				
+				<p:commandButton action="#{sintegraController.geraSintegra}" value="Gerar Arquivo" ajax="false"/>
+
+			</h:panelGrid>
+		</p:panel>
+	</ui:define>
+
+</ui:composition>

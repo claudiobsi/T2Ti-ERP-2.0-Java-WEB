@@ -1,0 +1,265 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Patrim Grupo Bem"
+			rendered="#{!patrimGrupoBemController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{patrimGrupoBemController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Patrim Grupo Bem"
+					rendered="#{patrimGrupoBemController.podeConsultar()}">
+
+					<p:dataTable id="dataTablePatrimGrupoBem" var="obj"
+						value="#{patrimGrupoBemController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{patrimGrupoBemController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{patrimGrupoBemController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!patrimGrupoBemController.podeInserir()}" />
+							<p:commandButton process="dataTablePatrimGrupoBem"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{patrimGrupoBemController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTablePatrimGrupoBem"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{patrimGrupoBemController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!patrimGrupoBemController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Codigo">
+							<h:outputLabel value="#{obj.codigo}" />
+						</p:column>
+						<p:column headerText="Nome">
+							<h:outputLabel value="#{obj.nome}" />
+						</p:column>
+						<p:column headerText="Descricao">
+							<h:outputLabel value="#{obj.descricao}" />
+						</p:column>
+						<p:column headerText="Conta Ativo Imobilizado">
+							<h:outputLabel value="#{obj.contaAtivoImobilizado}" />
+						</p:column>
+						<p:column headerText="Conta Depreciacao Acumulada">
+							<h:outputLabel value="#{obj.contaDepreciacaoAcumulada}" />
+						</p:column>
+						<p:column headerText="Conta Despesa Depreciacao">
+							<h:outputLabel value="#{obj.contaDespesaDepreciacao}" />
+						</p:column>
+						<p:column headerText="Codigo Historico">
+							<h:outputLabel value="#{obj.codigoHistorico}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!patrimGrupoBemController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Patrim Grupo Bem">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty patrimGrupoBemController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{patrimGrupoBemController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty patrimGrupoBemController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty patrimGrupoBemController.objeto}">
+
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="patrimGrupoBemCodigo" label="Codigo"
+							nomeAtributo="#{patrimGrupoBemController.objeto.codigo}"
+							tamanhoMaximo="3" requerido="true" />
+						<t2ti:campoTexto styleClass="t2ti-campo-80"
+							idComponente="patrimGrupoBemNome" label="Nome"
+							nomeAtributo="#{patrimGrupoBemController.objeto.nome}"
+							tamanhoMaximo="50" requerido="true" />
+
+						<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+							idComponente="patrimGrupoBemDescricao" label="Descricao"
+							nomeAtributo="#{patrimGrupoBemController.objeto.descricao}" />
+
+						<div class="t2ti-campo-100">
+							<p:outputLabel value="Conta Ativo Imobilizado"
+								for="patrimGrupoBemContaAtivoImobilizado" />
+							<br />
+							<p:autoComplete id="patrimGrupoBemContaAtivoImobilizado"
+								value="#{patrimGrupoBemController.contaAtivoImobilizado}"
+								completeMethod="#{patrimGrupoBemController.getListaContabilConta}"
+								var="contaAtivoImobilizado"
+								itemLabel="#{contaAtivoImobilizado.descricao}"
+								itemValue="#{contaAtivoImobilizado}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="10"
+								style="width: 58%; padding-right: 2%;"
+								emptyMessage="Nenhum registro encontrado">
+
+								<p:ajax event="itemSelect"
+									listener="#{patrimGrupoBemController.selecionaContaAtivoImobilizado}"
+									update="classificacaoAtivoImobilizado" />
+
+							</p:autoComplete>
+							<p:inputText id="classificacaoAtivoImobilizado"
+								value="#{patrimGrupoBemController.objeto.contaAtivoImobilizado}"
+								style="width: 38%" readonly="true" />
+						</div>
+
+						<div class="t2ti-campo-100">
+							<p:outputLabel value="Conta Depreciacao Acumulada"
+								for="patrimGrupoBemContaDepreciacaoAcumulada" />
+							<br />
+							<p:autoComplete id="patrimGrupoBemContaDepreciacaoAcumulada"
+								value="#{patrimGrupoBemController.contaDepreciacaoAcumulada}"
+								completeMethod="#{patrimGrupoBemController.getListaContabilConta}"
+								var="contaDepreciacaoAcumulada"
+								itemLabel="#{contaDepreciacaoAcumulada.descricao}"
+								itemValue="#{contaDepreciacaoAcumulada}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="10"
+								style="width: 58%; padding-right: 2%;"
+								emptyMessage="Nenhum registro encontrado">
+
+								<p:ajax event="itemSelect"
+									listener="#{patrimGrupoBemController.selecionaContaDepreciacaoAcumulada}"
+									update="classificacaoDepreciacaoAcumulada" />
+
+							</p:autoComplete>
+							<p:inputText id="classificacaoDepreciacaoAcumulada"
+								value="#{patrimGrupoBemController.objeto.contaDepreciacaoAcumulada}"
+								style="width: 38%" readonly="true" />
+						</div>
+
+						<div class="t2ti-campo-100">
+							<p:outputLabel value="Conta Despesa Depreciacao"
+								for="patrimGrupoBemContaDespesaDepreciacao" />
+							<br />
+							<p:autoComplete id="patrimGrupoBemContaDespesaDepreciacao"
+								value="#{patrimGrupoBemController.contaDespesaDepreciacao}"
+								completeMethod="#{patrimGrupoBemController.getListaContabilConta}"
+								var="contaDespesaDepreciacao"
+								itemLabel="#{contaDespesaDepreciacao.descricao}"
+								itemValue="#{contaDespesaDepreciacao}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="10"
+								style="width: 58%; padding-right: 2%;"
+								emptyMessage="Nenhum registro encontrado">
+
+								<p:ajax event="itemSelect"
+									listener="#{patrimGrupoBemController.selecionaContaDespesaDepreciacao}"
+									update="classificacaoDespesaDepreciacao" />
+
+							</p:autoComplete>
+							<p:inputText id="classificacaoDespesaDepreciacao"
+								value="#{patrimGrupoBemController.objeto.contaDespesaDepreciacao}"
+								style="width: 38%" readonly="true" />
+						</div>
+
+						<div class="t2ti-campo-100">
+							<p:outputLabel value="Codigo Historico"
+								for="patrimGrupoBemCodigoHistorico" />
+							<br />
+							<p:autoComplete id="patrimGrupoBemCodigoHistorico"
+								value="#{patrimGrupoBemController.historico}"
+								completeMethod="#{patrimGrupoBemController.getListaContabilHistorico}"
+								var="codigoHistorico"
+								itemLabel="#{codigoHistorico.descricao}"
+								itemValue="#{codigoHistorico}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="10"
+								style="width: 58%; padding-right: 2%;"
+								emptyMessage="Nenhum registro encontrado">
+
+								<p:ajax event="itemSelect"
+									listener="#{patrimGrupoBemController.selecionaContabilHistorico}"
+									update="codigoHistorico" />
+
+							</p:autoComplete>
+							<p:inputText id="codigoHistorico"
+								value="#{patrimGrupoBemController.objeto.codigoHistorico}"
+								style="width: 38%" readonly="true" />
+						</div>
+					</p:outputPanel>
+					<p:outputPanel
+						rendered="#{not empty patrimGrupoBemController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty patrimGrupoBemController.objeto.id}"
+							actionListener="#{patrimGrupoBemController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!patrimGrupoBemController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty patrimGrupoBemController.objeto.id}"
+							actionListener="#{patrimGrupoBemController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!patrimGrupoBemController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{patrimGrupoBemController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+</ui:composition>

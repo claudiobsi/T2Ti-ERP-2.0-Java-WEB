@@ -1,0 +1,454 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Colaborador"
+			rendered="#{!colaboradorController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{colaboradorController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Colaborador"
+					rendered="#{colaboradorController.podeConsultar()}">
+
+					<p:dataTable id="dataTableColaborador" var="obj"
+						value="#{colaboradorController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{colaboradorController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{colaboradorController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!colaboradorController.podeInserir()}" />
+							<p:commandButton process="dataTableColaborador" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{colaboradorController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableColaborador" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{colaboradorController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!colaboradorController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Pessoa" width="200">
+							<h:outputLabel value="#{obj.pessoa.nome}" />
+						</p:column>
+						<p:column headerText="Cargo">
+							<h:outputLabel value="#{obj.cargo.nome}" />
+						</p:column>
+						<p:column headerText="Situacao">
+							<h:outputLabel value="#{obj.situacaoColaborador.nome}" />
+						</p:column>
+						<p:column headerText="Data Admissao">
+							<h:outputLabel value="#{obj.dataAdmissao}" />
+						</p:column>
+						<p:column headerText="Data Demissao">
+							<h:outputLabel value="#{obj.dataDemissao}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!colaboradorController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Colaborador">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty colaboradorController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{colaboradorController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty colaboradorController.objeto}" />
+
+					<p:outputPanel rendered="#{not empty colaboradorController.objeto}">
+
+						<div class="t2ti-campo-50">
+							<p:outputLabel value="Pessoa" for="colaboradorPessoa" />
+							<br />
+							<p:autoComplete id="colaboradorPessoa"
+								value="#{colaboradorController.objeto.pessoa}"
+								completeMethod="#{colaboradorController.getListaPessoa}"
+								var="pessoa" itemLabel="#{pessoa.nome}" itemValue="#{pessoa}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="true" style="width: 100%" />
+						</div>
+						<div class="t2ti-campo-50">
+							<p:outputLabel value="Tipo Colaborador"
+								for="colaboradorTipoColaborador" />
+							<br />
+							<p:autoComplete id="colaboradorTipoColaborador"
+								value="#{colaboradorController.objeto.tipoColaborador}"
+								completeMethod="#{colaboradorController.getListaTipoColaborador}"
+								var="tipoColaborador" itemLabel="#{tipoColaborador.nome}"
+								itemValue="#{tipoColaborador}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="true" style="width: 100%" />
+						</div>
+
+						<div class="t2ti-campo-50">
+							<p:outputLabel value="Tipo Admissao"
+								for="colaboradorTipoAdmissao" />
+							<br />
+							<p:autoComplete id="colaboradorTipoAdmissao"
+								value="#{colaboradorController.objeto.tipoAdmissao}"
+								completeMethod="#{colaboradorController.getListaTipoAdmissao}"
+								var="tipoAdmissao" itemLabel="#{tipoAdmissao.nome}"
+								itemValue="#{tipoAdmissao}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="true" style="width: 100%" />
+						</div>
+						<div class="t2ti-campo-50">
+							<p:outputLabel value="Situacao Colaborador"
+								for="colaboradorSituacaoColaborador" />
+							<br />
+							<p:autoComplete id="colaboradorSituacaoColaborador"
+								value="#{colaboradorController.objeto.situacaoColaborador}"
+								completeMethod="#{colaboradorController.getListaSituacaoColaborador}"
+								var="situacaoColaborador"
+								itemLabel="#{situacaoColaborador.nome}"
+								itemValue="#{situacaoColaborador}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="true" style="width: 100%" />
+						</div>
+
+						<div class="t2ti-campo-40">
+							<p:outputLabel value="Nivel Formacao"
+								for="colaboradorNivelFormacao" />
+							<br />
+							<p:autoComplete id="colaboradorNivelFormacao"
+								value="#{colaboradorController.objeto.nivelFormacao}"
+								completeMethod="#{colaboradorController.getListaNivelFormacao}"
+								var="nivelFormacao" itemLabel="#{nivelFormacao.nome}"
+								itemValue="#{nivelFormacao}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="true" style="width: 100%" />
+						</div>
+						<div class="t2ti-campo-30">
+							<p:outputLabel value="Cargo" for="colaboradorCargo" />
+							<br />
+							<p:autoComplete id="colaboradorCargo"
+								value="#{colaboradorController.objeto.cargo}"
+								completeMethod="#{colaboradorController.getListaCargo}"
+								var="cargo" itemLabel="#{cargo.nome}" itemValue="#{cargo}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="true" style="width: 100%" />
+						</div>
+						<div class="t2ti-campo-30">
+							<p:outputLabel value="Setor" for="colaboradorSetor" />
+							<br />
+							<p:autoComplete id="colaboradorSetor"
+								value="#{colaboradorController.objeto.setor}"
+								completeMethod="#{colaboradorController.getListaSetor}"
+								var="setor" itemLabel="#{setor.nome}" itemValue="#{setor}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="true" style="width: 100%" />
+						</div>
+
+						<div class="t2ti-campo-50">
+							<p:outputLabel value="Contabil Conta"
+								for="colaboradorContabilConta" />
+							<br />
+							<p:autoComplete id="colaboradorContabilConta"
+								value="#{colaboradorController.objeto.contabilConta}"
+								completeMethod="#{colaboradorController.getListaContabilConta}"
+								var="contabilConta" itemLabel="#{contabilConta.descricao}"
+								itemValue="#{contabilConta}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="false" style="width: 100%" />
+						</div>
+						<div class="t2ti-campo-50">
+							<p:outputLabel value="Sindicato" for="colaboradorSindicato" />
+							<br />
+							<p:autoComplete id="colaboradorSindicato"
+								value="#{colaboradorController.objeto.sindicato}"
+								completeMethod="#{colaboradorController.getListaSindicato}"
+								var="sindicato" itemLabel="#{sindicato.nome}"
+								itemValue="#{sindicato}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="false" style="width: 100%" />
+						</div>
+
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="colaboradorDataCadastro" label="Data Cadastro"
+							nomeAtributo="#{colaboradorController.objeto.dataCadastro}"
+							somenteLeitura="true" />
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="colaboradorDataAdmissao" label="Data Admissao"
+							nomeAtributo="#{colaboradorController.objeto.dataAdmissao}" />
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="colaboradorVencimentoFerias"
+							label="Vencimento Ferias"
+							nomeAtributo="#{colaboradorController.objeto.vencimentoFerias}" />
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="colaboradorDataTransferencia"
+							label="Data Transferencia"
+							nomeAtributo="#{colaboradorController.objeto.dataTransferencia}" />
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="colaboradorDataDemissao" label="Data Demissao"
+							nomeAtributo="#{colaboradorController.objeto.dataDemissao}" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="colaboradorCodigoTurmaPonto"
+							label="Codigo Turma Ponto"
+							nomeAtributo="#{colaboradorController.objeto.codigoTurmaPonto}"
+							tamanhoMaximo="5" />
+						<t2ti:campoSelect styleClass="t2ti-campo-30"
+							idComponente="colaboradorDescontoPlanoSaude"
+							label="Desconto Plano Saude"
+							nomeAtributo="#{colaboradorController.objeto.descontoPlanoSaude}"
+							itens="#{colaboradorController.simNao}" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="colaboradorSaiNaRais" label="Sai Na Rais"
+							nomeAtributo="#{colaboradorController.objeto.saiNaRais}"
+							itens="#{colaboradorController.simNao}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="colaboradorMatricula" label="Matricula"
+							nomeAtributo="#{colaboradorController.objeto.matricula}"
+							tamanhoMaximo="10" />
+
+
+						<div class="t2ti-campo-100">
+							<br />
+							<p:outputLabel value="Exame Médico" style="font-weight: bold" />
+							<hr />
+						</div>
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="colaboradorExameMedicoUltimo" label="Ultimo"
+							nomeAtributo="#{colaboradorController.objeto.exameMedicoUltimo}" />
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="colaboradorExameMedicoVencimento"
+							label="Vencimento"
+							nomeAtributo="#{colaboradorController.objeto.exameMedicoVencimento}" />
+
+						<div class="t2ti-campo-100">
+							<br />
+							<p:outputLabel value="Sefip" style="font-weight: bold" />
+							<hr />
+						</div>
+						<t2ti:campoTexto styleClass="t2ti-campo-40"
+							idComponente="colaboradorCategoriaSefip" label="Categoria Sefip"
+							nomeAtributo="#{colaboradorController.objeto.categoriaSefip}"
+							tamanhoMaximo="2" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-30"
+							idComponente="colaboradorOcorrenciaSefip"
+							label="Ocorrencia Sefip"
+							nomeAtributo="#{colaboradorController.objeto.ocorrenciaSefip}" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-30"
+							idComponente="colaboradorCodigoDemissaoSefip"
+							label="Codigo Demissao Sefip"
+							nomeAtributo="#{colaboradorController.objeto.codigoDemissaoSefip}" />
+
+						<div class="t2ti-campo-100">
+							<br />
+							<p:outputLabel value="Caged" style="font-weight: bold" />
+							<hr />
+						</div>
+						<t2ti:campoInteiro styleClass="t2ti-campo-30"
+							idComponente="colaboradorCodigoAdmissaoCaged"
+							label="Codigo Admissao Caged"
+							nomeAtributo="#{colaboradorController.objeto.codigoAdmissaoCaged}" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-30"
+							idComponente="colaboradorCodigoDemissaoCaged"
+							label="Codigo Demissao Caged"
+							nomeAtributo="#{colaboradorController.objeto.codigoDemissaoCaged}" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="colaboradorCagedAprendiz" label="Aprendiz"
+							nomeAtributo="#{colaboradorController.objeto.cagedAprendiz}"
+							itens="#{colaboradorController.simNao}" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="colaboradorCagedDeficiencia" label="Deficiencia"
+							nomeAtributo="#{colaboradorController.objeto.cagedDeficiencia}"
+							itens="#{colaboradorController.simNao}" />
+
+						<div class="t2ti-campo-100">
+							<br />
+							<p:outputLabel value="FGTS" style="font-weight: bold" />
+							<hr />
+						</div>
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="colaboradorFgtsOptante" label="Fgts Optante"
+							nomeAtributo="#{colaboradorController.objeto.fgtsOptante}"
+							itens="#{colaboradorController.simNao}" />
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="colaboradorFgtsDataOpcao" label="Fgts Data Opcao"
+							nomeAtributo="#{colaboradorController.objeto.fgtsDataOpcao}" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-30"
+							idComponente="colaboradorFgtsConta" label="Fgts Conta"
+							nomeAtributo="#{colaboradorController.objeto.fgtsConta}" />
+
+						<div class="t2ti-campo-100">
+							<br />
+							<p:outputLabel value="Carteria Profissional"
+								style="font-weight: bold" />
+							<hr />
+						</div>
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="colaboradorCtpsDataExpedicao"
+							label="Data Expedicao"
+							nomeAtributo="#{colaboradorController.objeto.ctpsDataExpedicao}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-10"
+							idComponente="colaboradorCtpsUf" label="UF"
+							nomeAtributo="#{colaboradorController.objeto.ctpsUf}"
+							tamanhoMaximo="2" />
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="colaboradorCtpsNumero" label="Numero"
+							nomeAtributo="#{colaboradorController.objeto.ctpsNumero}"
+							tamanhoMaximo="10" />
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="colaboradorCtpsSerie" label="Serie"
+							nomeAtributo="#{colaboradorController.objeto.ctpsSerie}"
+							tamanhoMaximo="10" />
+
+						<div class="t2ti-campo-100">
+							<br />
+							<p:outputLabel value="Pagamento" style="font-weight: bold" />
+							<hr />
+						</div>
+						<t2ti:campoSelect styleClass="t2ti-campo-30"
+							idComponente="colaboradorPagamentoForma" label="Forma Pagamento"
+							nomeAtributo="#{colaboradorController.objeto.pagamentoForma}"
+							itens="#{colaboradorController.colaboradorFormaPagamento}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="colaboradorPagamentoBanco" label="Banco"
+							nomeAtributo="#{colaboradorController.objeto.pagamentoBanco}"
+							tamanhoMaximo="10" />
+						<t2ti:campoTexto styleClass="t2ti-campo-10"
+							idComponente="colaboradorPagamentoAgencia" label="Agencia"
+							nomeAtributo="#{colaboradorController.objeto.pagamentoAgencia}"
+							tamanhoMaximo="10" />
+						<t2ti:campoTexto styleClass="t2ti-campo-10"
+							idComponente="colaboradorPagamentoAgenciaDigito" label="Digito"
+							nomeAtributo="#{colaboradorController.objeto.pagamentoAgenciaDigito}"
+							tamanhoMaximo="1" />
+						<t2ti:campoTexto styleClass="t2ti-campo-10"
+							idComponente="colaboradorPagamentoConta" label="Conta"
+							nomeAtributo="#{colaboradorController.objeto.pagamentoConta}"
+							tamanhoMaximo="10" />
+						<t2ti:campoTexto styleClass="t2ti-campo-10"
+							idComponente="colaboradorPagamentoContaDigito" label="Digito"
+							nomeAtributo="#{colaboradorController.objeto.pagamentoContaDigito}"
+							tamanhoMaximo="1" />
+
+						<div class="t2ti-campo-100">
+							<br />
+							<p:outputLabel value="PIS" style="font-weight: bold" />
+							<hr />
+						</div>
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="colaboradorPisDataCadastro" label="Data Cadastro"
+							nomeAtributo="#{colaboradorController.objeto.pisDataCadastro}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="colaboradorPisNumero" label="Numero"
+							nomeAtributo="#{colaboradorController.objeto.pisNumero}"
+							tamanhoMaximo="12" />
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="colaboradorPisBanco" label="Banco"
+							nomeAtributo="#{colaboradorController.objeto.pisBanco}"
+							tamanhoMaximo="10" />
+						<t2ti:campoTexto styleClass="t2ti-campo-10"
+							idComponente="colaboradorPisAgencia" label="Agencia"
+							nomeAtributo="#{colaboradorController.objeto.pisAgencia}"
+							tamanhoMaximo="10" />
+						<t2ti:campoTexto styleClass="t2ti-campo-10"
+							idComponente="colaboradorPisAgenciaDigito" label="Digito"
+							nomeAtributo="#{colaboradorController.objeto.pisAgenciaDigito}"
+							tamanhoMaximo="10" />
+
+						<div class="t2ti-campo-100">
+							<br />
+							<hr />
+						</div>
+
+						<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+							idComponente="colaboradorObservacao" label="Observacao"
+							nomeAtributo="#{colaboradorController.objeto.observacao}" />
+					</p:outputPanel>
+					<p:outputPanel rendered="#{not empty colaboradorController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty colaboradorController.objeto.id}"
+							actionListener="#{colaboradorController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!colaboradorController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty colaboradorController.objeto.id}"
+							actionListener="#{colaboradorController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!colaboradorController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{colaboradorController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+</ui:composition>

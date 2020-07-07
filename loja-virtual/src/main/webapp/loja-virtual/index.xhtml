@@ -1,0 +1,214 @@
+<ui:composition template="/WEB-INF/template-loja.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+
+	<ui:define name="listaProduto">
+		<p:outputPanel id="panelListaProduto">
+
+			<p:outputPanel rendered="#{lojaVirtualController.telaListaProduto}">
+
+				<p:dataGrid var="produto"
+					value="#{lojaVirtualController.listaProduto}" columns="3"
+					layout="grid" emptyMessage="Nenhum produto encontrado">
+
+					<p:panel header="#{produto.nome}" style="text-align:center">
+						<h:panelGrid columns="1" style="width:100%">
+
+							<p:graphicImage
+								name="#{lojaVirtualController.imagemProduto(produto.id)}"
+								width="200" height="130" />
+
+							<p:outputLabel value="#{produto.valorVenda}">
+								<f:convertNumber pattern="R$ #,##0.00" />
+							</p:outputLabel>
+
+							<p:commandLink
+								update=":form1:panelDetalheProduto,:form1:panelListaProduto"
+								title="Detalhes"
+								actionListener="#{lojaVirtualController.selecionaProduto()}">
+								<h:outputText styleClass="ui-icon ui-icon-search"
+									style="margin:0 auto;" />
+								<f:setPropertyActionListener value="#{produto}"
+									target="#{lojaVirtualController.produtoSelecionado}" />
+							</p:commandLink>
+						</h:panelGrid>
+					</p:panel>
+
+				</p:dataGrid>
+
+			</p:outputPanel>
+
+		</p:outputPanel>
+	</ui:define>
+
+	<ui:define name="detalheProduto">
+		<p:outputPanel id="panelDetalheProduto">
+
+			<p:outputPanel rendered="#{!lojaVirtualController.telaListaProduto}">
+				<div style="width: 100%; text-align: center;">
+					<h1>
+						<p:outputLabel
+							value="#{lojaVirtualController.produtoSelecionado.nome}" />
+					</h1>
+				</div>
+
+				<div style="float: left; width: 50%; text-align: center;">
+					<p:graphicImage
+						name="#{lojaVirtualController.imagemProduto(lojaVirtualController.produtoSelecionado.id)}"
+						width="400" height="260" style="padding-left: 3%;" />
+				</div>
+
+				<div style="float: right; width: 50%; text-align: justify;">
+					<div style="width: 100%; text-align: center;">
+						<p:outputLabel
+							value="#{lojaVirtualController.produtoSelecionado.valorVenda}">
+							<f:convertNumber pattern="Valor: R$ #,##0.00" />
+						</p:outputLabel>
+					</div>
+					<div style="width: 100%; text-align: center; padding-top: 10%">
+						<p:commandLink
+							update=":form1:panelDetalheProduto,:formCabecalho:labelCarrinho"
+							title="Adicionar ao carrinho"
+							actionListener="#{lojaVirtualController.adicionaCarrinho}">
+							<p:graphicImage name="images/botao/carrinho.jpg" />
+						</p:commandLink>
+					</div>
+
+				</div>
+
+				<div style="float: right; width: 100%; text-align: justify;">
+					<h1>Descrição do Produto</h1>
+
+					<p:outputLabel
+						value="#{lojaVirtualController.produtoSelecionado.descricao}" />
+
+					<div style="width: 100%; text-align: center; padding-top: 3%">
+						<p:media player="flash" 
+							value="#{lojaVirtualController.urlVideo}" width="420"
+							height="315" />
+					</div>
+
+				</div>
+
+			</p:outputPanel>
+
+		</p:outputPanel>
+	</ui:define>
+
+	<ui:define name="carrinho">
+		<h:form id="formCarrinho">
+
+			<p:dialog id="dialogCarrinho" header="Finalização da Compra"
+				widgetVar="dialogCarrinho" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="true" width="800">
+
+				<p:outputPanel id="panelCarrinho">
+
+					<p:dataTable id="dataTableItensCarriho" var="obj"
+						value="#{lojaVirtualController.listaCarrinho}"
+						selectionMode="single" resizableColumns="true" rowKey="#{obj.id}">
+
+						<p:column headerText="Produto" width="60%">
+							<h:outputLabel value="#{obj.nome}" />
+						</p:column>
+						<p:column headerText="Quantidade">
+							<h:outputLabel value="1" />
+						</p:column>
+						<p:column headerText="Valor">
+							<h:outputLabel value="#{obj.valorVenda}">
+								<f:convertNumber pattern="#,##0.00" />
+							</h:outputLabel>
+						</p:column>
+					</p:dataTable>
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Finalizar"
+						actionListener="#{lojaVirtualController.finalizaCompra()}"
+						update=":formCarrinho:panelCarrinho"
+						oncomplete="if (!args.validationFailed) {PF('dialogCarrinho').hide();}" />
+					<p:commandButton value="Voltar"
+						oncomplete="PF('dialogCarrinho').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="loginCliente">
+		<h:form id="formLoginCliente">
+
+			<p:dialog id="dialogLoginCliente" header="Login"
+				widgetVar="dialogLoginCliente" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="true" width="500">
+
+				<p:outputPanel id="panelLoginCliente">
+
+					<t2ti:campoTexto idComponente="emailCliente" label="Email"
+						requerido="true" tamanhoMaximo="100"
+						nomeAtributo="#{lojaVirtualController.emailCliente}"
+						styleClass="t2ti-campo-100" />
+					<t2ti:campoSenha idComponente="senhaCliente" label="Senha"
+						requerido="true" tamanhoMaximo="100"
+						nomeAtributo="#{lojaVirtualController.senhaCliente}" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Login"
+						actionListener="#{lojaVirtualController.loginCliente}"
+						update=":formLoginCliente:panelLoginCliente,:formCabecalho:panelCabecalho"
+						oncomplete="if (!args.validationFailed) {PF('dialogLoginCliente').hide();}" />
+					<p:commandButton value="Voltar" process="@this"
+						oncomplete="PF('dialogLoginCliente').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="contato">
+		<h:form id="formContato">
+
+			<p:dialog id="dialogContato" header="Contato"
+				widgetVar="dialogContato" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="true" width="600">
+
+				<p:outputPanel id="panelContato">
+
+					<t2ti:campoTexto idComponente="contatoNomeCliente" label="Nome"
+						requerido="true" tamanhoMaximo="100"
+						nomeAtributo="#{lojaVirtualController.emailCliente}"
+						styleClass="t2ti-campo-100" />
+					<t2ti:campoTexto idComponente="contatoEmailCliente" label="Email"
+						requerido="true" tamanhoMaximo="100"
+						nomeAtributo="#{lojaVirtualController.emailCliente}"
+						styleClass="t2ti-campo-100" />
+					<t2ti:campoTexto idComponente="contatoAssunto" label="Assunto"
+						requerido="true" tamanhoMaximo="100"
+						nomeAtributo="#{lojaVirtualController.assunto}"
+						styleClass="t2ti-campo-100" />
+					<t2ti:campoAreaTexto idComponente="contatoMensagem"
+						label="Mensagem" requerido="true"
+						nomeAtributo="#{lojaVirtualController.mensagem}"
+						styleClass="t2ti-campo-100" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Enviar"
+						actionListener="#{lojaVirtualController.contato()}"
+						update=":formContato:panelContato"
+						oncomplete="if (!args.validationFailed) {PF('dialogContato').hide();}" />
+					<p:commandButton value="Voltar" process="@this"
+						oncomplete="PF('dialogContato').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

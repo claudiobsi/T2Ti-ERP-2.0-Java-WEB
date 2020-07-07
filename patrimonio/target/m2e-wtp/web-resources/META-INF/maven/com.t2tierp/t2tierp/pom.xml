@@ -1,0 +1,66 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.t2tierp</groupId>
+	<artifactId>t2tierp</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
+
+	<repositories>
+		<repository>
+			<id>jrimum.org</id>
+			<url>http://jrimum.org/maven/content/groups/public/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.primefaces</groupId>
+			<artifactId>primefaces</artifactId>
+			<version>5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.primefaces.extensions</groupId>
+			<artifactId>primefaces-extensions</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-web</artifactId>
+			<version>3.2.4.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-config</artifactId>
+			<version>3.2.4.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jrimum</groupId>
+			<artifactId>jrimum-bopepo</artifactId>
+			<version>0.2.3-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jrimum</groupId>
+			<artifactId>texgit-utilix</artifactId>
+			<version>0.2.0-SNAPSHOT-20101207</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sf.ofx4j</groupId>
+			<artifactId>ofx4j</artifactId>
+			<version>1.5</version>
+		</dependency>
+
+	</dependencies>
+
+</project>

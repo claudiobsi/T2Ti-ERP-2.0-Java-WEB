@@ -1,0 +1,237 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Controle de Caixa e Bancos"
+			rendered="#{!finMovimentoCaixaBancoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel
+				rendered="#{finMovimentoCaixaBancoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Controle de Caixa e Bancos"
+					rendered="#{finMovimentoCaixaBancoController.podeConsultar()}">
+					<p:dataTable id="dataTableFinMovimentoCaixaBanco" var="obj"
+						value="#{finMovimentoCaixaBancoController.listaMovimentoCaixaBanco}"
+						paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{finMovimentoCaixaBancoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" rowKey="#{obj.id}">
+
+						<f:facet name="header">
+							<p:commandButton title="Atualizar" icon="ui-icon-refresh"
+								actionListener="#{finMovimentoCaixaBancoController.buscaDados}"
+								update="dataTableFinMovimentoCaixaBanco,:form1:growl" />
+							<p:commandButton title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{finMovimentoCaixaBancoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+						</f:facet>
+
+						<p:column headerText="Operacao">
+							<h:outputLabel value="#{obj.viewFinMovimentoCaixaBanco.operacao}" />
+						</p:column>
+						<p:column headerText="Conta Caixa">
+							<h:outputLabel
+								value="#{obj.viewFinMovimentoCaixaBanco.nomeContaCaixa}" />
+						</p:column>
+						<p:column headerText="Pessoa">
+							<h:outputLabel
+								value="#{obj.viewFinMovimentoCaixaBanco.nomePessoa}" />
+						</p:column>
+						<p:column headerText="Data Lancamento">
+							<h:outputLabel
+								value="#{obj.viewFinMovimentoCaixaBanco.dataLancamento}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Data Pago/Recebido">
+							<h:outputLabel
+								value="#{obj.viewFinMovimentoCaixaBanco.dataPagoRecebido}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Histórico">
+							<h:outputLabel
+								value="#{obj.viewFinMovimentoCaixaBanco.historico}" />
+						</p:column>
+						<p:column headerText="Valor">
+							<h:outputLabel value="#{obj.viewFinMovimentoCaixaBanco.valor}">
+								<f:convertNumber pattern="#,##0.00" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Doc. Origem">
+							<h:outputLabel
+								value="#{obj.viewFinMovimentoCaixaBanco.descricaoDocumentoOrigem}" />
+						</p:column>
+					</p:dataTable>
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="movimentoCaixaBancoPeriodo" label="Período"
+						nomeAtributo="#{finMovimentoCaixaBancoController.periodo}"
+						formato="MM/yyyy" requerido="true" />
+
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel
+				rendered="#{!finMovimentoCaixaBancoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Controle de Caixa e Bancos">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty finMovimentoCaixaBancoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{finMovimentoCaixaBancoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty finMovimentoCaixaBancoController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty finMovimentoCaixaBancoController.objeto}">
+
+						<p:dataTable id="dataTableFinMovimentoCaixaBancoDetalhe" var="obj"
+							value="#{finMovimentoCaixaBancoController.listaMovimentoCaixaBancoDetalhe}"
+							paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+							resizableColumns="true">
+
+							<f:facet name="header">
+								<p:commandButton
+									process="dataTableFinMovimentoCaixaBancoDetalhe"
+									title="Processar Fechamento" icon="ui-icon-document"
+									actionListener="#{finMovimentoCaixaBancoController.processaFechamento}"
+									update=":form1:outputPanelDetalhe">
+									<p:confirm header="Confirmação"
+										message="Confirma o fechamento do movimento?"
+										icon="ui-icon-alert" />
+								</p:commandButton>
+							</f:facet>
+
+							<p:column headerText="Operacao">
+								<h:outputLabel
+									value="#{obj.viewFinMovimentoCaixaBanco.operacao}" />
+							</p:column>
+							<p:column headerText="Conta Caixa">
+								<h:outputLabel
+									value="#{obj.viewFinMovimentoCaixaBanco.nomeContaCaixa}" />
+							</p:column>
+							<p:column headerText="Pessoa">
+								<h:outputLabel
+									value="#{obj.viewFinMovimentoCaixaBanco.nomePessoa}" />
+							</p:column>
+							<p:column headerText="Data Lancamento">
+								<h:outputLabel
+									value="#{obj.viewFinMovimentoCaixaBanco.dataLancamento}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Data Pago/Recebido">
+								<h:outputLabel
+									value="#{obj.viewFinMovimentoCaixaBanco.dataPagoRecebido}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Histórico">
+								<h:outputLabel
+									value="#{obj.viewFinMovimentoCaixaBanco.historico}" />
+							</p:column>
+							<p:column headerText="Valor">
+								<h:outputLabel value="#{obj.viewFinMovimentoCaixaBanco.valor}">
+									<f:convertNumber pattern="#,##0.00" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Doc. Origem">
+								<h:outputLabel
+									value="#{obj.viewFinMovimentoCaixaBanco.descricaoDocumentoOrigem}" />
+							</p:column>
+						</p:dataTable>
+
+						<t2ti:separador label="Dados do Fechamento" />
+
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="finFechamentoCaixaBancoSaldoAnterior"
+							label="Saldo Anterior" somenteLeitura="true"
+							nomeAtributo="#{finMovimentoCaixaBancoController.fechamentoCaixaBanco.saldoAnterior}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="finFechamentoCaixaBancoRecebimentos"
+							label="Recebimentos" somenteLeitura="true"
+							nomeAtributo="#{finMovimentoCaixaBancoController.fechamentoCaixaBanco.recebimentos}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="finFechamentoCaixaBancoPagamentos"
+							label="Pagamentos" somenteLeitura="true"
+							nomeAtributo="#{finMovimentoCaixaBancoController.fechamentoCaixaBanco.pagamentos}" />
+
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="finFechamentoCaixaBancoSaldoConta"
+							label="Saldo Conta" somenteLeitura="true"
+							nomeAtributo="#{finMovimentoCaixaBancoController.fechamentoCaixaBanco.saldoConta}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="finFechamentoCaixaBancoChequeNaoCompensado"
+							label="Cheques Nao Compensados" somenteLeitura="true"
+							nomeAtributo="#{finMovimentoCaixaBancoController.fechamentoCaixaBanco.chequeNaoCompensado}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="finFechamentoCaixaBancoSaldoDisponivel"
+							label="Saldo Disponivel" somenteLeitura="true"
+							nomeAtributo="#{finMovimentoCaixaBancoController.fechamentoCaixaBanco.saldoDisponivel}" />
+
+					</p:outputPanel>
+					<p:outputPanel
+						rendered="#{not empty finMovimentoCaixaBancoController.objeto}"
+						styleClass="t2ti-campo-100">
+						<p:commandButton value="Fechar"
+							actionListener="#{finMovimentoCaixaBancoController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+</ui:composition>

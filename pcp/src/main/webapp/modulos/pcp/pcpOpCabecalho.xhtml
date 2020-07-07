@@ -1,0 +1,633 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="PCP - Ordem de Produção"
+			rendered="#{!pcpOpCabecalhoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{pcpOpCabecalhoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="PCP - Ordem de Produção"
+					rendered="#{pcpOpCabecalhoController.podeConsultar()}">
+
+					<p:dataTable id="dataTablePcpOpCabecalho" var="obj"
+						value="#{pcpOpCabecalhoController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{pcpOpCabecalhoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{pcpOpCabecalhoController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!pcpOpCabecalhoController.podeInserir()}" />
+							<p:commandButton process="dataTablePcpOpCabecalho"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{pcpOpCabecalhoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTablePcpOpCabecalho"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{pcpOpCabecalhoController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!pcpOpCabecalhoController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Inicio">
+							<h:outputLabel value="#{obj.inicio}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Previsao Entrega">
+							<h:outputLabel value="#{obj.previsaoEntrega}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Termino">
+							<h:outputLabel value="#{obj.termino}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Custo Total Previsto">
+							<h:outputLabel value="#{obj.custoTotalPrevisto}">
+								<f:convertNumber pattern="#,##0.00" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Custo Total Realizado">
+							<h:outputLabel value="#{obj.custoTotalRealizado}">
+								<f:convertNumber pattern="#,##0.00" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Porcento Venda">
+							<h:outputLabel value="#{obj.porcentoVenda}">
+								<f:convertNumber pattern="#,##0.00" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Porcento Estoque">
+							<h:outputLabel value="#{obj.porcentoEstoque}">
+								<f:convertNumber pattern="#,##0.00" />
+							</h:outputLabel>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!pcpOpCabecalhoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="PCP - Ordem de Produção">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty pcpOpCabecalhoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{pcpOpCabecalhoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty pcpOpCabecalhoController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty pcpOpCabecalhoController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="pcpOpCabecalhoInicio" label="Inicio"
+									nomeAtributo="#{pcpOpCabecalhoController.objeto.inicio}" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="pcpOpCabecalhoPrevisaoEntrega"
+									label="Previsao Entrega"
+									nomeAtributo="#{pcpOpCabecalhoController.objeto.previsaoEntrega}" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="pcpOpCabecalhoTermino" label="Termino"
+									nomeAtributo="#{pcpOpCabecalhoController.objeto.termino}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="pcpOpCabecalhoCustoTotalPrevisto"
+									label="Custo Previsto"
+									nomeAtributo="#{pcpOpCabecalhoController.objeto.custoTotalPrevisto}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="pcpOpCabecalhoCustoTotalRealizado"
+									label="Custo Realizado"
+									nomeAtributo="#{pcpOpCabecalhoController.objeto.custoTotalRealizado}" />
+
+								<div class="t2ti-campo-100" />
+
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="pcpOpCabecalhoPorcentoVenda"
+									label="Percentual Venda"
+									nomeAtributo="#{pcpOpCabecalhoController.objeto.porcentoVenda}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="pcpOpCabecalhoPorcentoEstoque"
+									label="Percentual Estoque"
+									nomeAtributo="#{pcpOpCabecalhoController.objeto.porcentoEstoque}" />
+
+								<p:outputPanel
+									rendered="#{not empty pcpOpCabecalhoController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty pcpOpCabecalhoController.objeto.id}"
+										actionListener="#{pcpOpCabecalhoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!pcpOpCabecalhoController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty pcpOpCabecalhoController.objeto.id}"
+										actionListener="#{pcpOpCabecalhoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!pcpOpCabecalhoController.podeAlterar()}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{pcpOpCabecalhoController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+
+								</p:outputPanel>
+							</p:tab>
+
+							<p:tab title="Detalhes"
+								disabled="#{empty pcpOpCabecalhoController.objeto.id}">
+								<p:dataTable id="dataTablePcpOpDetalhe" var="obj"
+									value="#{pcpOpCabecalhoController.objeto.listaPcpOpDetalhe}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{pcpOpCabecalhoController.pcpOpDetalheSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}" styleClass="t2ti-campo-100">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{pcpOpCabecalhoController.incluirPcpOpDetalhe}"
+											oncomplete="PF('dialogPcpOpDetalhe').show()"
+											update=":formOutrasTelas:panelPcpOpDetalhe,dataTablePcpOpDetalhe" />
+										<p:commandButton process="dataTablePcpOpDetalhe"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{pcpOpCabecalhoController.alterarPcpOpDetalhe}"
+											oncomplete="PF('dialogPcpOpDetalhe').show()"
+											update=":formOutrasTelas:panelPcpOpDetalhe,dataTablePcpOpDetalhe" />
+										<p:commandButton process="dataTablePcpOpDetalhe"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTablePcpOpDetalhe"
+											actionListener="#{pcpOpCabecalhoController.excluirPcpOpDetalhe}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:ajax event="rowSelect"
+										update=":form1:tabViewDetalhes:dataTablePcpServico" />
+
+									<p:column headerText="Produto">
+										<h:outputLabel value="#{obj.produto.nome}" />
+									</p:column>
+									<p:column headerText="Qtde Produzir">
+										<h:outputLabel value="#{obj.quantidadeProduzir}" />
+									</p:column>
+									<p:column headerText="Qtde Produzida">
+										<h:outputLabel value="#{obj.quantidadeProduzida}" />
+									</p:column>
+									<p:column headerText="Qtde Entregue">
+										<h:outputLabel value="#{obj.quantidadeEntregue}" />
+									</p:column>
+									<p:column headerText="Custo Previsto">
+										<h:outputLabel value="#{obj.custoPrevisto}" />
+									</p:column>
+									<p:column headerText="Custo Realizado">
+										<h:outputLabel value="#{obj.custoRealizado}" />
+									</p:column>
+								</p:dataTable>
+
+								<t2ti:separador label="Serviços" />
+
+								<p:dataTable id="dataTablePcpServico" var="obj"
+									value="#{pcpOpCabecalhoController.pcpOpDetalheSelecionado.listaPcpServico}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{pcpOpCabecalhoController.pcpServicoSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}" styleClass="t2ti-campo-100">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{pcpOpCabecalhoController.incluirPcpServico}"
+											oncomplete="PF('dialogPcpServico').show()"
+											update=":formOutrasTelas2:panelPcpServico,dataTablePcpServico" />
+										<p:commandButton process="dataTablePcpServico"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{pcpOpCabecalhoController.alterarPcpServico}"
+											oncomplete="PF('dialogPcpServico').show()"
+											update=":formOutrasTelas2:panelPcpServico,dataTablePcpServico" />
+										<p:commandButton process="dataTablePcpServico" title="Excluir"
+											icon="ui-icon-trash" update="dataTablePcpServico"
+											actionListener="#{pcpOpCabecalhoController.excluirPcpServico}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:ajax event="rowSelect"
+										update=":form1:tabViewDetalhes:dataTablePcpServicoColaborador, :form1:tabViewDetalhes:dataTablePcpServicoEquipamento" />
+
+									<p:column headerText="Inicio Previsto">
+										<h:outputLabel value="#{obj.inicioPrevisto}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Termino Previsto">
+										<h:outputLabel value="#{obj.terminoPrevisto}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Inicio Realizado">
+										<h:outputLabel value="#{obj.inicioRealizado}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Termino Realizado">
+										<h:outputLabel value="#{obj.terminoRealizado}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Custo Realizado">
+										<h:outputLabel value="#{obj.custoRealizado}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Custo Previsto">
+										<h:outputLabel value="#{obj.custoPrevisto}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+								</p:dataTable>
+
+								<div class="t2ti-campo-100" />
+
+								<p:dataTable id="dataTablePcpServicoColaborador" var="obj"
+									value="#{pcpOpCabecalhoController.pcpServicoSelecionado.listaPcpServicoColaborador}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{pcpOpCabecalhoController.pcpServicoColaboradorSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}" styleClass="t2ti-campo-50">
+
+									<f:facet name="header">
+										<p:outputLabel value="Colaboradores	" />
+
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{pcpOpCabecalhoController.incluirPcpServicoColaborador}"
+											oncomplete="PF('dialogPcpServicoColaborador').show()"
+											update=":formOutrasTelas3:panelPcpServicoColaborador,dataTablePcpServicoColaborador" />
+										<p:commandButton process="dataTablePcpServicoColaborador"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{pcpOpCabecalhoController.alterarPcpServicoColaborador}"
+											oncomplete="PF('dialogPcpServicoColaborador').show()"
+											update=":formOutrasTelas3:panelPcpServicoColaborador,dataTablePcpServicoColaborador" />
+										<p:commandButton process="dataTablePcpServicoColaborador"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTablePcpServicoColaborador"
+											actionListener="#{pcpOpCabecalhoController.excluirPcpServicoColaborador}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Colaborador">
+										<h:outputLabel value="#{obj.colaborador.pessoa.nome}" />
+									</p:column>
+								</p:dataTable>
+
+								<p:dataTable id="dataTablePcpServicoEquipamento" var="obj"
+									value="#{pcpOpCabecalhoController.pcpServicoSelecionado.listaPcpServicoEquipamento}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{pcpOpCabecalhoController.pcpServicoEquipamentoSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}" styleClass="t2ti-campo-50">
+
+									<f:facet name="header">
+										<p:outputLabel value="Equipamentos	" />
+
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{pcpOpCabecalhoController.incluirPcpServicoEquipamento}"
+											oncomplete="PF('dialogPcpServicoEquipamento').show()"
+											update=":formOutrasTelas5:panelPcpServicoEquipamento,dataTablePcpServicoEquipamento" />
+										<p:commandButton process="dataTablePcpServicoEquipamento"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{pcpOpCabecalhoController.alterarPcpServicoEquipamento}"
+											oncomplete="PF('dialogPcpServicoEquipamento').show()"
+											update=":formOutrasTelas5:panelPcpServicoEquipamento,dataTablePcpServicoEquipamento" />
+										<p:commandButton process="dataTablePcpServicoEquipamento"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTablePcpServicoEquipamento"
+											actionListener="#{pcpOpCabecalhoController.excluirPcpServicoEquipamento}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Equipamento">
+										<h:outputLabel value="#{obj.patrimBem.nome}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+
+							<p:tab title="Instrucões"
+								disabled="#{empty pcpOpCabecalhoController.objeto.id}">
+								<p:dataTable id="dataTablePcpInstrucaoOp" var="obj"
+									value="#{pcpOpCabecalhoController.objeto.listaPcpInstrucaoOp}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{pcpOpCabecalhoController.pcpInstrucaoOpSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{pcpOpCabecalhoController.incluirPcpInstrucaoOp}"
+											oncomplete="PF('dialogPcpInstrucaoOp').show()"
+											update=":formOutrasTelas4:panelPcpInstrucaoOp,dataTablePcpInstrucaoOp" />
+										<p:commandButton process="dataTablePcpInstrucaoOp"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{pcpOpCabecalhoController.alterarPcpInstrucaoOp}"
+											oncomplete="PF('dialogPcpInstrucaoOp').show()"
+											update=":formOutrasTelas4:panelPcpInstrucaoOp,dataTablePcpInstrucaoOp" />
+										<p:commandButton process="dataTablePcpInstrucaoOp"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTablePcpInstrucaoOp"
+											actionListener="#{pcpOpCabecalhoController.excluirPcpInstrucaoOp}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Instrucao">
+										<h:outputLabel value="#{obj.pcpInstrucao.descricao}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+						</p:tabView>
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogPcpOpDetalhe" header="Inclusão/Alteração Produto"
+				widgetVar="dialogPcpOpDetalhe" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="false" width="800">
+
+				<p:outputPanel id="panelPcpOpDetalhe">
+					<div class="t2ti-campo-80">
+						<p:outputLabel value="Produto" for="pcpOpDetalheProduto" />
+						<br />
+						<p:autoComplete id="pcpOpDetalheProduto"
+							value="#{pcpOpCabecalhoController.pcpOpDetalhe.produto}"
+							completeMethod="#{pcpOpCabecalhoController.getListaProduto}"
+							var="produto" itemLabel="#{produto.nome}" itemValue="#{produto}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="10"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="pcpOpDetalheQuantidadeProduzir"
+						label="Qtde Produzir" requerido="true"
+						nomeAtributo="#{pcpOpCabecalhoController.pcpOpDetalhe.quantidadeProduzir}" />
+
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="pcpOpDetalheQuantidadeProduzida"
+						label="Qtde Produzida"
+						nomeAtributo="#{pcpOpCabecalhoController.pcpOpDetalhe.quantidadeProduzida}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="pcpOpDetalheQuantidadeEntregue"
+						label="Qtde Entregue"
+						nomeAtributo="#{pcpOpCabecalhoController.pcpOpDetalhe.quantidadeEntregue}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="pcpOpDetalheCustoPrevisto" label="Custo Previsto"
+						nomeAtributo="#{pcpOpCabecalhoController.pcpOpDetalhe.custoPrevisto}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="pcpOpDetalheCustoRealizado" label="Custo Realizado"
+						nomeAtributo="#{pcpOpCabecalhoController.pcpOpDetalhe.custoRealizado}" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{pcpOpCabecalhoController.salvarPcpOpDetalhe}"
+						update=":formOutrasTelas:panelPcpOpDetalhe,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogPcpOpDetalhe').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogPcpOpDetalhe').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas2">
+		<h:form id="formOutrasTelas2">
+
+			<p:dialog id="dialogPcpServico" header="Inclusão/Alteração Servico"
+				widgetVar="dialogPcpServico" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="false" width="800">
+
+				<p:outputPanel id="panelPcpServico">
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="pcpServicoInicioPrevisto" label="Inicio Previsto"
+						nomeAtributo="#{pcpOpCabecalhoController.pcpServico.inicioPrevisto}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="pcpServicoTerminoPrevisto" label="Termino Previsto"
+						nomeAtributo="#{pcpOpCabecalhoController.pcpServico.terminoPrevisto}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="pcpServicoInicioRealizado" label="Inicio Realizado"
+						nomeAtributo="#{pcpOpCabecalhoController.pcpServico.inicioRealizado}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="pcpServicoTerminoRealizado"
+						label="Termino Realizado"
+						nomeAtributo="#{pcpOpCabecalhoController.pcpServico.terminoRealizado}" />
+
+					<div class="t2ti-campo-100" />
+
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="pcpServicoCustoPrevisto" label="Custo Previsto"
+						nomeAtributo="#{pcpOpCabecalhoController.pcpServico.custoPrevisto}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="pcpServicoCustoRealizado" label="Custo Realizado"
+						nomeAtributo="#{pcpOpCabecalhoController.pcpServico.custoRealizado}" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{pcpOpCabecalhoController.salvarPcpServico}"
+						update=":formOutrasTelas2:panelPcpServico,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogPcpServico').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogPcpServico').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas3">
+		<h:form id="formOutrasTelas3">
+
+			<p:dialog id="dialogPcpServicoColaborador"
+				header="Inclusão/Alteração Servico Colaborador"
+				widgetVar="dialogPcpServicoColaborador" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+
+				<p:outputPanel id="panelPcpServicoColaborador">
+					<div class="t2ti-campo-100">
+						<p:outputLabel value="Colaborador"
+							for="pcpServicoColaboradorColaborador" />
+						<br />
+						<p:autoComplete id="pcpServicoColaboradorColaborador"
+							value="#{pcpOpCabecalhoController.pcpServicoColaborador.colaborador}"
+							completeMethod="#{pcpOpCabecalhoController.getListaColaborador}"
+							var="colaborador" itemLabel="#{colaborador.pessoa.nome}"
+							itemValue="#{colaborador}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="10"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{pcpOpCabecalhoController.salvarPcpServicoColaborador}"
+						update=":formOutrasTelas3:panelPcpServicoColaborador,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogPcpServicoColaborador').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogPcpServicoColaborador').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas4">
+		<h:form id="formOutrasTelas4">
+
+			<p:dialog id="dialogPcpInstrucaoOp"
+				header="Inclusão/Alteração Instrucao"
+				widgetVar="dialogPcpInstrucaoOp" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+
+				<p:outputPanel id="panelPcpInstrucaoOp">
+					<div class="t2ti-campo-10">
+						<p:outputLabel value="Instrucao" for="pcpInstrucaoOpPcpInstrucao" />
+						<br />
+						<p:autoComplete id="pcpInstrucaoOpPcpInstrucao"
+							value="#{pcpOpCabecalhoController.pcpInstrucaoOp.pcpInstrucao}"
+							completeMethod="#{pcpOpCabecalhoController.getListaPcpInstrucao}"
+							var="pcpInstrucao" itemLabel="#{pcpInstrucao.descricao}"
+							itemValue="#{pcpInstrucao}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="10"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{pcpOpCabecalhoController.salvarPcpInstrucaoOp}"
+						update=":formOutrasTelas4:panelPcpInstrucaoOp,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogPcpInstrucaoOp').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogPcpInstrucaoOp').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas5">
+		<h:form id="formOutrasTelas5">
+
+			<p:dialog id="dialogPcpServicoEquipamento"
+				header="Inclusão/Alteração Servico Equipamento"
+				widgetVar="dialogPcpServicoEquipamento" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+
+				<p:outputPanel id="panelPcpServicoEquipamento">
+					<div class="t2ti-campo-100">
+						<p:outputLabel value="Equipamento"
+							for="pcpServicoEquipamentoPatrimBem" />
+						<br />
+						<p:autoComplete id="pcpServicoEquipamentoPatrimBem"
+							value="#{pcpOpCabecalhoController.pcpServicoEquipamento.patrimBem}"
+							completeMethod="#{pcpOpCabecalhoController.getListaPatrimBem}"
+							var="patrimBem" itemLabel="#{patrimBem.nome}"
+							itemValue="#{patrimBem}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="10"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{pcpOpCabecalhoController.salvarPcpServicoEquipamento}"
+						update=":formOutrasTelas5:panelPcpServicoEquipamento,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogPcpServicoEquipamento').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogPcpServicoEquipamento').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

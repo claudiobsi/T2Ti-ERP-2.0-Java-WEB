@@ -1,0 +1,271 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Fiscal Livro"
+			rendered="#{!fiscalLivroController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{fiscalLivroController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Fiscal Livro"
+					rendered="#{fiscalLivroController.podeConsultar()}">
+
+					<p:dataTable id="dataTableFiscalLivro" var="obj"
+						value="#{fiscalLivroController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{fiscalLivroController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{fiscalLivroController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!fiscalLivroController.podeInserir()}" />
+							<p:commandButton process="dataTableFiscalLivro" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{fiscalLivroController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableFiscalLivro" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{fiscalLivroController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!fiscalLivroController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Descricao">
+							<h:outputLabel value="#{obj.descricao}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!fiscalLivroController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Fiscal Livro">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty fiscalLivroController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{fiscalLivroController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty fiscalLivroController.objeto}" />
+
+					<p:outputPanel rendered="#{not empty fiscalLivroController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+
+								<t2ti:campoTexto styleClass="t2ti-campo-100"
+									idComponente="fiscalLivroDescricao" label="Descricao"
+									nomeAtributo="#{fiscalLivroController.objeto.descricao}"
+									tamanhoMaximo="50" />
+								<p:outputPanel
+									rendered="#{not empty fiscalLivroController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty fiscalLivroController.objeto.id}"
+										actionListener="#{fiscalLivroController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!fiscalLivroController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty fiscalLivroController.objeto.id}"
+										actionListener="#{fiscalLivroController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!fiscalLivroController.podeAlterar()}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{fiscalLivroController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+
+								</p:outputPanel>
+							</p:tab>
+							<p:tab title="Fiscal Termo"
+								disabled="#{empty fiscalLivroController.objeto.id}">
+
+								<p:dataTable id="dataTableFiscalTermo" var="obj"
+									value="#{fiscalLivroController.objeto.listaFiscalTermo}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{fiscalLivroController.fiscalTermoSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{fiscalLivroController.incluirFiscalTermo}"
+											oncomplete="PF('dialogFiscalTermo').show()"
+											update=":formOutrasTelas:panelFiscalTermo,dataTableFiscalTermo" />
+										<p:commandButton process="dataTableFiscalTermo"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{fiscalLivroController.alterarFiscalTermo}"
+											oncomplete="PF('dialogFiscalTermo').show()"
+											update=":formOutrasTelas:panelFiscalTermo,dataTableFiscalTermo" />
+										<p:commandButton process="dataTableFiscalTermo"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableFiscalTermo"
+											actionListener="#{fiscalLivroController.excluirFiscalTermo}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Abertura Encerramento">
+										<h:outputLabel
+											value="#{fiscalLivroController.keyFromValue(fiscalLivroController.aberturaEncerramento, obj.aberturaEncerramento)}" />
+									</p:column>
+									<p:column headerText="Numero">
+										<h:outputLabel value="#{obj.numero}" />
+									</p:column>
+									<p:column headerText="Registrado">
+										<h:outputLabel value="#{obj.registrado}" />
+									</p:column>
+									<p:column headerText="Data Despacho">
+										<h:outputLabel value="#{obj.dataDespacho}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Data Abertura">
+										<h:outputLabel value="#{obj.dataAbertura}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Data Encerramento">
+										<h:outputLabel value="#{obj.dataEncerramento}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+						</p:tabView>
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogFiscalTermo"
+				header="Inclusão/Alteração Fiscal Termo"
+				widgetVar="dialogFiscalTermo" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="false" width="800">
+
+				<p:outputPanel id="panelFiscalTermo">
+					<t2ti:campoSelect styleClass="t2ti-campo-210"
+						idComponente="fiscalTermoAberturaEncerramento"
+						label="Abertura Encerramento"
+						nomeAtributo="#{fiscalLivroController.fiscalTermo.aberturaEncerramento}"
+						itens="#{fiscalLivroController.aberturaEncerramento}" />
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="fiscalTermoNumero" label="Numero"
+						nomeAtributo="#{fiscalLivroController.fiscalTermo.numero}" />
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="fiscalTermoPaginaInicial" label="Pagina Inicial"
+						nomeAtributo="#{fiscalLivroController.fiscalTermo.paginaInicial}" />
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="fiscalTermoPaginaFinal" label="Pagina Final"
+						nomeAtributo="#{fiscalLivroController.fiscalTermo.paginaFinal}" />
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="fiscalTermoRegistrado" label="Registrado"
+						nomeAtributo="#{fiscalLivroController.fiscalTermo.registrado}"
+						tamanhoMaximo="100" />
+					
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="fiscalTermoNumeroRegistro" label="Numero Registro"
+						nomeAtributo="#{fiscalLivroController.fiscalTermo.numeroRegistro}"
+						tamanhoMaximo="50" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="fiscalTermoDataDespacho" label="Data Despacho"
+						nomeAtributo="#{fiscalLivroController.fiscalTermo.dataDespacho}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="fiscalTermoDataAbertura" label="Data Abertura"
+						nomeAtributo="#{fiscalLivroController.fiscalTermo.dataAbertura}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="fiscalTermoDataEncerramento"
+						label="Data Encerramento"
+						nomeAtributo="#{fiscalLivroController.fiscalTermo.dataEncerramento}" />
+					
+					<div class="t2ti-campo-100" />
+					
+					<t2ti:campoData styleClass="t2ti-campo-30"
+						idComponente="fiscalTermoEscrituracaoInicio"
+						label="Escrituracao Inicio"
+						nomeAtributo="#{fiscalLivroController.fiscalTermo.escrituracaoInicio}" />
+					<t2ti:campoData styleClass="t2ti-campo-30"
+						idComponente="fiscalTermoEscrituracaoFim" label="Escrituracao Fim"
+						nomeAtributo="#{fiscalLivroController.fiscalTermo.escrituracaoFim}" />
+
+					<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+						idComponente="fiscalTermoTexto" label="Texto"
+						nomeAtributo="#{fiscalLivroController.fiscalTermo.texto}" />
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{fiscalLivroController.salvarFiscalTermo}"
+						update=":formOutrasTelas:panelFiscalTermo,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogFiscalTermo').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogFiscalTermo').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

@@ -1,0 +1,305 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Contabil Lancamento"
+			rendered="#{!contabilLancamentoCabecalhoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel
+				rendered="#{contabilLancamentoCabecalhoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Contabil Lancamento"
+					rendered="#{contabilLancamentoCabecalhoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableContabilLancamentoCabecalho" var="obj"
+						value="#{contabilLancamentoCabecalhoController.dataModel}"
+						paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{contabilLancamentoCabecalhoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{contabilLancamentoCabecalhoController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!contabilLancamentoCabecalhoController.podeInserir()}" />
+							<p:commandButton process="dataTableContabilLancamentoCabecalho"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{contabilLancamentoCabecalhoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableContabilLancamentoCabecalho"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{contabilLancamentoCabecalhoController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!contabilLancamentoCabecalhoController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Data Lancamento">
+							<h:outputLabel value="#{obj.dataLancamento}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Data Inclusao">
+							<h:outputLabel value="#{obj.dataInclusao}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Tipo">
+							<h:outputLabel value="#{obj.tipo}" />
+						</p:column>
+						<p:column headerText="Liberado">
+							<h:outputLabel
+								value="#{contabilLancamentoCabecalhoController.keyFromValue(contabilLancamentoCabecalhoController.simNao, obj.liberado)}" />
+						</p:column>
+						<p:column headerText="Valor">
+							<h:outputLabel value="#{obj.valor}">
+								<f:convertNumber pattern="#,##0.00" />
+							</h:outputLabel>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel
+				rendered="#{!contabilLancamentoCabecalhoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Contabil Lancamento">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty contabilLancamentoCabecalhoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{contabilLancamentoCabecalhoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty contabilLancamentoCabecalhoController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty contabilLancamentoCabecalhoController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+
+								<div class="t2ti-campo-100">
+									<p:outputLabel value="Contabil Lote"
+										for="contabilLancamentoCabecalhoContabilLote" />
+									<br />
+									<p:autoComplete id="contabilLancamentoCabecalhoContabilLote"
+										value="#{contabilLancamentoCabecalhoController.objeto.contabilLote}"
+										completeMethod="#{contabilLancamentoCabecalhoController.getListaContabilLote}"
+										var="contabilLote" itemLabel="#{contabilLote.descricao}"
+										itemValue="#{contabilLote}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="contabilLancamentoCabecalhoDataLancamento"
+									label="Data Lancamento"
+									nomeAtributo="#{contabilLancamentoCabecalhoController.objeto.dataLancamento}" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="contabilLancamentoCabecalhoDataInclusao"
+									label="Data Inclusao"
+									nomeAtributo="#{contabilLancamentoCabecalhoController.objeto.dataInclusao}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="contabilLancamentoCabecalhoValor" label="Valor"
+									nomeAtributo="#{contabilLancamentoCabecalhoController.objeto.valor}" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="contabilLancamentoCabecalhoTipo" label="Tipo"
+									nomeAtributo="#{contabilLancamentoCabecalhoController.objeto.tipo}"
+									itens="#{contabilLancamentoCabecalhoController.tipoLancamentoProgramado}" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="contabilLancamentoCabecalhoLiberado"
+									label="Liberado"
+									nomeAtributo="#{contabilLancamentoCabecalhoController.objeto.liberado}"
+									itens="#{contabilLancamentoCabecalhoController.simNao}" />
+
+								<p:outputPanel
+									rendered="#{not empty contabilLancamentoCabecalhoController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty contabilLancamentoCabecalhoController.objeto.id}"
+										actionListener="#{contabilLancamentoCabecalhoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!contabilLancamentoCabecalhoController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty contabilLancamentoCabecalhoController.objeto.id}"
+										actionListener="#{contabilLancamentoCabecalhoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!contabilLancamentoCabecalhoController.podeAlterar()}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{contabilLancamentoCabecalhoController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+
+								</p:outputPanel>
+							</p:tab>
+							<p:tab title="Contabil Lancamento Detalhe"
+								disabled="#{empty contabilLancamentoCabecalhoController.objeto.id}">
+								<p:dataTable id="dataTableContabilLancamentoDetalhe" var="obj"
+									value="#{contabilLancamentoCabecalhoController.objeto.listaContabilLancamentoDetalhe}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{contabilLancamentoCabecalhoController.contabilLancamentoDetalheSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{contabilLancamentoCabecalhoController.incluirContabilLancamentoDetalhe}"
+											oncomplete="PF('dialogContabilLancamentoDetalhe').show()"
+											update=":formOutrasTelas:panelContabilLancamentoDetalhe,dataTableContabilLancamentoDetalhe" />
+										<p:commandButton process="dataTableContabilLancamentoDetalhe"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{contabilLancamentoCabecalhoController.alterarContabilLancamentoDetalhe}"
+											oncomplete="PF('dialogContabilLancamentoDetalhe').show()"
+											update=":formOutrasTelas:panelContabilLancamentoDetalhe,dataTableContabilLancamentoDetalhe" />
+										<p:commandButton process="dataTableContabilLancamentoDetalhe"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableContabilLancamentoDetalhe"
+											actionListener="#{contabilLancamentoCabecalhoController.excluirContabilLancamentoDetalhe}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Conta">
+										<h:outputLabel value="#{obj.contabilConta.classificacao}" />
+									</p:column>
+									<p:column headerText="Historico">
+										<h:outputLabel value="#{obj.contabilHistorico.historico}" />
+									</p:column>
+									<p:column headerText="Valor">
+										<h:outputLabel value="#{obj.valor}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Tipo">
+										<h:outputLabel
+											value="#{contabilLancamentoCabecalhoController.keyFromValue(contabilLancamentoCabecalhoController.tipoLancamento, obj.tipo)}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+						</p:tabView>
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogContabilLancamentoDetalhe"
+				header="Inclusão/Alteração Contabil Lancamento Detalhe"
+				widgetVar="dialogContabilLancamentoDetalhe" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+
+				<p:outputPanel id="panelContabilLancamentoDetalhe">
+
+					<div class="t2ti-campo-100">
+						<p:outputLabel value="Conta"
+							for="contabilLancamentoDetalheContabilConta" />
+						<br />
+						<p:autoComplete id="contabilLancamentoDetalheContabilConta"
+							value="#{contabilLancamentoCabecalhoController.contabilLancamentoDetalhe.contabilConta}"
+							completeMethod="#{contabilLancamentoCabecalhoController.getListaContabilConta}"
+							var="contabilConta" itemLabel="#{contabilConta.descricao}"
+							itemValue="#{contabilConta}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="10"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+
+					<div class="t2ti-campo-10">
+						<p:outputLabel value="Contabil Historico"
+							for="contabilLancamentoDetalheContabilHistorico" />
+						<br />
+						<p:autoComplete id="contabilLancamentoDetalheContabilHistorico"
+							value="#{contabilLancamentoCabecalhoController.contabilLancamentoDetalhe.contabilHistorico}"
+							completeMethod="#{contabilLancamentoCabecalhoController.getListaContabilHistorico}"
+							var="contabilHistorico"
+							itemLabel="#{contabilHistorico.historico}"
+							itemValue="#{contabilHistorico}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="10"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="contabilLancamentoDetalheValor" label="Valor"
+						nomeAtributo="#{contabilLancamentoCabecalhoController.contabilLancamentoDetalhe.valor}" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="contabilLancamentoDetalheTipo" label="Tipo"
+						nomeAtributo="#{contabilLancamentoCabecalhoController.contabilLancamentoDetalhe.tipo}"
+						itens="#{contabilLancamentoCabecalhoController.tipoLancamento}" />
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{contabilLancamentoCabecalhoController.salvarContabilLancamentoDetalhe}"
+						update=":formOutrasTelas:panelContabilLancamentoDetalhe,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogContabilLancamentoDetalhe').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogContabilLancamentoDetalhe').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

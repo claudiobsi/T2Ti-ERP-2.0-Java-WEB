@@ -1,0 +1,720 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Emissão CT-e"
+			rendered="#{!cteCabecalhoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{cteCabecalhoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Emissão CT-e"
+					rendered="#{cteCabecalhoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableCteCabecalho" var="obj"
+						value="#{cteCabecalhoController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{cteCabecalhoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{cteCabecalhoController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!cteCabecalhoController.podeInserir()}" />
+							<p:commandButton process="dataTableCteCabecalho" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{cteCabecalhoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableCteCabecalho" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{cteCabecalhoController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!cteCabecalhoController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Numero">
+							<h:outputLabel value="#{obj.numero}" />
+						</p:column>
+						<p:column headerText="Data Hora Emissao">
+							<h:outputLabel value="#{obj.dataHoraEmissao}" />
+						</p:column>
+						<p:column headerText="Chave Acesso">
+							<h:outputLabel value="#{obj.chaveAcesso}" />
+						</p:column>
+						<p:column headerText="DV">
+							<h:outputLabel value="#{obj.digitoChaveAcesso}" />
+						</p:column>
+						<p:column headerText="Valor Total Servico">
+							<h:outputLabel value="#{obj.valorTotalServico}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!cteCabecalhoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Emissão CT-e">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty cteCabecalhoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{cteCabecalhoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty cteCabecalhoController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty cteCabecalhoController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+
+								<t2ti:campoTexto styleClass="t2ti-campo-40"
+									idComponente="cteCabecalhoNaturezaOperacao"
+									label="Natureza Operacao"
+									nomeAtributo="#{cteCabecalhoController.objeto.naturezaOperacao}"
+									tamanhoMaximo="60" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoModelo" label="Modelo"
+									nomeAtributo="#{cteCabecalhoController.objeto.modelo}"
+									tamanhoMaximo="2" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoSerie" label="Serie"
+									nomeAtributo="#{cteCabecalhoController.objeto.serie}"
+									tamanhoMaximo="3" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoNumero" label="Numero"
+									nomeAtributo="#{cteCabecalhoController.objeto.numero}"
+									tamanhoMaximo="9" />
+
+
+								<t2ti:campoTexto styleClass="t2ti-campo-40"
+									idComponente="cteCabecalhoChaveAcesso" label="Chave Acesso"
+									nomeAtributo="#{cteCabecalhoController.objeto.chaveAcesso}"
+									tamanhoMaximo="44" />
+								<t2ti:campoTexto styleClass="t2ti-campo-10"
+									idComponente="cteCabecalhoDigitoChaveAcesso" label="DV"
+									nomeAtributo="#{cteCabecalhoController.objeto.digitoChaveAcesso}"
+									tamanhoMaximo="1" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoDataHoraEmissao"
+									label="Data Hora Emissao"
+									nomeAtributo="#{cteCabecalhoController.objeto.dataHoraEmissao}" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoFormatoImpressaoDacte"
+									label="Formato Impressao Dacte"
+									nomeAtributo="#{cteCabecalhoController.objeto.formatoImpressaoDacte}"
+									itens="#{cteCabecalhoController.cteFormatoImpressaoDacte}" />
+
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoModal" label="Modalidade"
+									nomeAtributo="#{cteCabecalhoController.objeto.modal}"
+									itens="#{cteCabecalhoController.cteModal}" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoTipoEmissao" label="Tipo Emissao"
+									nomeAtributo="#{cteCabecalhoController.objeto.tipoEmissao}"
+									itens="#{cteCabecalhoController.cteTipoEmissao}" />
+								<t2ti:campoInteiro styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoCfop" label="CFOP"
+									nomeAtributo="#{cteCabecalhoController.objeto.cfop}" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoFormaPagamento"
+									label="Forma Pagamento"
+									nomeAtributo="#{cteCabecalhoController.objeto.formaPagamento}"
+									itens="#{cteCabecalhoController.cteFormaPagamento}" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoTipoServico" label="Tipo Servico"
+									nomeAtributo="#{cteCabecalhoController.objeto.tipoServico}"
+									itens="#{cteCabecalhoController.cteTipoServico}" />
+
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoTipoCte" label="Tipo CT-e"
+									nomeAtributo="#{cteCabecalhoController.objeto.tipoCte}"
+									itens="#{cteCabecalhoController.cteTipo}" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoNomeMunicipioEnvio"
+									label="Municipio Envio"
+									nomeAtributo="#{cteCabecalhoController.objeto.nomeMunicipioEnvio}"
+									tamanhoMaximo="60" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoUfEnvio" label="UF Envio"
+									nomeAtributo="#{cteCabecalhoController.objeto.ufEnvio}"
+									tamanhoMaximo="2" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoNomeMunicipioFimPrestacao"
+									label="Municipio Fim Prestacao"
+									nomeAtributo="#{cteCabecalhoController.objeto.nomeMunicipioFimPrestacao}"
+									tamanhoMaximo="60" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoUfFimPrestacao"
+									label="UF Fim Prestacao"
+									nomeAtributo="#{cteCabecalhoController.objeto.ufFimPrestacao}"
+									tamanhoMaximo="2" />
+
+								<div class="t2ti-campo-100" />
+
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoTomador" label="Tomador"
+									nomeAtributo="#{cteCabecalhoController.objeto.tomador}"
+									itens="#{cteCabecalhoController.cteTomador}" />
+								<t2ti:campoTexto styleClass="t2ti-campo-40"
+									idComponente="cteCabecalhoCaracAdicionalTransporte"
+									label="Caracteristica Adicional Transporte"
+									nomeAtributo="#{cteCabecalhoController.objeto.caracAdicionalTransporte}"
+									tamanhoMaximo="15" />
+								<t2ti:campoTexto styleClass="t2ti-campo-40"
+									idComponente="cteCabecalhoCaracAdicionalServico"
+									label="Caracteristica Adicional Servico"
+									nomeAtributo="#{cteCabecalhoController.objeto.caracAdicionalServico}"
+									tamanhoMaximo="30" />
+
+								<div class="t2ti-campo-100" />
+
+								<t2ti:campoTexto styleClass="t2ti-campo-40"
+									idComponente="cteCabecalhoFuncionarioEmissor"
+									label="Funcionario Emissor"
+									nomeAtributo="#{cteCabecalhoController.objeto.funcionarioEmissor}"
+									tamanhoMaximo="20" />
+								<t2ti:campoInteiro styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoEntregaTipoPeriodo"
+									label="Entrega Tipo Periodo"
+									nomeAtributo="#{cteCabecalhoController.objeto.entregaTipoPeriodo}" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoMunicipioOrigemCalculo"
+									label="Municipio Origem Calculo"
+									nomeAtributo="#{cteCabecalhoController.objeto.municipioOrigemCalculo}"
+									tamanhoMaximo="40" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="cteCabecalhoMunicipioDestinoCalculo"
+									label="Municipio Destino Calculo"
+									nomeAtributo="#{cteCabecalhoController.objeto.municipioDestinoCalculo}"
+									tamanhoMaximo="40" />
+
+								<t2ti:campoDecimal styleClass="t2ti-campo-30"
+									idComponente="cteCabecalhoValorTotalServico"
+									label="Valor Total Servico"
+									nomeAtributo="#{cteCabecalhoController.objeto.valorTotalServico}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-30"
+									idComponente="cteCabecalhoValorReceber" label="Valor Receber"
+									nomeAtributo="#{cteCabecalhoController.objeto.valorReceber}" />
+
+								<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+									idComponente="cteCabecalhoObservacoesGerais"
+									label="Observacoes Gerais"
+									nomeAtributo="#{cteCabecalhoController.objeto.observacoesGerais}" />
+
+								<p:outputPanel
+									rendered="#{not empty cteCabecalhoController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty cteCabecalhoController.objeto.id}"
+										actionListener="#{cteCabecalhoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!cteCabecalhoController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty cteCabecalhoController.objeto.id}"
+										actionListener="#{cteCabecalhoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!cteCabecalhoController.podeAlterar()}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{cteCabecalhoController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+									<p:commandButton value="Enviar CT-e"
+										actionListener="#{cteCabecalhoController.enviaCte()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+
+								</p:outputPanel>
+							</p:tab>
+
+							<p:tab title="Remetente">
+								<p:outputPanel id="panelCteRemetente">
+									<t2ti:campoTexto styleClass="t2ti-campo-60"
+										idComponente="cteRemetenteNome" label="Nome"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteRemetente.nome}"
+										tamanhoMaximo="60" />
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="cteRemetenteCnpj" label="Cnpj"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteRemetente.cnpj}"
+										tamanhoMaximo="14" />
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="cteRemetenteIe" label="IE"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteRemetente.ie}"
+										tamanhoMaximo="20" />
+
+									<t2ti:campoTexto styleClass="t2ti-campo-40"
+										idComponente="cteRemetenteFantasia" label="Fantasia"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteRemetente.fantasia}"
+										tamanhoMaximo="60" />
+									<t2ti:campoTexto styleClass="t2ti-campo-40"
+										idComponente="cteRemetenteLogradouro" label="Logradouro"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteRemetente.logradouro}"
+										tamanhoMaximo="250" />
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="cteRemetenteNumero" label="Numero"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteRemetente.numero}"
+										tamanhoMaximo="60" />
+
+									<t2ti:campoTexto styleClass="t2ti-campo-30"
+										idComponente="cteRemetenteComplemento" label="Complemento"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteRemetente.complemento}"
+										tamanhoMaximo="60" />
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="cteRemetenteBairro" label="Bairro"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteRemetente.bairro}"
+										tamanhoMaximo="60" />
+									<t2ti:campoTexto styleClass="t2ti-campo-10"
+										idComponente="cteRemetenteUf" label="UF"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteRemetente.uf}"
+										tamanhoMaximo="2" />
+									<t2ti:campoTexto styleClass="t2ti-campo-40"
+										idComponente="cteRemetenteNomeMunicipio"
+										label="Nome Municipio"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteRemetente.nomeMunicipio}"
+										tamanhoMaximo="60" />
+
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="cteRemetenteCep" label="Cep"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteRemetente.cep}"
+										tamanhoMaximo="8" />
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="cteRemetenteTelefone" label="Telefone"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteRemetente.telefone}"
+										tamanhoMaximo="14" />
+									<t2ti:campoTexto styleClass="t2ti-campo-40"
+										idComponente="cteRemetenteEmail" label="Email"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteRemetente.email}"
+										tamanhoMaximo="60" />
+
+								</p:outputPanel>
+
+							</p:tab>
+
+							<p:tab title="Destinatario">
+								<p:outputPanel id="panelCteDestinatario">
+
+									<t2ti:campoTexto styleClass="t2ti-campo-40"
+										idComponente="cteDestinatarioNome" label="Nome"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteDestinatario.nome}"
+										tamanhoMaximo="60" />
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="cteDestinatarioCnpj" label="Cnpj"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteDestinatario.cnpj}"
+										tamanhoMaximo="14" />
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="cteDestinatarioCpf" label="Cpf"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteDestinatario.cpf}"
+										tamanhoMaximo="11" />
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="cteDestinatarioIe" label="Ie"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteDestinatario.ie}"
+										tamanhoMaximo="20" />
+
+									<t2ti:campoTexto styleClass="t2ti-campo-40"
+										idComponente="cteDestinatarioFantasia" label="Fantasia"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteDestinatario.fantasia}"
+										tamanhoMaximo="60" />
+									<t2ti:campoTexto styleClass="t2ti-campo-40"
+										idComponente="cteDestinatarioLogradouro" label="Logradouro"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteDestinatario.logradouro}"
+										tamanhoMaximo="250" />
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="cteDestinatarioNumero" label="Numero"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteDestinatario.numero}"
+										tamanhoMaximo="60" />
+
+									<t2ti:campoTexto styleClass="t2ti-campo-30"
+										idComponente="cteDestinatarioComplemento" label="Complemento"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteDestinatario.complemento}"
+										tamanhoMaximo="60" />
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="cteDestinatarioBairro" label="Bairro"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteDestinatario.bairro}"
+										tamanhoMaximo="60" />
+									<t2ti:campoTexto styleClass="t2ti-campo-10"
+										idComponente="cteDestinatarioUf" label="Uf"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteDestinatario.uf}"
+										tamanhoMaximo="2" />
+									<t2ti:campoTexto styleClass="t2ti-campo-40"
+										idComponente="cteDestinatarioNomeMunicipio"
+										label="Nome Municipio"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteDestinatario.nomeMunicipio}"
+										tamanhoMaximo="60" />
+
+
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="cteDestinatarioCep" label="Cep"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteDestinatario.cep}"
+										tamanhoMaximo="8" />
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="cteDestinatarioTelefone" label="Telefone"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteDestinatario.telefone}"
+										tamanhoMaximo="14" />
+									<t2ti:campoTexto styleClass="t2ti-campo-40"
+										idComponente="cteDestinatarioEmail" label="Email"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteDestinatario.email}"
+										tamanhoMaximo="60" />
+
+								</p:outputPanel>
+							</p:tab>
+
+							<p:tab title="Carga">
+								<p:dataTable id="dataTableCteCarga" var="obj"
+									value="#{cteCabecalhoController.objeto.listaCteCarga}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{cteCabecalhoController.cteCargaSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{cteCabecalhoController.incluirCteCarga}"
+											oncomplete="PF('dialogCteCarga').show()"
+											update=":formOutrasTelas:panelCteCarga,dataTableCteCarga" />
+										<p:commandButton process="dataTableCteCarga" title="Detalhes"
+											icon="ui-icon-zoomin"
+											actionListener="#{cteCabecalhoController.alterarCteCarga}"
+											oncomplete="PF('dialogCteCarga').show()"
+											update=":formOutrasTelas:panelCteCarga,dataTableCteCarga" />
+										<p:commandButton process="dataTableCteCarga" title="Excluir"
+											icon="ui-icon-trash" update="dataTableCteCarga"
+											actionListener="#{cteCabecalhoController.excluirCteCarga}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Codigo Unidade Medida">
+										<h:outputLabel
+											value="#{cteCabecalhoController.keyFromValue(cteCabecalhoController.cteCodigoUnidadeMedida, obj.codigoUnidadeMedida)}" />
+									</p:column>
+									<p:column headerText="Tipo Medida">
+										<h:outputLabel value="#{obj.tipoMedida}" />
+									</p:column>
+									<p:column headerText="Quantidade">
+										<h:outputLabel value="#{obj.quantidade}">
+											<f:convertNumber pattern="0.000" />
+										</h:outputLabel>
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+
+							<p:tab title="Documentos">
+								<p:dataTable id="dataTableCteInformacaoNfOutros" var="obj"
+									value="#{cteCabecalhoController.objeto.listaCteInformacaoNfOutros}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{cteCabecalhoController.cteInformacaoNfOutrosSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{cteCabecalhoController.incluirCteInformacaoNfOutros}"
+											oncomplete="PF('dialogCteInformacaoNfOutros').show()"
+											update=":formOutrasTelas2:panelCteInformacaoNfOutros,dataTableCteInformacaoNfOutros" />
+										<p:commandButton process="dataTableCteInformacaoNfOutros"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{cteCabecalhoController.alterarCteInformacaoNfOutros}"
+											oncomplete="PF('dialogCteInformacaoNfOutros').show()"
+											update=":formOutrasTelas2:panelCteInformacaoNfOutros,dataTableCteInformacaoNfOutros" />
+										<p:commandButton process="dataTableCteInformacaoNfOutros"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableCteInformacaoNfOutros"
+											actionListener="#{cteCabecalhoController.excluirCteInformacaoNfOutros}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Chave Acesso Nfe">
+										<h:outputLabel value="#{obj.chaveAcessoNfe}" />
+									</p:column>
+									<p:column headerText="Pin Suframa">
+										<h:outputLabel value="#{obj.pinSuframa}" />
+									</p:column>
+									<p:column headerText="Data Prevista Entrega">
+										<h:outputLabel value="#{obj.dataPrevistaEntrega}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+
+							<p:tab title="Rodoviario">
+
+								<p:outputPanel id="panelCteRodoviario">
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="cteRodoviarioRntrc" label="RNTRC"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteRodoviario.rntrc}"
+										tamanhoMaximo="8" />
+									<t2ti:campoData styleClass="t2ti-campo-20"
+										idComponente="cteRodoviarioDataPrevistaEntrega"
+										label="Data Prevista Entrega"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteRodoviario.dataPrevistaEntrega}" />
+									<t2ti:campoInteiro styleClass="t2ti-campo-20"
+										idComponente="cteRodoviarioCiot" label="CIOT"
+										nomeAtributo="#{cteCabecalhoController.objeto.cteRodoviario.ciot}" />
+
+									<t2ti:separador label="Ordens de Coleta" />
+
+									<p:dataTable id="dataTableCteRodoviarioOcc" var="obj"
+										value="#{cteCabecalhoController.objeto.cteRodoviario.listaCteRodoviarioOcc}"
+										paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+										selection="#{cteCabecalhoController.cteRodoviarioOccSelecionado}"
+										selectionMode="single" resizableColumns="true"
+										rowKey="#{obj.id}" styleClass="t2ti-campo-100">
+
+										<f:facet name="header">
+											<p:commandButton title="Novo" icon="ui-icon-plus"
+												actionListener="#{cteCabecalhoController.incluirCteRodoviarioOcc}"
+												oncomplete="PF('dialogCteRodoviarioOcc').show()"
+												update=":formOutrasTelas3:panelCteRodoviarioOcc,dataTableCteRodoviarioOcc" />
+											<p:commandButton process="dataTableCteRodoviarioOcc"
+												title="Detalhes" icon="ui-icon-zoomin"
+												actionListener="#{cteCabecalhoController.alterarCteRodoviarioOcc}"
+												oncomplete="PF('dialogCteRodoviarioOcc').show()"
+												update=":formOutrasTelas3:panelCteRodoviarioOcc,dataTableCteRodoviarioOcc" />
+											<p:commandButton process="dataTableCteRodoviarioOcc"
+												title="Excluir" icon="ui-icon-trash"
+												update="dataTableCteRodoviarioOcc"
+												actionListener="#{cteCabecalhoController.excluirCteRodoviarioOcc}">
+												<p:confirm header="Confirmação" message="Confirma Exclusão?"
+													icon="ui-icon-alert" />
+											</p:commandButton>
+										</f:facet>
+
+										<p:column headerText="Serie">
+											<h:outputLabel value="#{obj.serie}" />
+										</p:column>
+										<p:column headerText="Numero">
+											<h:outputLabel value="#{obj.numero}" />
+										</p:column>
+										<p:column headerText="Data Emissao">
+											<h:outputLabel value="#{obj.dataEmissao}">
+												<f:convertDateTime pattern="dd/MM/yyyy" />
+											</h:outputLabel>
+										</p:column>
+										<p:column headerText="Cnpj">
+											<h:outputLabel value="#{obj.cnpj}" />
+										</p:column>
+										<p:column headerText="Codigo Interno">
+											<h:outputLabel value="#{obj.codigoInterno}" />
+										</p:column>
+										<p:column headerText="IE">
+											<h:outputLabel value="#{obj.ie}" />
+										</p:column>
+										<p:column headerText="UF">
+											<h:outputLabel value="#{obj.uf}" />
+										</p:column>
+										<p:column headerText="Telefone">
+											<h:outputLabel value="#{obj.telefone}" />
+										</p:column>
+									</p:dataTable>
+								</p:outputPanel>
+							</p:tab>
+							<p:tab title="Dutoviario">
+							</p:tab>
+							<p:tab title="Ferroviário">
+							</p:tab>
+							<p:tab title="Aquaviário">
+							</p:tab>
+							<p:tab title="Aéreo">
+							</p:tab>
+						</p:tabView>
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogCteCarga" header="Inclusão/Alteração Carga"
+				widgetVar="dialogCteCarga" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="false" width="800">
+
+				<p:outputPanel id="panelCteCarga">
+					<t2ti:campoSelect styleClass="t2ti-campo-30"
+						idComponente="cteCargaCodigoUnidadeMedida"
+						label="Codigo Unidade Medida"
+						nomeAtributo="#{cteCabecalhoController.cteCarga.codigoUnidadeMedida}"
+						itens="#{cteCabecalhoController.cteCodigoUnidadeMedida}" />
+					<t2ti:campoTexto styleClass="t2ti-campo-30"
+						idComponente="cteCargaTipoMedida" label="Tipo Medida"
+						nomeAtributo="#{cteCabecalhoController.cteCarga.tipoMedida}"
+						tamanhoMaximo="20" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-30"
+						idComponente="cteCargaQuantidade" label="Quantidade"
+						nomeAtributo="#{cteCabecalhoController.cteCarga.quantidade}" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{cteCabecalhoController.salvarCteCarga}"
+						update=":formOutrasTelas:panelCteCarga,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogCteCarga').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogCteCarga').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas2">
+		<h:form id="formOutrasTelas2">
+
+			<p:dialog id="dialogCteInformacaoNfOutros"
+				header="Inclusão/Alteração Cte Informacao Nf Outros"
+				widgetVar="dialogCteInformacaoNfOutros" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+
+				<p:outputPanel id="panelCteInformacaoNfOutros">
+					<div class="t2ti-campo-100">
+						<p:outputLabel value="Chave Acesso NF-e"
+							for="cteInformacaoNfOutrosChaveAcessoNfe" />
+						<br />
+						<p:autoComplete id="cteInformacaoNfOutrosChaveAcessoNfe"
+							value="#{cteCabecalhoController.cteInformacaoNfOutros.nfeCabecalho}"
+							completeMethod="#{cteCabecalhoController.getListaNfeCabecalho}"
+							var="nfe" itemLabel="#{nfe.chaveAcesso}" itemValue="#{nfe}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="5"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="cteInformacaoNfOutrosPinSuframa" label="Pin Suframa"
+						nomeAtributo="#{cteCabecalhoController.cteInformacaoNfOutros.pinSuframa}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="cteInformacaoNfOutrosDataPrevistaEntrega"
+						label="Data Prevista Entrega"
+						nomeAtributo="#{cteCabecalhoController.cteInformacaoNfOutros.dataPrevistaEntrega}" />
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{cteCabecalhoController.salvarCteInformacaoNfOutros}"
+						update=":formOutrasTelas2:panelCteInformacaoNfOutros,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogCteInformacaoNfOutros').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogCteInformacaoNfOutros').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas3">
+		<h:form id="formOutrasTelas3">
+
+			<p:dialog id="dialogCteRodoviarioOcc"
+				header="Inclusão/Alteração Cte Rodoviario Occ"
+				widgetVar="dialogCteRodoviarioOcc" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+
+				<p:outputPanel id="panelCteRodoviarioOcc">
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="cteRodoviarioOccSerie" label="Serie"
+						nomeAtributo="#{cteCabecalhoController.cteRodoviarioOcc.serie}"
+						tamanhoMaximo="3" />
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="cteRodoviarioOccNumero" label="Numero"
+						nomeAtributo="#{cteCabecalhoController.cteRodoviarioOcc.numero}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="cteRodoviarioOccDataEmissao" label="Data Emissao"
+						nomeAtributo="#{cteCabecalhoController.cteRodoviarioOcc.dataEmissao}" />
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="cteRodoviarioOccCnpj" label="CNPJ"
+						nomeAtributo="#{cteCabecalhoController.cteRodoviarioOcc.cnpj}"
+						tamanhoMaximo="14" />
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="cteRodoviarioOccCodigoInterno"
+						label="Codigo Interno"
+						nomeAtributo="#{cteCabecalhoController.cteRodoviarioOcc.codigoInterno}"
+						tamanhoMaximo="10" />
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="cteRodoviarioOccIe" label="IE"
+						nomeAtributo="#{cteCabecalhoController.cteRodoviarioOcc.ie}"
+						tamanhoMaximo="14" />
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="cteRodoviarioOccUf" label="UF"
+						nomeAtributo="#{cteCabecalhoController.cteRodoviarioOcc.uf}"
+						tamanhoMaximo="2" />
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="cteRodoviarioOccTelefone" label="Telefone"
+						nomeAtributo="#{cteCabecalhoController.cteRodoviarioOcc.telefone}"
+						tamanhoMaximo="14" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{cteCabecalhoController.salvarCteRodoviarioOcc}"
+						update=":formOutrasTelas3:panelCteRodoviarioOcc,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogCteRodoviarioOcc').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogCteRodoviarioOcc').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

@@ -1,0 +1,236 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+    <ui:define name="gridDados">
+        <p:panel style="border: none" header="Contabil Conta"
+            rendered="#{!contabilContaController.podeConsultar()}">
+            <p:outputLabel value="Você não possui acesso a esta função" />
+        </p:panel>
+
+        <p:outputPanel id="outputPanelGrid">
+
+            <p:outputPanel rendered="#{contabilContaController.telaGrid}">
+
+                <p:panel id="panelCentroGrid" style="border: none" header="Contabil Conta"
+                     rendered="#{contabilContaController.podeConsultar()}">
+
+                    <p:dataTable id="dataTableContabilConta" var="obj"
+                        value="#{contabilContaController.dataModel}" paginator="true"
+                        rows="10" rowsPerPageTemplate="5,10,15,20"
+                        selection="#{contabilContaController.objetoSelecionado}"
+                        selectionMode="single" resizableColumns="true" lazy="true">
+
+                        <f:facet name="header">
+                            <p:commandButton title="Novo" icon="ui-icon-plus"
+                                actionListener="#{contabilContaController.incluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!contabilContaController.podeInserir()}" />
+                            <p:commandButton process="dataTableContabilConta" title="Detalhes"
+                                icon="ui-icon-zoomin"
+                                actionListener="#{contabilContaController.alterar()}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+                            <p:commandButton process="dataTableContabilConta" title="Excluir"
+                                icon="ui-icon-trash"
+                                actionListener="#{contabilContaController.excluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!contabilContaController.podeExcluir()}">
+                                <p:confirm header="Confirmação" message="Confirma Exclusão?"
+                                    icon="ui-icon-alert" />
+                            </p:commandButton>
+                        </f:facet>
+
+                        <p:column headerText="Classificacao">
+                            <h:outputLabel value="#{obj.classificacao}" />
+                        </p:column>
+                        <p:column headerText="Tipo">
+                            <h:outputLabel value="#{contabilContaController.keyFromValue(contabilContaController.tipoPlanoContaSped, obj.tipo)}" />
+                        </p:column>
+                        <p:column headerText="Descricao">
+                            <h:outputLabel value="#{obj.descricao}" />
+                        </p:column>
+                        <p:column headerText="Data Inclusao">
+                            <h:outputLabel value="#{obj.dataInclusao}" />
+                        </p:column>
+                        <p:column headerText="Situacao">
+                            <h:outputLabel value="#{contabilContaController.keyFromValue(contabilContaController.situacaoContaContabil, obj.situacao)}" />
+                        </p:column>
+                        <p:column headerText="Natureza">
+                            <h:outputLabel value="#{contabilContaController.keyFromValue(contabilContaController.naturezaContaContabil, obj.natureza)}" />
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+
+    <ui:define name="telaInclusaoAlteracao">
+
+        <p:outputPanel id="outputPanelDetalhe">
+
+            <p:outputPanel rendered="#{!contabilContaController.telaGrid}">
+                <p:panel id="panelCentroDetalhe" style="border: none" header="Contabil Conta">
+
+                    <p:outputLabel value="Nenhum registro selecionado."
+                        rendered="#{empty contabilContaController.objeto}" />
+                    <p:commandButton value="Voltar"
+                        actionListener="#{contabilContaController.voltar()}"
+                        update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                        rendered="#{empty contabilContaController.objeto}" />
+
+                    <p:outputPanel rendered="#{not empty contabilContaController.objeto}">
+
+                        <div class="t2ti-campo-100">
+                            <p:outputLabel value="Plano Conta" for="contabilContaPlanoConta" />
+                            <br />
+                            <p:autoComplete id="contabilContaPlanoConta"
+                                value="#{contabilContaController.objeto.planoConta}"
+                                completeMethod="#{contabilContaController.getListaPlanoConta}" var="planoConta"
+                                itemLabel="#{planoConta.nome}" itemValue="#{planoConta}"
+                                converter="com.t2tierp.model.bean.converter.defaultConverter" forceSelection="true"
+                                minQueryLength="3" maxResults="10"
+                                required="true" style="width: 100%"
+                                emptyMessage="Nenhum registro encontrado" />
+                        </div>
+                        
+                        <div class="t2ti-campo-100">
+                            <p:outputLabel value="Contabil Conta" for="contabilContaContabilConta" />
+                            <br />
+                            <p:autoComplete id="contabilContaContabilConta"
+                                value="#{contabilContaController.objeto.contabilConta}"
+                                completeMethod="#{contabilContaController.getListaContabilConta}" var="contabilConta"
+                                itemLabel="#{contabilConta.descricao}" itemValue="#{contabilConta}"
+                                converter="com.t2tierp.model.bean.converter.defaultConverter" forceSelection="true"
+                                minQueryLength="3" maxResults="10"
+                                required="false" style="width: 100%"
+                                emptyMessage="Nenhum registro encontrado" />
+                        </div>
+                        <div class="t2ti-campo-100">
+                            <p:outputLabel value="Plano Conta Ref Sped" for="contabilContaPlanoContaRefSped" />
+                            <br />
+                            <p:autoComplete id="contabilContaPlanoContaRefSped"
+                                value="#{contabilContaController.objeto.planoContaRefSped}"
+                                completeMethod="#{contabilContaController.getListaPlanoContaRefSped}" var="planoContaRefSped"
+                                itemLabel="#{planoContaRefSped.descricao}" itemValue="#{planoContaRefSped}"
+                                converter="com.t2tierp.model.bean.converter.defaultConverter" forceSelection="true"
+                                minQueryLength="3" maxResults="10"
+                                required="true" style="width: 100%"
+                                emptyMessage="Nenhum registro encontrado" />
+                        </div>
+                        
+                        
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="contabilContaClassificacao" label="Classificacao"
+                            nomeAtributo="#{contabilContaController.objeto.classificacao}"
+                            tamanhoMaximo="30" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-20"
+                            idComponente="contabilContaTipo" label="Tipo"
+                            nomeAtributo="#{contabilContaController.objeto.tipo}"
+                            itens="#{contabilContaController.tipoPlanoContaSped}" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-60"
+                            idComponente="contabilContaDescricao" label="Descricao"
+                            nomeAtributo="#{contabilContaController.objeto.descricao}"
+                            tamanhoMaximo="100" />
+                        
+                        <div class="t2ti-campo-100" />
+                        
+                        <t2ti:campoData styleClass="t2ti-campo-20"
+                            idComponente="contabilContaDataInclusao" label="Data Inclusao"
+                            nomeAtributo="#{contabilContaController.objeto.dataInclusao}" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-20"
+                            idComponente="contabilContaSituacao" label="Situacao"
+                            nomeAtributo="#{contabilContaController.objeto.situacao}"
+                            itens="#{contabilContaController.situacaoContaContabil}" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-20"
+                            idComponente="contabilContaNatureza" label="Natureza"
+                            nomeAtributo="#{contabilContaController.objeto.natureza}"
+                            itens="#{contabilContaController.naturezaContaContabil}" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-20"
+                            idComponente="contabilContaPatrimonioResultado" label="Patrimonio Resultado"
+                            nomeAtributo="#{contabilContaController.objeto.patrimonioResultado}"
+                            itens="#{contabilContaController.patrimonioResultadoContaContabil}" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-20"
+                            idComponente="contabilContaLivroCaixa" label="Livro Caixa"
+                            nomeAtributo="#{contabilContaController.objeto.livroCaixa}"
+                            itens="#{contabilContaController.simNao}" />
+                        
+                        
+                        <t2ti:campoSelect styleClass="t2ti-campo-20"
+                            idComponente="contabilContaDfc" label="Dfc"
+                            nomeAtributo="#{contabilContaController.objeto.dfc}"
+                            itens="#{contabilContaController.dfcContaContabil}" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="contabilContaOrdem" label="Ordem"
+                            nomeAtributo="#{contabilContaController.objeto.ordem}"
+                            tamanhoMaximo="20" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="contabilContaCodigoReduzido" label="Codigo Reduzido"
+                            nomeAtributo="#{contabilContaController.objeto.codigoReduzido}"
+                            tamanhoMaximo="10" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="contabilContaCodigoEfd" label="Codigo EFD"
+                            nomeAtributo="#{contabilContaController.objeto.codigoEfd}"
+                            tamanhoMaximo="2" />
+                    </p:outputPanel>
+                    <p:outputPanel rendered="#{not empty contabilContaController.objeto}" styleClass="t2ti-campo-100" >
+
+                        <p:commandButton value="Incluir"
+                            rendered="#{empty contabilContaController.objeto.id}"
+                            actionListener="#{contabilContaController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!contabilContaController.podeInserir()}" />
+                        <p:commandButton value="Alterar"
+                            rendered="#{not empty contabilContaController.objeto.id}"
+                            actionListener="#{contabilContaController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!contabilContaController.podeAlterar()}" />
+                        <p:commandButton value="Fechar"
+                            actionListener="#{contabilContaController.voltar()}"
+                            update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            process="@this" />
+
+                    </p:outputPanel>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+</ui:composition>

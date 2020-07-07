@@ -1,0 +1,489 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Ponto Marcacao"
+			rendered="#{!pontoImportaMarcacaoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:panel id="panelCentroGrid" style="border: none"
+				header="Ponto Importa Marcacao"
+				rendered="#{pontoImportaMarcacaoController.podeConsultar()}">
+
+				<f:facet name="header">
+					<p:commandButton title="Importa Arquivo AFD"
+						icon="ui-icon-arrowthick-1-n"
+						oncomplete="PF('dialogUploadArquivo').show()"
+						update=":formUploadArquivo:dialogUploadArquivo" />
+					<p:commandButton title="Processar Fechamento"
+						icon="ui-icon-calculator"
+						actionListener="#{pontoImportaMarcacaoController.processarFechamento}"
+						update=":form1:tabViewImportacaoArquivo:dataTablePontoImportaArquivo,:form1:tabViewImportacaoArquivo:dataTablePontoFechamentoJornada" />
+					<p:commandButton title="Gravar Fechamento"
+						icon="ui-icon-disk"
+						actionListener="#{pontoImportaMarcacaoController.gravaFechamento}"
+						update=":form1:tabViewImportacaoArquivo:dataTablePontoImportaArquivo,:form1:tabViewImportacaoArquivo:dataTablePontoFechamentoJornada" />
+				</f:facet>
+
+				<p:tabView id="tabViewImportacaoArquivo" style="border: 0px;">
+					<p:tab title="Marcações no Arquivo">
+
+						<p:dataTable id="dataTablePontoImportaArquivo" var="obj"
+							value="#{pontoImportaMarcacaoController.listaAFDTipo3}"
+							paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+							selection="#{pontoImportaMarcacaoController.afdTipo3Selecionado}"
+							selectionMode="single" resizableColumns="true"
+							rowKey="#{obj.sequencial}">
+
+
+							<p:column headerText="Sequencial">
+								<h:outputLabel value="#{obj.sequencial}" />
+							</p:column>
+							<p:column headerText="Data">
+								<h:outputLabel value="#{obj.dataMarcacao}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Hora">
+								<h:outputLabel value="#{obj.horaMarcacao}" />
+							</p:column>
+							<p:column headerText="PIS">
+								<h:outputLabel value="#{obj.pisEmpregado}" />
+							</p:column>
+							<p:column headerText="Colaborador">
+								<h:outputLabel value="#{obj.colaborador.pessoa.nome}" />
+							</p:column>
+							<p:column headerText="Nr. Série Relógio">
+								<h:outputLabel value="#{obj.numeroSerieRelogioPonto}" />
+							</p:column>
+							<p:column headerText="Situação">
+								<h:outputLabel value="#{obj.situacaoRegistro}" />
+							</p:column>
+							<p:column headerText="Desconsiderar">
+								<h:selectBooleanCheckbox value="#{obj.desconsiderar}" />
+							</p:column>
+						</p:dataTable>
+
+					</p:tab>
+
+					<p:tab title="Marcações Incluídas">
+						<p:dataTable id="dataTablePontoMarcacao" var="obj"
+							value="#{pontoImportaMarcacaoController.listaMarcacaoIncluida}"
+							paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+							selection="#{pontoImportaMarcacaoController.pontoMarcacaoSelecionado}"
+							selectionMode="single" resizableColumns="true" rowKey="#{obj.id}">
+
+							<f:facet name="header">
+								<p:commandButton title="Novo" icon="ui-icon-plus"
+									actionListener="#{pontoImportaMarcacaoController.incluirPontoMarcacao}"
+									oncomplete="PF('dialogPontoMarcacao').show()"
+									update=":formOutrasTelas2:panelPontoMarcacao,dataTablePontoMarcacao" />
+								<p:commandButton process="dataTablePontoMarcacao"
+									title="Detalhes" icon="ui-icon-zoomin"
+									actionListener="#{pontoImportaMarcacaoController.alterarPontoMarcacao}"
+									oncomplete="PF('dialogPontoMarcacao').show()"
+									update=":formOutrasTelas2:panelPontoMarcacao,dataTablePontoMarcacao" />
+								<p:commandButton process="dataTablePontoMarcacao"
+									title="Excluir" icon="ui-icon-trash"
+									update="dataTablePontoMarcacao"
+									actionListener="#{pontoImportaMarcacaoController.excluirPontoMarcacao}">
+									<p:confirm header="Confirmação" message="Confirma Exclusão?"
+										icon="ui-icon-alert" />
+								</p:commandButton>
+							</f:facet>
+
+							<p:column headerText="Colaborador">
+								<h:outputLabel value="#{obj.colaborador.pessoa.nome}" />
+							</p:column>
+
+							<p:column headerText="Data Marcacao">
+								<h:outputLabel value="#{obj.dataMarcacao}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Hora Marcacao">
+								<h:outputLabel value="#{obj.horaMarcacao}" />
+							</p:column>
+							<p:column headerText="Tipo Registro">
+								<h:outputLabel
+									value="#{pontoImportaMarcacaoController.keyFromValue(pontoImportaMarcacaoController.tipoRegistroPonto, obj.tipoRegistro)}" />
+							</p:column>
+							<p:column headerText="Justificativa">
+								<h:outputLabel value="#{obj.justificativa}" />
+							</p:column>
+						</p:dataTable>
+
+					</p:tab>
+
+					<p:tab title="Fechamento Jornada">
+						<p:dataTable id="dataTablePontoFechamentoJornada" var="obj"
+							value="#{pontoImportaMarcacaoController.listaFechamentoJornada}"
+							paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+							selection="#{pontoImportaMarcacaoController.objetoSelecionado}"
+							selectionMode="single" resizableColumns="true"
+							rowKey="#{obj.idTransient}">
+
+							<f:facet name="header">
+								<p:commandButton process="dataTablePontoFechamentoJornada"
+									title="Detalhes" icon="ui-icon-zoomin"
+									actionListener="#{pontoImportaMarcacaoController.alterar}"
+									oncomplete="PF('dialogFechamentoJornada').show()"
+									update=":formOutrasTelas3:panelFechamentoJornada" />
+							</f:facet>
+
+							<p:column headerText="Colaborador">
+								<h:outputLabel value="#{obj.colaborador.pessoa.nome}" />
+							</p:column>
+							<p:column headerText="Data Fechamento">
+								<h:outputLabel value="#{obj.dataFechamento}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Dia Semana">
+								<h:outputLabel value="#{obj.diaSemana}" />
+							</p:column>
+							<p:column headerText="Carga Horaria Esperada">
+								<h:outputLabel value="#{obj.cargaHorariaEsperada}" />
+							</p:column>
+							<p:column headerText="Carga Horaria Total">
+								<h:outputLabel value="#{obj.cargaHorariaTotal}" />
+							</p:column>
+							<p:column headerText="Observacao">
+								<h:outputLabel value="#{obj.observacao}" />
+							</p:column>
+						</p:dataTable>
+
+					</p:tab>
+				</p:tabView>
+			</p:panel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+
+		<h:form id="formUploadArquivo" enctype="multipart/form-data">
+			<p:dialog id="dialogUploadArquivo" header="Selecionar Arquivo"
+				widgetVar="dialogUploadArquivo" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+				<p:outputPanel id="panelUploadArquivo">
+					<div class="t2ti-campo-100">
+						<p:fileUpload
+							fileUploadListener="#{pontoImportaMarcacaoController.importarARquivoAFD}"
+							mode="advanced" fileLimit="1" allowTypes="/(\.|\/)(txt)$/"
+							update=":form1:growl,:form1:tabViewImportacaoArquivo:dataTablePontoImportaArquivo"
+							oncomplete="PF('dialogUploadArquivo').hide()" />
+					</div>
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogUploadArquivo').hide();" process="@this" />
+				</f:facet>
+			</p:dialog>
+		</h:form>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas2">
+		<h:form id="formOutrasTelas2">
+
+			<p:dialog id="dialogPontoMarcacao"
+				header="Inclusão/Alteração Ponto Marcacao"
+				widgetVar="dialogPontoMarcacao" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="700px">
+
+				<p:outputPanel id="panelPontoMarcacao">
+					<div class="t2ti-campo-100">
+						<p:outputLabel value="Colaborador" for="pontoMarcacaoColaborador" />
+						<br />
+						<p:autoComplete id="pontoMarcacaoColaborador"
+							value="#{pontoImportaMarcacaoController.pontoMarcacao.colaborador}"
+							completeMethod="#{pontoImportaMarcacaoController.getListaColaborador}"
+							var="colaborador" itemLabel="#{colaborador.pessoa.nome}"
+							itemValue="#{colaborador}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="10"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="pontoMarcacaoDataMarcacao" label="Data"
+						nomeAtributo="#{pontoImportaMarcacaoController.pontoMarcacao.dataMarcacao}" />
+					<t2ti:campoMascara styleClass="t2ti-campo-20"
+						idComponente="pontoMarcacaoHoraMarcacao" label="Hora"
+						nomeAtributo="#{pontoImportaMarcacaoController.pontoMarcacao.horaMarcacao}"
+						mascara="99:99:99" />
+
+					<t2ti:campoSelect styleClass="t2ti-campo-30"
+						idComponente="pontoMarcacaoTipoRegistro" label="Tipo Registro"
+						nomeAtributo="#{pontoImportaMarcacaoController.pontoMarcacao.tipoRegistro}"
+						itens="#{pontoImportaMarcacaoController.tipoRegistroPonto}" />
+
+					<t2ti:campoTexto styleClass="t2ti-campo-100"
+						idComponente="pontoMarcacaoJustificativa" label="Justificativa"
+						nomeAtributo="#{pontoImportaMarcacaoController.pontoMarcacao.justificativa}"
+						tamanhoMaximo="100" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{pontoImportaMarcacaoController.salvarPontoMarcacao}"
+						update=":formOutrasTelas2:panelPontoMarcacao,:form1:growl,:form1:outputPanelGrid"
+						oncomplete="if (!args.validationFailed) {PF('dialogPontoMarcacao').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogPontoMarcacao').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas3">
+		<h:form id="formOutrasTelas3">
+
+			<p:dialog id="dialogFechamentoJornada"
+				header="Detalhes Fechamento Jornada"
+				widgetVar="dialogFechamentoJornada" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" width="90%"
+				maximizable="true" height="500px">
+
+				<p:outputPanel id="panelFechamentoJornada">
+					<p:scrollPanel mode="native" styleClass="t2ti-campo-100">
+
+						<t2ti:campoTexto styleClass="t2ti-campo-100"
+							idComponente="pontoFechamentoJornadaColaborador"
+							label="Colaborador"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.colaborador.pessoa.nome}" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-50"
+							idComponente="pontoFechamentoJornadaPontoClassificacaoJornada"
+							label="Classificacao Jornada"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.pontoClassificacaoJornada.nome}" />
+
+						<t2ti:campoData styleClass="t2ti-campo-30"
+							idComponente="pontoFechamentoJornadaDataFechamento"
+							label="Data Fechamento"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.dataFechamento}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaDiaSemana" label="Dia Semana"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.diaSemana}"
+							tamanhoMaximo="7" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaCodigoHorario"
+							label="Codigo Horario"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.codigoHorario}"
+							tamanhoMaximo="4" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaCargaHorariaEsperada"
+							label="Carga Horaria Esperada"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.cargaHorariaEsperada}"
+							tamanhoMaximo="8" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaCargaHorariaDiurna"
+							label="Carga Horaria Diurna"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.cargaHorariaDiurna}"
+							tamanhoMaximo="8" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaCargaHorariaNoturna"
+							label="Carga Horaria Noturna"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.cargaHorariaNoturna}"
+							tamanhoMaximo="8" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaCargaHorariaTotal"
+							label="Carga Horaria Total"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.cargaHorariaTotal}"
+							tamanhoMaximo="8" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaEntrada01" label="Entrada01"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.entrada01}"
+							tamanhoMaximo="8" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaSaida01" label="Saida01"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.saida01}"
+							tamanhoMaximo="8" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaEntrada02" label="Entrada02"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.entrada02}"
+							tamanhoMaximo="8" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaSaida02" label="Saida02"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.saida02}"
+							tamanhoMaximo="8" />
+
+						<t2ti:separador />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaEntrada03" label="Entrada03"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.entrada03}"
+							tamanhoMaximo="8" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaSaida03" label="Saida03"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.saida03}"
+							tamanhoMaximo="8" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaEntrada04" label="Entrada04"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.entrada04}"
+							tamanhoMaximo="8" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaSaida04" label="Saida04"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.saida04}"
+							tamanhoMaximo="8" />
+
+						<t2ti:separador />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaEntrada05" label="Entrada05"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.entrada05}"
+							tamanhoMaximo="8" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaSaida05" label="Saida05"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.saida05}"
+							tamanhoMaximo="8" />
+
+						<t2ti:separador />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="pontoFechamentoJornadaHoraInicioJornada"
+							label="Hora Inicio Jornada"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.horaInicioJornada}"
+							tamanhoMaximo="8" />
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="pontoFechamentoJornadaHoraFimJornada"
+							label="Hora Fim Jornada"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.horaFimJornada}"
+							tamanhoMaximo="8" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-60"
+							idComponente="pontoFechamentoJornadaModalidadeHoraExtra01"
+							label="Modalidade Hora Extra01"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.modalidadeHoraExtra01}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaHoraExtra01"
+							label="Hora Extra 01"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.horaExtra01}"
+							tamanhoMaximo="8" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaPercentualHoraExtra01"
+							label="% Hora Extra 01"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.percentualHoraExtra01}" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-60"
+							idComponente="pontoFechamentoJornadaModalidadeHoraExtra02"
+							label="Modalidade Hora Extra 02"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.modalidadeHoraExtra02}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaHoraExtra02"
+							label="Hora Extra 02"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.horaExtra02}"
+							tamanhoMaximo="8" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaPercentualHoraExtra02"
+							label="% Hora Extra 02"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.percentualHoraExtra02}" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-60"
+							idComponente="pontoFechamentoJornadaModalidadeHoraExtra03"
+							label="Modalidade Hora Extra 03"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.modalidadeHoraExtra03}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaHoraExtra03"
+							label="Hora Extra 03"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.horaExtra03}"
+							tamanhoMaximo="8" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaPercentualHoraExtra03"
+							label="% Hora Extra 03"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.percentualHoraExtra03}" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-60"
+							idComponente="pontoFechamentoJornadaModalidadeHoraExtra04"
+							label="Modalidade Hora Extra 04"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.modalidadeHoraExtra04}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaHoraExtra04"
+							label="Hora Extra 04"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.horaExtra04}"
+							tamanhoMaximo="8" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaPercentualHoraExtra04"
+							label="% Hora Extra 04"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.percentualHoraExtra04}" />
+						
+						<t2ti:separador />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaFaltaAtraso"
+							label="Falta/Atraso"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.faltaAtraso}"
+							tamanhoMaximo="8" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaCompensar" label="Compensar"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.compensar}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="pontoFechamentoJornadaBancoHoras"
+							label="Banco Horas"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.bancoHoras}"
+							tamanhoMaximo="8" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-100"
+							idComponente="pontoFechamentoJornadaObservacao"
+							label="Observacao"
+							nomeAtributo="#{pontoImportaMarcacaoController.objeto.observacao}"
+							tamanhoMaximo="250" />
+					</p:scrollPanel>
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Fechar"
+						oncomplete="PF('dialogFechamentoJornada').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

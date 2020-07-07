@@ -1,0 +1,217 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Conciliacao Bancaria"
+			rendered="#{!finExtratoContaBancoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{finExtratoContaBancoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Conciliacao Bancaria"
+					rendered="#{finExtratoContaBancoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableContaCaixa" var="obj"
+						value="#{finExtratoContaBancoController.dataModel}"
+						paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{finExtratoContaBancoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton process="dataTableContaCaixa" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{finExtratoContaBancoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+						</f:facet>
+
+						<p:column headerText="Agencia">
+							<h:outputLabel value="#{obj.agenciaBanco.nome}" />
+						</p:column>
+						<p:column headerText="Codigo">
+							<h:outputLabel value="#{obj.codigo}" />
+						</p:column>
+						<p:column headerText="Digito">
+							<h:outputLabel value="#{obj.digito}" />
+						</p:column>
+						<p:column headerText="Nome" width="20%">
+							<h:outputLabel value="#{obj.nome}" />
+						</p:column>
+						<p:column headerText="Descricao" width="30%">
+							<h:outputLabel value="#{obj.descricao}" />
+						</p:column>
+						<p:column headerText="Tipo">
+							<h:outputLabel
+								value="#{finExtratoContaBancoController.keyFromValue(finExtratoContaBancoController.tipoContaCaixa, obj.tipo)}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!finExtratoContaBancoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Conciliacao Bancaria">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty finExtratoContaBancoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{finExtratoContaBancoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty finExtratoContaBancoController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty finExtratoContaBancoController.objeto}">
+
+						<p:dataTable id="dataTableFinExtratoContaBanco" var="obj"
+							value="#{finExtratoContaBancoController.extratoContaBanco}"
+							paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+							resizableColumns="true">
+
+							<f:facet name="header">
+								<p:commandButton title="Atualizar" icon="ui-icon-refresh"
+									actionListener="#{finExtratoContaBancoController.buscaDados}"
+									update="dataTableFinExtratoContaBanco,:form1:growl" />
+								<p:commandButton process="dataTableFinExtratoContaBanco"
+									title="Importa Arquivo OFX" icon=" ui-icon-arrowthick-1-n"
+									update=":formUploadArquivo:dialogUploadArquivo"
+									oncomplete="PF('dialogUploadArquivo').show()" />
+								<p:commandButton process="dataTableFinExtratoContaBanco"
+									title="Conciliar Lançamentos" icon="ui-icon-check"
+									actionListener="#{finExtratoContaBancoController.conciliaLancamentos}"
+									update="dataTableFinExtratoContaBanco" />
+								<p:commandButton process="dataTableFinExtratoContaBanco"
+									title="Conciliar Cheques" icon="ui-icon-check"
+									actionListener="#{finExtratoContaBancoController.conciliaCheques}"
+									update="dataTableFinExtratoContaBanco" />
+								<p:commandButton title="Salvar Extrato" icon="ui-icon-disk"
+									actionListener="#{finExtratoContaBancoController.salvaExtrato()}"
+									update=":form1:growl,:form1:outputPanelDetalhe" />
+							</f:facet>
+
+							<p:column headerText="Data Movimento">
+								<h:outputLabel value="#{obj.dataMovimento}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Data Balancete">
+								<h:outputLabel value="#{obj.dataBalancete}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Historico">
+								<h:outputLabel value="#{obj.historico}" />
+							</p:column>
+							<p:column headerText="Documento">
+								<h:outputLabel value="#{obj.documento}" />
+							</p:column>
+							<p:column headerText="Valor">
+								<h:outputLabel value="#{obj.valor}">
+									<f:convertNumber pattern="#,##0.00" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Conciliado">
+								<h:outputLabel
+									value="#{finExtratoContaBancoController.keyFromValue(finExtratoContaBancoController.simNao, obj.conciliado)}" />
+							</p:column>
+							<p:column headerText="Observacao">
+								<h:outputLabel value="#{obj.observacao}" />
+							</p:column>
+
+							<f:facet name="footer">
+								<p:outputLabel value="#{finExtratoContaBancoController.totais}" />
+							</f:facet>
+						</p:dataTable>
+
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="resumoTesourariaPeriodo" label="Período"
+							nomeAtributo="#{finExtratoContaBancoController.periodo}"
+							formato="MM/yyyy" requerido="true" />
+
+					</p:outputPanel>
+					<p:outputPanel
+						rendered="#{not empty finExtratoContaBancoController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Fechar"
+							actionListener="#{finExtratoContaBancoController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formUploadArquivo" enctype="multipart/form-data">
+			<p:dialog id="dialogUploadArquivo" header="Selecionar Arquivo"
+				widgetVar="dialogUploadArquivo" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+				<p:outputPanel id="panelUploadArquivo">
+					<div class="t2ti-campo-100">
+						<p:fileUpload
+							fileUploadListener="#{finExtratoContaBancoController.importaOFX}"
+							mode="advanced" fileLimit="1" allowTypes="/(\.|\/)(ofx)$/"
+							update=":form1:growl,:form1:outputPanelDetalhe"
+							oncomplete="PF('dialogUploadArquivo').hide()" />
+					</div>
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogUploadArquivo').hide();" process="@this" />
+				</f:facet>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

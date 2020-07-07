@@ -1,0 +1,356 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Fin Cobranca"
+			rendered="#{!finCobrancaController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{finCobrancaController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Fin Cobranca"
+					rendered="#{finCobrancaController.podeConsultar()}">
+
+					<p:dataTable id="dataTableFinCobranca" var="obj"
+						value="#{finCobrancaController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{finCobrancaController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{finCobrancaController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!finCobrancaController.podeInserir()}" />
+							<p:commandButton process="dataTableFinCobranca" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{finCobrancaController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableFinCobranca" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{finCobrancaController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!finCobrancaController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Cliente">
+							<h:outputLabel value="#{obj.cliente.pessoa.nome}" />
+						</p:column>
+						<p:column headerText="Data Contato">
+							<h:outputLabel value="#{obj.dataContato}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Hora Contato">
+							<h:outputLabel value="#{obj.horaContato}" />
+						</p:column>
+						<p:column headerText="Telefone Contato">
+							<h:outputLabel value="#{obj.telefoneContato}" />
+						</p:column>
+						<p:column headerText="Data Pagamento">
+							<h:outputLabel value="#{obj.dataAcertoPagamento}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Total Receber">
+							<h:outputLabel value="#{obj.totalReceberNaData}">
+								<f:convertNumber pattern="#,##0.00" />
+							</h:outputLabel>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!finCobrancaController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Fin Cobranca">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty finCobrancaController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{finCobrancaController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty finCobrancaController.objeto}" />
+
+					<p:outputPanel rendered="#{not empty finCobrancaController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+
+								<div class="t2ti-campo-100">
+									<p:outputLabel value="Cliente" for="finCobrancaCliente" />
+									<br />
+									<p:autoComplete id="finCobrancaCliente"
+										value="#{finCobrancaController.objeto.cliente}"
+										completeMethod="#{finCobrancaController.getListaCliente}"
+										var="cliente" itemLabel="#{cliente.pessoa.nome}"
+										itemValue="#{cliente}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="finCobrancaDataContato" label="Data Contato"
+									nomeAtributo="#{finCobrancaController.objeto.dataContato}" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="finCobrancaHoraContato" label="Hora Contato"
+									nomeAtributo="#{finCobrancaController.objeto.horaContato}"
+									tamanhoMaximo="8" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="finCobrancaTelefoneContato"
+									label="Telefone Contato"
+									nomeAtributo="#{finCobrancaController.objeto.telefoneContato}"
+									tamanhoMaximo="14" />
+								<t2ti:campoData styleClass="t2ti-campo-40"
+									idComponente="finCobrancaDataAcertoPagamento"
+									label="Data Acerto Pagamento"
+									nomeAtributo="#{finCobrancaController.objeto.dataAcertoPagamento}" />
+
+
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="finCobrancaTotalAtraso" label="Total Atraso"
+									nomeAtributo="#{finCobrancaController.objeto.totalAtrasado}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="finCobrancaTotalJuros" label="Total Juros"
+									nomeAtributo="#{finCobrancaController.objeto.totalJuros}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="finCobrancaTotalMulta" label="Total Multa"
+									nomeAtributo="#{finCobrancaController.objeto.totalMulta}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-40"
+									idComponente="finCobrancaTotalReceberNaData"
+									label="Total Receber"
+									nomeAtributo="#{finCobrancaController.objeto.totalReceberNaData}" />
+
+								<p:outputPanel
+									rendered="#{not empty finCobrancaController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty finCobrancaController.objeto.id}"
+										actionListener="#{finCobrancaController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!finCobrancaController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty finCobrancaController.objeto.id}"
+										actionListener="#{finCobrancaController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!finCobrancaController.podeAlterar()}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{finCobrancaController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+
+								</p:outputPanel>
+							</p:tab>
+							<p:tab title="Parcelas Vencidas">
+								<p:dataTable id="dataTableFinParcelaReceber" var="obj"
+									value="#{finCobrancaController.parcelasVencidas}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									resizableColumns="true" editable="true" editMode="row">
+
+									<f:facet name="header">
+										<p:commandButton 
+											title="Buscar Parcelas Vencidas" icon="ui-icon-zoomin"
+											actionListener="#{finCobrancaController.buscaParcelaVencida}"
+											update="dataTableFinParcelaReceber" />
+									</f:facet>
+
+									<p:ajax event="rowEdit"
+										listener="#{finCobrancaController.alteraParcelaVencida}"
+										update="dataTableFinParcelaReceber" />
+
+									<p:column headerText="Numero Parcela">
+										<h:outputLabel value="#{obj.numeroParcela}" />
+									</p:column>
+									<p:column headerText="Data Emissao">
+										<h:outputLabel value="#{obj.dataEmissao}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Data Vencimento">
+										<h:outputLabel value="#{obj.dataVencimento}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Valor">
+										<h:outputLabel value="#{obj.valor}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Taxa Juro">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputLabel value="#{obj.taxaJuro}">
+													<f:convertNumber pattern="#,##0.00" />
+												</h:outputLabel>
+											</f:facet>
+											<f:facet name="input">
+												<pe:inputNumber value="#{obj.taxaJuro}" decimalPlaces="2" />
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="Taxa Multa">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputLabel value="#{obj.taxaMulta}">
+													<f:convertNumber pattern="#,##0.00" />
+												</h:outputLabel>
+											</f:facet>
+											<f:facet name="input">
+												<pe:inputNumber value="#{obj.taxaMulta}" decimalPlaces="2" />
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="Status">
+										<h:outputLabel value="#{obj.finStatusParcela.descricao}" />
+									</p:column>
+									<p:column>
+										<p:rowEditor />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+
+							<p:tab title="Parcelas Simulado/Acordo">
+								<p:dataTable id="dataTableFinCobrancaParcelaReceber" var="obj"
+									value="#{finCobrancaController.objeto.listaFinCobrancaParcelaReceber}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									resizableColumns="true" editable="true" editMode="row">
+
+									<f:facet name="header">
+										<p:commandButton process="dataTableFinCobrancaParcelaReceber"
+											title="Calcular Juros/Multa" icon="ui-icon-calculator"
+											actionListener="#{finCobrancaController.calcularJurosMulta}"
+											update="dataTableFinCobrancaParcelaReceber,:form1:outputPanelDetalhe" />
+										<p:commandButton process="dataTableFinCobrancaParcelaReceber"
+											title="Simular Acordo" icon="ui-icon-pencil"
+											actionListener="#{finCobrancaController.simulaValores}"
+											update=":form1:outputPanelDetalhe" />
+									</f:facet>
+
+
+									<p:ajax event="rowEdit" listener="#{finCobrancaController.alteraParcelaCobranca}"
+										update="dataTableFinCobrancaParcelaReceber" />
+
+									<p:column headerText="Vencimento">
+										<h:outputLabel value="#{obj.dataVencimento}" />
+									</p:column>
+									<p:column headerText="Vlr Parcela">
+										<h:outputLabel value="#{obj.valorParcela}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Juro Simulado">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputLabel value="#{obj.valorJuroSimulado}">
+													<f:convertNumber pattern="#,##0.00" />
+												</h:outputLabel>
+											</f:facet>
+											<f:facet name="input">
+												<pe:inputNumber value="#{obj.valorJuroSimulado}"
+													decimalPlaces="2" />
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="Juro Acordo">
+										<h:outputLabel value="#{obj.valorJuroAcordo}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Multa Simulado">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputLabel value="#{obj.valorMultaSimulado}">
+													<f:convertNumber pattern="#,##0.00" />
+												</h:outputLabel>
+											</f:facet>
+											<f:facet name="input">
+												<pe:inputNumber value="#{obj.valorMultaSimulado}"
+													decimalPlaces="2" />
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="Multa Acordo">
+										<h:outputLabel value="#{obj.valorMultaAcordo}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Vlr Receber Simulado" width="15%">
+										<h:outputLabel value="#{obj.valorReceberSimulado}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Vlr Receber Acordo" width="15%">
+										<h:outputLabel value="#{obj.valorReceberAcordo}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column width="2%">
+										<p:rowEditor />
+									</p:column>									
+								</p:dataTable>
+							</p:tab>
+
+						</p:tabView>
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+</ui:composition>

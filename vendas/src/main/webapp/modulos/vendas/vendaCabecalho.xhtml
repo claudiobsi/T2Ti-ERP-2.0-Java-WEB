@@ -1,0 +1,413 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Venda Cabecalho"
+			rendered="#{!vendaCabecalhoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{vendaCabecalhoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Venda Cabecalho"
+					rendered="#{vendaCabecalhoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableVendaCabecalho" var="obj"
+						value="#{vendaCabecalhoController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{vendaCabecalhoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{vendaCabecalhoController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!vendaCabecalhoController.podeInserir()}" />
+							<p:commandButton process="dataTableVendaCabecalho"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{vendaCabecalhoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableVendaCabecalho"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{vendaCabecalhoController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!vendaCabecalhoController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Cliente">
+							<h:outputLabel value="#{obj.cliente.pessoa.nome}" />
+						</p:column>
+						<p:column headerText="Data Venda">
+							<h:outputLabel value="#{obj.dataVenda}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Numero Fatura">
+							<h:outputLabel value="#{obj.numeroFatura}" />
+						</p:column>
+						<p:column headerText="Valor Total">
+							<h:outputLabel value="#{obj.valorTotal}">
+								<f:convertNumber pattern="#,##0.00" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Situacao">
+							<h:outputLabel
+								value="#{vendaCabecalhoController.keyFromValue(vendaCabecalhoController.vendaOrcamentoSituacao, obj.situacao)}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!vendaCabecalhoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Venda Cabecalho">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty vendaCabecalhoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{vendaCabecalhoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty vendaCabecalhoController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty vendaCabecalhoController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Orcamento"
+										for="vendaCabecalhoVendaOrcamentoCabecalho" />
+									<br />
+									<p:autoComplete id="vendaCabecalhoVendaOrcamentoCabecalho"
+										value="#{vendaCabecalhoController.objeto.vendaOrcamentoCabecalho}"
+										completeMethod="#{vendaCabecalhoController.getListaVendaOrcamentoCabecalho}"
+										var="vendaOrcamentoCabecalho"
+										itemLabel="#{vendaOrcamentoCabecalho.codigo}"
+										itemValue="#{vendaOrcamentoCabecalho}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="false" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado">
+
+										<p:ajax event="itemSelect"
+											listener="#{vendaCabecalhoController.carregaItensOrcamento}"
+											update=":form1:outputPanelDetalhe" />
+
+									</p:autoComplete>
+								</div>
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Tipo Nota Fiscal"
+										for="vendaCabecalhoTipoNotaFiscal" />
+									<br />
+									<p:autoComplete id="vendaCabecalhoTipoNotaFiscal"
+										value="#{vendaCabecalhoController.objeto.notaFiscalTipo}"
+										completeMethod="#{vendaCabecalhoController.getListaTipoNotaFiscal}"
+										var="tipoNotaFiscal" itemLabel="#{tipoNotaFiscal.nome}"
+										itemValue="#{tipoNotaFiscal}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Cliente" for="vendaCabecalhoCliente" />
+									<br />
+									<p:autoComplete id="vendaCabecalhoCliente"
+										value="#{vendaCabecalhoController.objeto.cliente}"
+										completeMethod="#{vendaCabecalhoController.getListaCliente}"
+										var="cliente" itemLabel="#{cliente.pessoa.nome}"
+										itemValue="#{cliente}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Vendedor" for="vendaCabecalhoVendedor" />
+									<br />
+									<p:autoComplete id="vendaCabecalhoVendedor"
+										value="#{vendaCabecalhoController.objeto.vendedor}"
+										completeMethod="#{vendaCabecalhoController.getListaVendedor}"
+										var="vendedor" itemLabel="#{vendedor.colaborador.pessoa.nome}"
+										itemValue="#{vendedor}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Condicoes Pagamento"
+										for="vendaCabecalhoVendaCondicoesPagamento" />
+									<br />
+									<p:autoComplete id="vendaCabecalhoVendaCondicoesPagamento"
+										value="#{vendaCabecalhoController.objeto.condicoesPagamento}"
+										completeMethod="#{vendaCabecalhoController.getListaVendaCondicoesPagamento}"
+										var="vendaCondicoesPagamento"
+										itemLabel="#{vendaCondicoesPagamento.nome}"
+										itemValue="#{vendaCondicoesPagamento}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Transportadora"
+										for="vendaCabecalhoTransportadora" />
+									<br />
+									<p:autoComplete id="vendaCabecalhoTransportadora"
+										value="#{vendaCabecalhoController.objeto.transportadora}"
+										completeMethod="#{vendaCabecalhoController.getListaTransportadora}"
+										var="transportadora" itemLabel="#{transportadora.pessoa.nome}"
+										itemValue="#{transportadora}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="false" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="vendaCabecalhoFormaPagamento"
+									label="Forma Pagamento"
+									nomeAtributo="#{vendaCabecalhoController.objeto.formaPagamento}"
+									itens="#{vendaCabecalhoController.formaPagamento}" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="vendaCabecalhoTipoFrete" label="Frete"
+									nomeAtributo="#{vendaCabecalhoController.objeto.tipoFrete}"
+									itens="#{vendaCabecalhoController.compraTipoFrete}" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="vendaCabecalhoDataVenda" label="Data Venda"
+									nomeAtributo="#{vendaCabecalhoController.objeto.dataVenda}" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="vendaCabecalhoDataSaida" label="Data Saida"
+									nomeAtributo="#{vendaCabecalhoController.objeto.dataSaida}" />
+								<t2ti:campoMascara styleClass="t2ti-campo-20"
+									idComponente="vendaCabecalhoHoraSaida" label="Hora Saida"
+									nomeAtributo="#{vendaCabecalhoController.objeto.horaSaida}"
+									mascara="99:99:99" />
+								
+								<div class="t2ti-campo-100" />
+								
+								<t2ti:campoInteiro styleClass="t2ti-campo-20"
+									idComponente="vendaCabecalhoNumeroFatura" label="Numero Fatura"
+									nomeAtributo="#{vendaCabecalhoController.objeto.numeroFatura}" />
+								<t2ti:campoTexto styleClass="t2ti-campo-40"
+									idComponente="vendaCabecalhoLocalEntrega" label="Local Entrega"
+									nomeAtributo="#{vendaCabecalhoController.objeto.localEntrega}"
+									tamanhoMaximo="100" />
+								<t2ti:campoTexto styleClass="t2ti-campo-40"
+									idComponente="vendaCabecalhoLocalCobranca"
+									label="Local Cobranca"
+									nomeAtributo="#{vendaCabecalhoController.objeto.localCobranca}"
+									tamanhoMaximo="100" />
+
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="vendaCabecalhoValorSubtotal"
+									label="Valor Subtotal"
+									nomeAtributo="#{vendaCabecalhoController.objeto.valorSubtotal}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="vendaCabecalhoTaxaComissao" label="Taxa Comissao"
+									nomeAtributo="#{vendaCabecalhoController.objeto.taxaComissao}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="vendaCabecalhoValorComissao"
+									label="Valor Comissao"
+									nomeAtributo="#{vendaCabecalhoController.objeto.valorComissao}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="vendaCabecalhoTaxaDesconto" label="Taxa Desconto"
+									nomeAtributo="#{vendaCabecalhoController.objeto.taxaDesconto}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="vendaCabecalhoValorDesconto"
+									label="Valor Desconto"
+									nomeAtributo="#{vendaCabecalhoController.objeto.valorDesconto}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="vendaCabecalhoValorFrete" label="Valor Frete"
+									nomeAtributo="#{vendaCabecalhoController.objeto.valorFrete}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="vendaCabecalhoValorSeguro" label="Valor Seguro"
+									nomeAtributo="#{vendaCabecalhoController.objeto.valorSeguro}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="vendaCabecalhoValorTotal" label="Valor Total"
+									nomeAtributo="#{vendaCabecalhoController.objeto.valorTotal}" />
+
+								<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+									idComponente="vendaCabecalhoObservacao" label="Observacao"
+									nomeAtributo="#{vendaCabecalhoController.objeto.observacao}" />
+								<p:outputPanel
+									rendered="#{not empty vendaCabecalhoController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty vendaCabecalhoController.objeto.id}"
+										actionListener="#{vendaCabecalhoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!vendaCabecalhoController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty vendaCabecalhoController.objeto.id}"
+										actionListener="#{vendaCabecalhoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!vendaCabecalhoController.podeAlterar()}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{vendaCabecalhoController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+
+								</p:outputPanel>
+							</p:tab>
+
+							<p:tab title="Itens Venda">
+								<p:dataTable id="dataTableVendaDetalhe" var="obj"
+									value="#{vendaCabecalhoController.objeto.listaVendaDetalhe}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{vendaCabecalhoController.vendaDetalheSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowIndexVar="index" rowKey="index">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{vendaCabecalhoController.incluirVendaDetalhe}"
+											oncomplete="PF('dialogVendaDetalhe').show()"
+											update=":formOutrasTelas:panelVendaDetalhe,dataTableVendaDetalhe" />
+										<p:commandButton process="dataTableVendaDetalhe"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{vendaCabecalhoController.alterarVendaDetalhe}"
+											oncomplete="PF('dialogVendaDetalhe').show()"
+											update=":formOutrasTelas:panelVendaDetalhe,dataTableVendaDetalhe" />
+										<p:commandButton process="dataTableVendaDetalhe"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableVendaDetalhe"
+											actionListener="#{vendaCabecalhoController.excluirVendaDetalhe}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Produto">
+										<h:outputLabel value="#{obj.produto.nome}" />
+									</p:column>
+									<p:column headerText="Quantidade">
+										<h:outputLabel value="#{obj.quantidade}">
+											<f:convertNumber pattern="0.000" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Valor Unitario">
+										<h:outputLabel value="#{obj.valorUnitario}" />
+									</p:column>
+									<p:column headerText="Valor Subtotal">
+										<h:outputLabel value="#{obj.valorSubtotal}" />
+									</p:column>
+									<p:column headerText="Taxa Desconto">
+										<h:outputLabel value="#{obj.taxaDesconto}" />
+									</p:column>
+									<p:column headerText="Valor Desconto">
+										<h:outputLabel value="#{obj.valorDesconto}" />
+									</p:column>
+									<p:column headerText="Valor Total">
+										<h:outputLabel value="#{obj.valorTotal}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+						</p:tabView>
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogVendaDetalhe"
+				header="Inclusão/Alteração Venda Detalhe"
+				widgetVar="dialogVendaDetalhe" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="false" width="800">
+
+				<p:outputPanel id="panelVendaDetalhe">
+					<div class="t2ti-campo-60">
+						<p:outputLabel value="Produto" for="vendaDetalheProduto" />
+						<br />
+						<p:autoComplete id="vendaDetalheProduto"
+							value="#{vendaCabecalhoController.vendaDetalhe.produto}"
+							completeMethod="#{vendaCabecalhoController.getListaProduto}"
+							var="produto" itemLabel="#{produto.nome}" itemValue="#{produto}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="100"
+							required="false" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="vendaDetalheQuantidade" label="Quantidade"
+						requerido="true"
+						nomeAtributo="#{vendaCabecalhoController.vendaDetalhe.quantidade}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="vendaDetalheTaxaDesconto" label="Taxa Desconto"
+						nomeAtributo="#{vendaCabecalhoController.vendaDetalhe.taxaDesconto}" />
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{vendaCabecalhoController.salvarVendaDetalhe}"
+						update=":formOutrasTelas:panelVendaDetalhe,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogVendaDetalhe').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogVendaDetalhe').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

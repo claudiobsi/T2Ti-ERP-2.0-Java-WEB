@@ -1,0 +1,211 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Ponto Espelho"
+			rendered="#{!pontoEspelhoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{pontoEspelhoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Ponto Espelho"
+					rendered="#{pontoEspelhoController.podeConsultar()}">
+
+					<p:dataTable id="dataTablePontoColaborador" var="obj"
+						value="#{pontoEspelhoController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{pontoEspelhoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton process="dataTablePontoColaborador"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{pontoEspelhoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+						</f:facet>
+
+						<p:column headerText="Colaborador" width="60%">
+							<h:outputLabel value="#{obj.pessoa.nome}" />
+						</p:column>
+						<p:column headerText="Nr. PIS">
+							<h:outputLabel value="#{obj.pisNumero}" />
+						</p:column>
+						<p:column headerText="Data Admissao">
+							<h:outputLabel value="#{obj.dataAdmissao}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!pontoEspelhoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Ponto Espelho">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty pontoEspelhoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{pontoEspelhoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty pontoEspelhoController.objeto}" />
+
+					<f:facet name="header">
+					</f:facet>
+
+					<p:outputPanel
+						rendered="#{not empty pontoEspelhoController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+
+
+								<t2ti:campoTexto styleClass="t2ti-campo-100"
+									idComponente="pontoEspelhoColaborador" label="Colaborador"
+									nomeAtributo="#{pontoEspelhoController.objeto.pessoa.nome}"
+									somenteLeitura="true" />
+
+								<t2ti:separador label="Espelho" />
+
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="espelhoDataInicio" label="Data Inicio"
+									nomeAtributo="#{pontoEspelhoController.dataInicial}"
+									requerido="true" id="campoDataEspelhoDataInicio" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="espelhoDataFim" label="Data Fim"
+									nomeAtributo="#{pontoEspelhoController.dataFinal}"
+									requerido="true" id="campoDataEspelhoDataFim" />
+
+								<div class="t2ti-campo-60">
+									<br />
+									<p:commandButton value="Atualizar"
+										actionListener="#{pontoEspelhoController.carregarDados}"
+										update=":form1:tabViewDetalhes:dataTablePontoFechamentoJornada,:form1:outputPanelDetalhe,:form1:growl"
+										process="@this,:form1:tabViewDetalhes:campoDataEspelhoDataInicio:espelhoDataInicio, :form1:tabViewDetalhes:campoDataEspelhoDataFim:espelhoDataFim" />
+									<p:commandButton value="Gerar Relatório"
+										action="#{pontoEspelhoController.geraRelatorio}"
+										update=":form1:outputPanelDetalhe,:form1:growl"
+										process="@this,:form1:tabViewDetalhes:campoDataEspelhoDataInicio:espelhoDataInicio, :form1:tabViewDetalhes:campoDataEspelhoDataFim:espelhoDataFim"
+										ajax="false" />
+
+								</div>
+
+								<t2ti:separador label="Classificação Jornada" />
+
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="pontoEspelhoDataClassificar"
+									label="Data Classificar"
+									nomeAtributo="#{pontoEspelhoController.dataClassificacaoJornada}"
+									requerido="true" id="campoDataPontoEspelhoDataClassificar" />
+								<div class="t2ti-campo-80">
+									<p:outputLabel value="Classificação Jornada"
+										for="pontoEspelhoClassificacaoJornada" />
+									<br />
+									<p:autoComplete id="pontoEspelhoClassificacaoJornada"
+										value="#{pontoEspelhoController.pontoClassificacaoJornada}"
+										completeMethod="#{pontoEspelhoController.getListaPontoClassificacaoJornada}"
+										var="classificacao" itemLabel="#{classificacao.nome}"
+										itemValue="#{classificacao}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<div class="t2ti-campo-20">
+									<p:commandButton value="Classificar"
+										actionListener="#{pontoEspelhoController.classificarJornada}"
+										update=":form1:outputPanelDetalhe,:form1:growl"
+										process="@this,:form1:tabViewDetalhes:pontoEspelhoClassificacaoJornada,:form1:tabViewDetalhes:campoDataPontoEspelhoDataClassificar:pontoEspelhoDataClassificar" />
+								</div>
+
+							</p:tab>
+
+							<p:tab title="Registros">
+								<p:dataTable id="dataTablePontoFechamentoJornada" var="obj"
+									value="#{pontoEspelhoController.listaFechamentoJornada}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									resizableColumns="true">
+
+									<p:column headerText="Colaborador">
+										<h:outputLabel value="#{obj.colaborador.pessoa.nome}" />
+									</p:column>
+									<p:column headerText="Data Fechamento">
+										<h:outputLabel value="#{obj.dataFechamento}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Dia Semana">
+										<h:outputLabel value="#{obj.diaSemana}" />
+									</p:column>
+									<p:column headerText="Carga Horaria Esperada">
+										<h:outputLabel value="#{obj.cargaHorariaEsperada}" />
+									</p:column>
+									<p:column headerText="Carga Horaria Total">
+										<h:outputLabel value="#{obj.cargaHorariaTotal}" />
+									</p:column>
+									<p:column headerText="Observacao">
+										<h:outputLabel value="#{obj.observacao}" />
+									</p:column>
+								</p:dataTable>
+
+							</p:tab>
+						</p:tabView>
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+</ui:composition>

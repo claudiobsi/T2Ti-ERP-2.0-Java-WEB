@@ -1,0 +1,253 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Composicao Saldo"
+			rendered="#{!composicaoSaldoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{composicaoSaldoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Composicao Saldo"
+					rendered="#{composicaoSaldoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableContabilConta" var="obj"
+						value="#{composicaoSaldoController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{composicaoSaldoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton process="dataTableContabilConta"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{composicaoSaldoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+						</f:facet>
+
+						<p:column headerText="Classificacao">
+							<h:outputLabel value="#{obj.classificacao}" />
+						</p:column>
+						<p:column headerText="Tipo">
+							<h:outputLabel
+								value="#{composicaoSaldoController.keyFromValue(composicaoSaldoController.tipoPlanoContaSped, obj.tipo)}" />
+						</p:column>
+						<p:column headerText="Descricao">
+							<h:outputLabel value="#{obj.descricao}" />
+						</p:column>
+						<p:column headerText="Data Inclusao">
+							<h:outputLabel value="#{obj.dataInclusao}" />
+						</p:column>
+						<p:column headerText="Situacao">
+							<h:outputLabel
+								value="#{composicaoSaldoController.keyFromValue(composicaoSaldoController.situacaoContaContabil, obj.situacao)}" />
+						</p:column>
+						<p:column headerText="Natureza">
+							<h:outputLabel
+								value="#{composicaoSaldoController.keyFromValue(composicaoSaldoController.naturezaContaContabil, obj.natureza)}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!composicaoSaldoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Composicao Saldo">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty composicaoSaldoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{composicaoSaldoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty composicaoSaldoController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty composicaoSaldoController.objeto}">
+
+						<t2ti:campoTexto styleClass="t2ti-campo-50"
+							idComponente="contabilContaClassificacao" label="Conta Contabil"
+							nomeAtributo="#{composicaoSaldoController.objeto.descricao}"
+							tamanhoMaximo="30" />
+						<t2ti:campoTexto styleClass="t2ti-campo-50"
+							idComponente="contabilContaClassificacao" label="Plano Conta"
+							nomeAtributo="#{composicaoSaldoController.objeto.planoConta.nome}"
+							tamanhoMaximo="30" />
+						<t2ti:campoTexto styleClass="t2ti-campo-100"
+							idComponente="contabilContaClassificacao"
+							label="Plano Conta Ref Sped"
+							nomeAtributo="#{composicaoSaldoController.objeto.planoContaRefSped.descricao}"
+							tamanhoMaximo="30" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="contabilContaClassificacao" label="Classificacao"
+							nomeAtributo="#{composicaoSaldoController.objeto.classificacao}"
+							tamanhoMaximo="30" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="contabilContaTipo" label="Tipo"
+							nomeAtributo="#{composicaoSaldoController.objeto.tipo}"
+							itens="#{composicaoSaldoController.tipoPlanoContaSped}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-60"
+							idComponente="contabilContaDescricao" label="Descricao"
+							nomeAtributo="#{composicaoSaldoController.objeto.descricao}"
+							tamanhoMaximo="100" />
+
+						<div class="t2ti-campo-100" />
+						
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="contabilContaDataInclusao" label="Data Inclusao"
+							nomeAtributo="#{composicaoSaldoController.objeto.dataInclusao}" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="contabilContaSituacao" label="Situacao"
+							nomeAtributo="#{composicaoSaldoController.objeto.situacao}"
+							itens="#{composicaoSaldoController.situacaoContaContabil}" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="contabilContaNatureza" label="Natureza"
+							nomeAtributo="#{composicaoSaldoController.objeto.natureza}"
+							itens="#{composicaoSaldoController.naturezaContaContabil}" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="contabilContaPatrimonioResultado"
+							label="Patrimonio Resultado"
+							nomeAtributo="#{composicaoSaldoController.objeto.patrimonioResultado}"
+							itens="#{composicaoSaldoController.patrimonioResultadoContaContabil}" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="contabilContaLivroCaixa" label="Livro Caixa"
+							nomeAtributo="#{composicaoSaldoController.objeto.livroCaixa}"
+							itens="#{composicaoSaldoController.simNao}" />
+
+
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="contabilContaDfc" label="DFC"
+							nomeAtributo="#{composicaoSaldoController.objeto.dfc}"
+							itens="#{composicaoSaldoController.dfcContaContabil}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="contabilContaOrdem" label="Ordem"
+							nomeAtributo="#{composicaoSaldoController.objeto.ordem}"
+							tamanhoMaximo="20" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="contabilContaCodigoReduzido"
+							label="Codigo Reduzido"
+							nomeAtributo="#{composicaoSaldoController.objeto.codigoReduzido}"
+							tamanhoMaximo="10" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="contabilContaCodigoEfd" label="Codigo EFD"
+							nomeAtributo="#{composicaoSaldoController.objeto.codigoEfd}"
+							tamanhoMaximo="2" />
+
+						<div class="t2ti-campo-100" />
+
+						<p:dataTable id="dataTableFinExtratoContaBanco" var="obj"
+							value="#{composicaoSaldoController.extratoContaBanco}"
+							paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+							resizableColumns="true" styleClass="t2ti-campo-100">
+
+							<p:column headerText="Mes">
+								<h:outputLabel value="#{obj.mes}" />
+							</p:column>
+							<p:column headerText="Ano">
+								<h:outputLabel value="#{obj.ano}" />
+							</p:column>
+							<p:column headerText="Data Movimento">
+								<h:outputLabel value="#{obj.dataMovimento}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Data Balancete">
+								<h:outputLabel value="#{obj.dataBalancete}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Historico">
+								<h:outputLabel value="#{obj.historico}" />
+							</p:column>
+							<p:column headerText="Valor">
+								<h:outputLabel value="#{obj.valor}">
+									<f:convertNumber pattern="#,##0.00" />
+								</h:outputLabel>
+							</p:column>
+							
+							<f:facet name="footer">
+								<h:outputLabel value="#{composicaoSaldoController.labelTotal}" />
+							</f:facet>
+							
+						</p:dataTable>
+
+
+					</p:outputPanel>
+					<p:outputPanel
+						rendered="#{not empty composicaoSaldoController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<t2ti:campoData idComponente="dataInicial" label="Data Inicial"
+							nomeAtributo="#{composicaoSaldoController.dataInicial}"
+							requerido="true" styleClass="t2ti-campo-20" />
+
+						<t2ti:campoData idComponente="dataFinal" label="Data Final"
+							nomeAtributo="#{composicaoSaldoController.dataFinal}"
+							requerido="true" styleClass="t2ti-campo-20" />
+
+						<br />
+
+						<p:commandButton value="Atualizar"
+							actionListener="#{composicaoSaldoController.carregaDados}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+
+						<p:commandButton value="Fechar"
+							actionListener="#{composicaoSaldoController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+</ui:composition>

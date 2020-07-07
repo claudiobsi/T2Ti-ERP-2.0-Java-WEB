@@ -1,0 +1,169 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+    <ui:define name="gridDados">
+        <p:panel style="border: none" header="Folha Ferias Coletivas"
+            rendered="#{!folhaFeriasColetivasController.podeConsultar()}">
+            <p:outputLabel value="Você não possui acesso a esta função" />
+        </p:panel>
+
+        <p:outputPanel id="outputPanelGrid">
+
+            <p:outputPanel rendered="#{folhaFeriasColetivasController.telaGrid}">
+
+                <p:panel id="panelCentroGrid" style="border: none" header="Folha Ferias Coletivas"
+                     rendered="#{folhaFeriasColetivasController.podeConsultar()}">
+
+                    <p:dataTable id="dataTableFolhaFeriasColetivas" var="obj"
+                        value="#{folhaFeriasColetivasController.dataModel}" paginator="true"
+                        rows="10" rowsPerPageTemplate="5,10,15,20"
+                        selection="#{folhaFeriasColetivasController.objetoSelecionado}"
+                        selectionMode="single" resizableColumns="true" lazy="true">
+
+                        <f:facet name="header">
+                            <p:commandButton title="Novo" icon="ui-icon-plus"
+                                actionListener="#{folhaFeriasColetivasController.incluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!folhaFeriasColetivasController.podeInserir()}" />
+                            <p:commandButton process="dataTableFolhaFeriasColetivas" title="Detalhes"
+                                icon="ui-icon-zoomin"
+                                actionListener="#{folhaFeriasColetivasController.alterar()}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+                            <p:commandButton process="dataTableFolhaFeriasColetivas" title="Excluir"
+                                icon="ui-icon-trash"
+                                actionListener="#{folhaFeriasColetivasController.excluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!folhaFeriasColetivasController.podeExcluir()}">
+                                <p:confirm header="Confirmação" message="Confirma Exclusão?"
+                                    icon="ui-icon-alert" />
+                            </p:commandButton>
+                        </f:facet>
+
+                        <p:column headerText="Data Inicio">
+                            <h:outputLabel value="#{obj.dataInicio}" >
+                            	<f:convertDateTime pattern="dd/MM/yyyy"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Data Fim">
+                            <h:outputLabel value="#{obj.dataFim}" >
+                            	<f:convertDateTime pattern="dd/MM/yyyy"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Dias Gozo">
+                            <h:outputLabel value="#{obj.diasGozo}" />
+                        </p:column>
+                        <p:column headerText="Data Pagamento">
+                            <h:outputLabel value="#{obj.dataPagamento}" >
+                            	<f:convertDateTime pattern="dd/MM/yyyy"/>
+                            </h:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+
+    <ui:define name="telaInclusaoAlteracao">
+
+        <p:outputPanel id="outputPanelDetalhe">
+
+            <p:outputPanel rendered="#{!folhaFeriasColetivasController.telaGrid}">
+                <p:panel id="panelCentroDetalhe" style="border: none" header="Folha Ferias Coletivas">
+
+                    <p:outputLabel value="Nenhum registro selecionado."
+                        rendered="#{empty folhaFeriasColetivasController.objeto}" />
+                    <p:commandButton value="Voltar"
+                        actionListener="#{folhaFeriasColetivasController.voltar()}"
+                        update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                        rendered="#{empty folhaFeriasColetivasController.objeto}" />
+
+                    <p:outputPanel rendered="#{not empty folhaFeriasColetivasController.objeto}">
+
+                        <t2ti:campoData styleClass="t2ti-campo-20"
+                            idComponente="folhaFeriasColetivasDataInicio" label="Data Inicio"
+                            nomeAtributo="#{folhaFeriasColetivasController.objeto.dataInicio}" />
+                        <t2ti:campoData styleClass="t2ti-campo-20"
+                            idComponente="folhaFeriasColetivasDataFim" label="Data Fim"
+                            nomeAtributo="#{folhaFeriasColetivasController.objeto.dataFim}" />
+                        <t2ti:campoInteiro styleClass="t2ti-campo-20"
+                            idComponente="folhaFeriasColetivasDiasGozo" label="Dias Gozo"
+                            nomeAtributo="#{folhaFeriasColetivasController.objeto.diasGozo}" />
+                        <t2ti:campoInteiro styleClass="t2ti-campo-40"
+                            idComponente="folhaFeriasColetivasDiasAbono" label="Dias Abono"
+                            nomeAtributo="#{folhaFeriasColetivasController.objeto.diasAbono}" />
+
+						<div  class="t2ti-campo-100" ></div>
+
+                        <t2ti:campoData styleClass="t2ti-campo-40"
+                            idComponente="folhaFeriasColetivasAbonoPecuniarioInicio" label="Abono Pecuniario Inicio"
+                            nomeAtributo="#{folhaFeriasColetivasController.objeto.abonoPecuniarioInicio}" />
+                        <t2ti:campoData styleClass="t2ti-campo-40"
+                            idComponente="folhaFeriasColetivasAbonoPecuniarioFim" label="Abono Pecuniario Fim"
+                            nomeAtributo="#{folhaFeriasColetivasController.objeto.abonoPecuniarioFim}" />
+                        <t2ti:campoData styleClass="t2ti-campo-20"
+                            idComponente="folhaFeriasColetivasDataPagamento" label="Data Pagamento"
+                            nomeAtributo="#{folhaFeriasColetivasController.objeto.dataPagamento}" />
+                    </p:outputPanel>
+                    <p:outputPanel rendered="#{not empty folhaFeriasColetivasController.objeto}" styleClass="t2ti-campo-100" >
+
+                        <p:commandButton value="Incluir"
+                            rendered="#{empty folhaFeriasColetivasController.objeto.id}"
+                            actionListener="#{folhaFeriasColetivasController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!folhaFeriasColetivasController.podeInserir()}" />
+                        <p:commandButton value="Alterar"
+                            rendered="#{not empty folhaFeriasColetivasController.objeto.id}"
+                            actionListener="#{folhaFeriasColetivasController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!folhaFeriasColetivasController.podeAlterar()}" />
+                        <p:commandButton value="Fechar"
+                            actionListener="#{folhaFeriasColetivasController.voltar()}"
+                            update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            process="@this" />
+
+                    </p:outputPanel>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+</ui:composition>

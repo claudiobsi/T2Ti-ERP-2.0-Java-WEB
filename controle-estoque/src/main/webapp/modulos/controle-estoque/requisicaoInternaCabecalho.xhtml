@@ -1,0 +1,261 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Requisicao Interna"
+			rendered="#{!requisicaoInternaCabecalhoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel
+				rendered="#{requisicaoInternaCabecalhoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Requisicao Interna"
+					rendered="#{requisicaoInternaCabecalhoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableRequisicaoInternaCabecalho" var="obj"
+						value="#{requisicaoInternaCabecalhoController.dataModel}"
+						paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{requisicaoInternaCabecalhoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{requisicaoInternaCabecalhoController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!requisicaoInternaCabecalhoController.podeInserir()}" />
+							<p:commandButton process="dataTableRequisicaoInternaCabecalho"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{requisicaoInternaCabecalhoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableRequisicaoInternaCabecalho"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{requisicaoInternaCabecalhoController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!requisicaoInternaCabecalhoController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Colaborador">
+							<h:outputLabel value="#{obj.colaborador.pessoa.nome}" />
+						</p:column>
+						<p:column headerText="Data Requisicao">
+							<h:outputLabel value="#{obj.dataRequisicao}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Situacao">
+							<h:outputLabel
+								value="#{requisicaoInternaCabecalhoController.keyFromValue(requisicaoInternaCabecalhoController.requisicaoInternaSituacao, obj.situacao)}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel
+				rendered="#{!requisicaoInternaCabecalhoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Requisicao Interna">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty requisicaoInternaCabecalhoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{requisicaoInternaCabecalhoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty requisicaoInternaCabecalhoController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty requisicaoInternaCabecalhoController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+
+								<div class="t2ti-campo-80">
+									<p:outputLabel value="Colaborador"
+										for="requisicaoInternaCabecalhoColaborador" />
+									<br />
+									<p:autoComplete id="requisicaoInternaCabecalhoColaborador"
+										value="#{requisicaoInternaCabecalhoController.objeto.colaborador}"
+										completeMethod="#{requisicaoInternaCabecalhoController.getListaColaborador}"
+										var="colaborador" itemLabel="#{colaborador.pessoa.nome}"
+										itemValue="#{colaborador}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="requisicaoInternaCabecalhoDataRequisicao"
+									label="Data Requisicao"
+									nomeAtributo="#{requisicaoInternaCabecalhoController.objeto.dataRequisicao}" />
+								<p:outputPanel
+									rendered="#{not empty requisicaoInternaCabecalhoController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty requisicaoInternaCabecalhoController.objeto.id}"
+										actionListener="#{requisicaoInternaCabecalhoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!requisicaoInternaCabecalhoController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty requisicaoInternaCabecalhoController.objeto.id}"
+										actionListener="#{requisicaoInternaCabecalhoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!requisicaoInternaCabecalhoController.podeAlterar()}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{requisicaoInternaCabecalhoController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+									<p:commandButton value="Deferir"
+										actionListener="#{requisicaoInternaCabecalhoController.deferirRequisicao}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+									<p:commandButton value="Indeferir"
+										actionListener="#{requisicaoInternaCabecalhoController.indeferirRequisicao}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+
+								</p:outputPanel>
+							</p:tab>
+
+							<p:tab title="Itens"
+								disabled="#{empty requisicaoInternaCabecalhoController.objeto.id}">
+								<p:dataTable id="dataTableRequisicaoInternaDetalhe" var="obj"
+									value="#{requisicaoInternaCabecalhoController.objeto.listaRequisicaoInternaDetalhe}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{requisicaoInternaCabecalhoController.requisicaoInternaDetalheSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{requisicaoInternaCabecalhoController.incluirRequisicaoInternaDetalhe}"
+											oncomplete="PF('dialogRequisicaoInternaDetalhe').show()"
+											update=":formOutrasTelas:panelRequisicaoInternaDetalhe,dataTableRequisicaoInternaDetalhe" />
+										<p:commandButton process="dataTableRequisicaoInternaDetalhe"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{requisicaoInternaCabecalhoController.alterarRequisicaoInternaDetalhe}"
+											oncomplete="PF('dialogRequisicaoInternaDetalhe').show()"
+											update=":formOutrasTelas:panelRequisicaoInternaDetalhe,dataTableRequisicaoInternaDetalhe" />
+										<p:commandButton process="dataTableRequisicaoInternaDetalhe"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableRequisicaoInternaDetalhe"
+											actionListener="#{requisicaoInternaCabecalhoController.excluirRequisicaoInternaDetalhe}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Produto">
+										<h:outputLabel value="#{obj.produto.nome}" />
+									</p:column>
+									<p:column headerText="GTIN">
+										<h:outputLabel value="#{obj.produto.gtin}" />
+									</p:column>
+									<p:column headerText="Quantidade">
+										<h:outputLabel value="#{obj.quantidade}">
+											<f:convertNumber pattern="0.000" />
+										</h:outputLabel>
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+						</p:tabView>
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogRequisicaoInternaDetalhe"
+				header="Inclusão/Alteração Item Requisicao Interna"
+				widgetVar="dialogRequisicaoInternaDetalhe" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false" width="800">
+
+				<p:outputPanel id="panelRequisicaoInternaDetalhe">
+					<div class="t2ti-campo-80">
+						<p:outputLabel value="Produto"
+							for="requisicaoInternaDetalheProduto" />
+						<br />
+						<p:autoComplete id="requisicaoInternaDetalheProduto"
+							value="#{requisicaoInternaCabecalhoController.requisicaoInternaDetalhe.produto}"
+							completeMethod="#{requisicaoInternaCabecalhoController.getListaProduto}"
+							var="produto" itemLabel="#{produto.nome}" itemValue="#{produto}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="10"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="requisicaoInternaDetalheQuantidade"
+						label="Quantidade"
+						nomeAtributo="#{requisicaoInternaCabecalhoController.requisicaoInternaDetalhe.quantidade}" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{requisicaoInternaCabecalhoController.salvarRequisicaoInternaDetalhe}"
+						update=":formOutrasTelas:panelRequisicaoInternaDetalhe,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogRequisicaoInternaDetalhe').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogRequisicaoInternaDetalhe').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

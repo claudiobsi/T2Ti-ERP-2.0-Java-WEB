@@ -1,0 +1,165 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+    <ui:define name="gridDados">
+        <p:panel style="border: none" header="Folha Vale Transporte"
+            rendered="#{!folhaValeTransporteController.podeConsultar()}">
+            <p:outputLabel value="Você não possui acesso a esta função" />
+        </p:panel>
+
+        <p:outputPanel id="outputPanelGrid">
+
+            <p:outputPanel rendered="#{folhaValeTransporteController.telaGrid}">
+
+                <p:panel id="panelCentroGrid" style="border: none" header="Folha Vale Transporte"
+                     rendered="#{folhaValeTransporteController.podeConsultar()}">
+
+                    <p:dataTable id="dataTableFolhaValeTransporte" var="obj"
+                        value="#{folhaValeTransporteController.dataModel}" paginator="true"
+                        rows="10" rowsPerPageTemplate="5,10,15,20"
+                        selection="#{folhaValeTransporteController.objetoSelecionado}"
+                        selectionMode="single" resizableColumns="true" lazy="true">
+
+                        <f:facet name="header">
+                            <p:commandButton title="Novo" icon="ui-icon-plus"
+                                actionListener="#{folhaValeTransporteController.incluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!folhaValeTransporteController.podeInserir()}" />
+                            <p:commandButton process="dataTableFolhaValeTransporte" title="Detalhes"
+                                icon="ui-icon-zoomin"
+                                actionListener="#{folhaValeTransporteController.alterar()}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+                            <p:commandButton process="dataTableFolhaValeTransporte" title="Excluir"
+                                icon="ui-icon-trash"
+                                actionListener="#{folhaValeTransporteController.excluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!folhaValeTransporteController.podeExcluir()}">
+                                <p:confirm header="Confirmação" message="Confirma Exclusão?"
+                                    icon="ui-icon-alert" />
+                            </p:commandButton>
+                        </f:facet>
+
+                        <p:column headerText="Colaborador">
+                            <h:outputLabel value="#{obj.colaborador.pessoa.nome}" />
+                        </p:column>
+                        <p:column headerText="Quantidade">
+                            <h:outputLabel value="#{obj.quantidade}" />
+                        </p:column>
+                        <p:column headerText="Itinerario">
+                            <h:outputLabel value="#{obj.empresaTransporteItinerario.nome}" />
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+
+    <ui:define name="telaInclusaoAlteracao">
+
+        <p:outputPanel id="outputPanelDetalhe">
+
+            <p:outputPanel rendered="#{!folhaValeTransporteController.telaGrid}">
+                <p:panel id="panelCentroDetalhe" style="border: none" header="Folha Vale Transporte">
+
+                    <p:outputLabel value="Nenhum registro selecionado."
+                        rendered="#{empty folhaValeTransporteController.objeto}" />
+                    <p:commandButton value="Voltar"
+                        actionListener="#{folhaValeTransporteController.voltar()}"
+                        update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                        rendered="#{empty folhaValeTransporteController.objeto}" />
+
+                    <p:outputPanel rendered="#{not empty folhaValeTransporteController.objeto}">
+
+                        <div class="t2ti-campo-100">
+                            <p:outputLabel value="Colaborador" for="folhaValeTransporteColaborador" />
+                            <br />
+                            <p:autoComplete id="folhaValeTransporteColaborador"
+                                value="#{folhaValeTransporteController.objeto.colaborador}"
+                                completeMethod="#{folhaValeTransporteController.getListaColaborador}" var="colaborador"
+                                itemLabel="#{colaborador.pessoa.nome}" itemValue="#{colaborador}"
+                                converter="com.t2tierp.model.bean.converter.defaultConverter" forceSelection="true"
+                                minQueryLength="3" maxResults="10"
+                                required="true" style="width: 100%"
+                                emptyMessage="Nenhum registro encontrado" />
+                        </div>
+
+                        <div class="t2ti-campo-100">
+                            <p:outputLabel value="Itinerario" for="folhaValeTransporteEmpresaTranspItin" />
+                            <br />
+                            <p:autoComplete id="folhaValeTransporteEmpresaTranspItin"
+                                value="#{folhaValeTransporteController.objeto.empresaTransporteItinerario}"
+                                completeMethod="#{folhaValeTransporteController.getListaEmpresaTransporteItinerario}" var="empresaTranspItin"
+                                itemLabel="#{empresaTranspItin.nome}" itemValue="#{empresaTranspItin}"
+                                converter="com.t2tierp.model.bean.converter.defaultConverter" forceSelection="true"
+                                minQueryLength="3" maxResults="10"
+                                required="true" style="width: 100%"
+                                emptyMessage="Nenhum registro encontrado" />
+                        </div>
+
+                        <t2ti:campoInteiro styleClass="t2ti-campo-20"
+                            idComponente="folhaValeTransporteQuantidade" label="Quantidade"
+                            nomeAtributo="#{folhaValeTransporteController.objeto.quantidade}" />
+                    </p:outputPanel>
+                    <p:outputPanel rendered="#{not empty folhaValeTransporteController.objeto}" styleClass="t2ti-campo-100" >
+
+                        <p:commandButton value="Incluir"
+                            rendered="#{empty folhaValeTransporteController.objeto.id}"
+                            actionListener="#{folhaValeTransporteController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!folhaValeTransporteController.podeInserir()}" />
+                        <p:commandButton value="Alterar"
+                            rendered="#{not empty folhaValeTransporteController.objeto.id}"
+                            actionListener="#{folhaValeTransporteController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!folhaValeTransporteController.podeAlterar()}" />
+                        <p:commandButton value="Fechar"
+                            actionListener="#{folhaValeTransporteController.voltar()}"
+                            update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            process="@this" />
+
+                    </p:outputPanel>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+</ui:composition>

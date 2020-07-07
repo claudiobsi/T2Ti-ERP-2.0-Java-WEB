@@ -1,0 +1,24 @@
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+	<ui:define name="outrasTelas">
+		<p:dialog id="login" visible="true" modal="true" closable="false" header="Acesso ao Sistema(T2Ti ERP)">
+			<h:outputText value="Usuário ou senha incorretos!"
+				rendered="#{param.erro}" style="color: darkred" />
+			<form action="j_spring_security_check" method="post">
+				<h:panelGrid columns="2" cellpadding="5">
+					<h:outputLabel for="j_username" value="Usuário: *" />
+					<p:inputText id="j_username" required="true" />
+					<h:outputLabel for="j_password" value="Senha: * " />
+					<h:inputSecret id="j_password" required="true" style="width: 100%" />
+					<h:commandButton value="Login" />
+				</h:panelGrid>
+			</form>
+		</p:dialog>
+	</ui:define>
+
+</ui:composition>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<h:outputStylesheet name="css/t2tierp.css" />
+	<title><ui:insert name="titulo">Projeto T2Ti ERP</ui:insert></title>
+</h:head>
+<h:body>
+
+	<p:ajaxStatus onstart="PF('statusDialog').show();"
+		onsuccess="PF('statusDialog').hide();" />
+
+	<p:dialog modal="true" widgetVar="statusDialog" header="Processando..."
+		draggable="false" closable="false" resizable="false">
+		<p:graphicImage value="/imagens/ajax_loading_bar.gif" />
+	</p:dialog>
+
+	<p:layout fullPage="true" id="principal" widgetVar="layoutPrincipal">
+
+		<p:layoutUnit id="centro" position="center">
+			<h:form id="form1">
+				<p:confirmDialog global="true" showEffect="fade"
+					hideEffect="explode">
+					<p:commandButton value="Sim" type="button"
+						styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+					<p:commandButton value="Não" type="button"
+						styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+				</p:confirmDialog>
+
+				<p:growl id="growl" life="3000" autoUpdate="true" showDetail="true"/>
+				
+			</h:form>
+
+			<ui:insert name="nfceTelaPrincipal" />
+
+		</p:layoutUnit>
+
+	</p:layout>
+
+	<ui:insert name="efetuaPagamento" />
+	
+	<ui:insert name="danfe" />
+
+	<ui:insert name="identificaCliente" />
+	
+	<ui:insert name="cancelaItem" />
+	
+	<ui:insert name="selecionaVenda" />
+	
+	<ui:insert name="identificaVendedor" />
+	
+	<ui:insert name="descontoAcrescimo" />
+	
+	<ui:insert name="pesquisaProduto" />
+	
+</h:body>
+</html>

@@ -1,0 +1,26 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+	<h:form>
+		<p:accordionPanel activeIndex="-1">
+			<p:tab title="Nota Fiscal Eletrônica">
+				<p:tree id="treeNfe" selectionMode="single"
+					value="#{funcoesController.rootNfe}" var="fun"
+					style="border: none">
+
+					<p:treeNode expandedIcon="ui-icon-folder-open"
+						collapsedIcon="ui-icon-folder-collapsed">
+						<h:outputText value="#{fun.nome}" />
+					</p:treeNode>
+
+					<p:treeNode type="document" icon="ui-icon-document">
+						<h:link outcome="#{fun.pagina}" value="#{fun.nome}" />
+					</p:treeNode>
+				</p:tree>
+			</p:tab>
+		</p:accordionPanel>
+	</h:form>
+</ui:composition>

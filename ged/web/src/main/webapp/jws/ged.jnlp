@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<jnlp spec="1.0+" codebase="http://localhost:8080/ged/jws/" > 
+
+    <application-desc main-class="com.t2tierp.ged.cliente.GedDocumento"/>
+
+    <information>
+        <title>T2Ti ERP</title>
+        <vendor>by T2Ti.COM</vendor>
+        <description>T2Ti ERP</description>
+    </information>
+
+    <security>
+        <all-permissions/>
+    </security>
+
+    <resources>
+        <j2se version="1.8+"/>
+        <jar href="T2TiERPCliente.jar" />
+        <jar href="MmsComputing.jar" />
+        <jar href="gson-2.2.4.jar" />
+        
+        <property name="jnlp.serverURL" value="http://localhost:8080/ged/rest/documento/envio"/>
+        <property name="jnlp.codigoRequisicao" value="$$codigoRequisicao"/>
+        
+    </resources>
+
+</jnlp>

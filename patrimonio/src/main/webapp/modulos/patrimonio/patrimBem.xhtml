@@ -1,0 +1,556 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Patrim Bem"
+			rendered="#{!patrimBemController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{patrimBemController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Patrim Bem"
+					rendered="#{patrimBemController.podeConsultar()}">
+
+					<p:dataTable id="dataTablePatrimBem" var="obj"
+						value="#{patrimBemController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{patrimBemController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{patrimBemController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!patrimBemController.podeInserir()}" />
+							<p:commandButton process="dataTablePatrimBem" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{patrimBemController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTablePatrimBem" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{patrimBemController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!patrimBemController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Numero">
+							<h:outputLabel value="#{obj.numeroNb}" />
+						</p:column>
+						<p:column headerText="Nome">
+							<h:outputLabel value="#{obj.nome}" />
+						</p:column>
+						<p:column headerText="Numero Serie">
+							<h:outputLabel value="#{obj.numeroSerie}" />
+						</p:column>
+						<p:column headerText="Data Aquisicao">
+							<h:outputLabel value="#{obj.dataAquisicao}" />
+						</p:column>
+						<p:column headerText="Estado Conservacao">
+							<h:outputLabel value="#{obj.patrimEstadoConservacao.nome}" />
+						</p:column>
+						<p:column headerText="Setor">
+							<h:outputLabel value="#{obj.setor.nome}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!patrimBemController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Patrim Bem">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty patrimBemController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{patrimBemController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty patrimBemController.objeto}" />
+
+					<p:outputPanel rendered="#{not empty patrimBemController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Patrim Tipo Aquisicao Bem"
+										for="patrimBemPatrimTipoAquisicaoBem" />
+									<br />
+									<p:autoComplete id="patrimBemPatrimTipoAquisicaoBem"
+										value="#{patrimBemController.objeto.patrimTipoAquisicaoBem}"
+										completeMethod="#{patrimBemController.getListaPatrimTipoAquisicaoBem}"
+										var="patrimTipoAquisicaoBem"
+										itemLabel="#{patrimTipoAquisicaoBem.nome}"
+										itemValue="#{patrimTipoAquisicaoBem}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="100"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Patrim Estado Conservacao"
+										for="patrimBemPatrimEstadoConservacao" />
+									<br />
+									<p:autoComplete id="patrimBemPatrimEstadoConservacao"
+										value="#{patrimBemController.objeto.patrimEstadoConservacao}"
+										completeMethod="#{patrimBemController.getListaPatrimEstadoConservacao}"
+										var="patrimEstadoConservacao"
+										itemLabel="#{patrimEstadoConservacao.nome}"
+										itemValue="#{patrimEstadoConservacao}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="100"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Patrim Grupo Bem"
+										for="patrimBemPatrimGrupoBem" />
+									<br />
+									<p:autoComplete id="patrimBemPatrimGrupoBem"
+										value="#{patrimBemController.objeto.patrimGrupoBem}"
+										completeMethod="#{patrimBemController.getListaPatrimGrupoBem}"
+										var="patrimGrupoBem" itemLabel="#{patrimGrupoBem.nome}"
+										itemValue="#{patrimGrupoBem}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="100"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Setor" for="patrimBemSetor" />
+									<br />
+									<p:autoComplete id="patrimBemSetor"
+										value="#{patrimBemController.objeto.setor}"
+										completeMethod="#{patrimBemController.getListaSetor}"
+										var="setor" itemLabel="#{setor.nome}" itemValue="#{setor}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="100"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Fornecedor" for="patrimBemFornecedor" />
+									<br />
+									<p:autoComplete id="patrimBemFornecedor"
+										value="#{patrimBemController.objeto.fornecedor}"
+										completeMethod="#{patrimBemController.getListaFornecedor}"
+										var="fornecedor" itemLabel="#{fornecedor.pessoa.nome}"
+										itemValue="#{fornecedor}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="100"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Colaborador" for="patrimBemColaborador" />
+									<br />
+									<p:autoComplete id="patrimBemColaborador"
+										value="#{patrimBemController.objeto.colaborador}"
+										completeMethod="#{patrimBemController.getListaColaborador}"
+										var="colaborador" itemLabel="#{colaborador.pessoa.nome}"
+										itemValue="#{colaborador}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="100"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="patrimBemNumeroNb" label="Numero Nb"
+									nomeAtributo="#{patrimBemController.objeto.numeroNb}"
+									tamanhoMaximo="20" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="patrimBemNumeroSerie" label="Numero Serie"
+									nomeAtributo="#{patrimBemController.objeto.numeroSerie}"
+									tamanhoMaximo="50" />
+								<t2ti:campoTexto styleClass="t2ti-campo-60"
+									idComponente="patrimBemNome" label="Nome"
+									nomeAtributo="#{patrimBemController.objeto.nome}"
+									tamanhoMaximo="100" />
+
+								<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+									idComponente="patrimBemDescricao" label="Descricao"
+									nomeAtributo="#{patrimBemController.objeto.descricao}" />
+
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="patrimBemDataAquisicao" label="Data Aquisicao"
+									nomeAtributo="#{patrimBemController.objeto.dataAquisicao}" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="patrimBemDataAceite" label="Data Aceite"
+									nomeAtributo="#{patrimBemController.objeto.dataAceite}" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="patrimBemDataCadastro" label="Data Cadastro"
+									nomeAtributo="#{patrimBemController.objeto.dataCadastro}" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="patrimBemDataContabilizado"
+									label="Data Contabilizado"
+									nomeAtributo="#{patrimBemController.objeto.dataContabilizado}" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="patrimBemDataVistoria" label="Data Vistoria"
+									nomeAtributo="#{patrimBemController.objeto.dataVistoria}" />
+
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="patrimBemDataMarcacao" label="Data Marcacao"
+									nomeAtributo="#{patrimBemController.objeto.dataMarcacao}" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="patrimBemDataBaixa" label="Data Baixa"
+									nomeAtributo="#{patrimBemController.objeto.dataBaixa}" />
+								<t2ti:campoData styleClass="t2ti-campo-60"
+									idComponente="patrimBemVencimentoGarantia"
+									label="Vencimento Garantia"
+									nomeAtributo="#{patrimBemController.objeto.vencimentoGarantia}" />
+
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="patrimBemNumeroNotaFiscal" label="Numero NF"
+									nomeAtributo="#{patrimBemController.objeto.numeroNotaFiscal}"
+									tamanhoMaximo="50" />
+								<t2ti:campoTexto styleClass="t2ti-campo-80"
+									idComponente="patrimBemChaveNfe" label="Chave Nfe"
+									nomeAtributo="#{patrimBemController.objeto.chaveNfe}"
+									tamanhoMaximo="44" />
+
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="patrimBemValorOriginal" label="Valor Original"
+									nomeAtributo="#{patrimBemController.objeto.valorOriginal}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="patrimBemValorCompra" label="Valor Compra"
+									nomeAtributo="#{patrimBemController.objeto.valorCompra}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="patrimBemValorAtualizado"
+									label="Valor Atualizado"
+									nomeAtributo="#{patrimBemController.objeto.valorAtualizado}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="patrimBemValorBaixa" label="Valor Baixa"
+									nomeAtributo="#{patrimBemController.objeto.valorBaixa}" />
+
+								<t2ti:separador label="Depreciação" />
+
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="patrimBemDeprecia" label="Deprecia"
+									nomeAtributo="#{patrimBemController.objeto.deprecia}"
+									itens="#{patrimBemController.simNao}" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="patrimBemMetodoDepreciacao"
+									label="Metodo Depreciacao"
+									nomeAtributo="#{patrimBemController.objeto.metodoDepreciacao}"
+									itens="#{patrimBemController.metodoDepreciacao}" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="patrimBemInicioDepreciacao"
+									label="Inicio Depreciacao"
+									nomeAtributo="#{patrimBemController.objeto.inicioDepreciacao}" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="patrimBemUltimaDepreciacao"
+									label="Ultima Depreciacao"
+									nomeAtributo="#{patrimBemController.objeto.ultimaDepreciacao}" />
+
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="patrimBemTipoDepreciacao"
+									label="Tipo Depreciacao"
+									nomeAtributo="#{patrimBemController.objeto.tipoDepreciacao}"
+									itens="#{patrimBemController.tipoDepreciacao}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="patrimBemTaxaAnualDepreciacao"
+									label="Taxa Anual Depreciacao"
+									nomeAtributo="#{patrimBemController.objeto.taxaAnualDepreciacao}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="patrimBemTaxaMensalDepreciacao"
+									label="Taxa Mensal Depreciacao"
+									nomeAtributo="#{patrimBemController.objeto.taxaMensalDepreciacao}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="patrimBemTaxaDepreciacaoAcelerada"
+									label="Taxa Depreciacao Acelerada"
+									nomeAtributo="#{patrimBemController.objeto.taxaDepreciacaoAcelerada}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="patrimBemTaxaDepreciacaoIncentivada"
+									label="Taxa Depreciacao Incentivada"
+									nomeAtributo="#{patrimBemController.objeto.taxaDepreciacaoIncentivada}" />
+
+								<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+									idComponente="patrimBemFuncao" label="Funcao"
+									nomeAtributo="#{patrimBemController.objeto.funcao}" />
+								<p:outputPanel
+									rendered="#{not empty patrimBemController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty patrimBemController.objeto.id}"
+										actionListener="#{patrimBemController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!patrimBemController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty patrimBemController.objeto.id}"
+										actionListener="#{patrimBemController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!patrimBemController.podeAlterar()}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{patrimBemController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+
+								</p:outputPanel>
+							</p:tab>
+
+							<p:tab title="Documentação"
+								disabled="#{empty patrimBemController.objeto.id}">
+								<p:dataTable id="dataTablePatrimDocumentoBem" var="obj"
+									value="#{patrimBemController.objeto.listaPatrimDocumentoBem}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{patrimBemController.patrimDocumentoBemSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{patrimBemController.incluirPatrimDocumentoBem}"
+											oncomplete="PF('dialogPatrimDocumentoBem').show()"
+											update=":formOutrasTelas:panelPatrimDocumentoBem,dataTablePatrimDocumentoBem" />
+										<p:commandButton process="dataTablePatrimDocumentoBem"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{patrimBemController.alterarPatrimDocumentoBem}"
+											oncomplete="PF('dialogPatrimDocumentoBem').show()"
+											update=":formOutrasTelas:panelPatrimDocumentoBem,dataTablePatrimDocumentoBem" />
+										<p:commandButton process="dataTablePatrimDocumentoBem"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTablePatrimDocumentoBem"
+											actionListener="#{patrimBemController.excluirPatrimDocumentoBem}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Nome">
+										<h:outputLabel value="#{obj.nome}" />
+									</p:column>
+									<p:column headerText="Descricao">
+										<h:outputLabel value="#{obj.descricao}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+
+							<p:tab title="Depreciação"
+								disabled="#{empty patrimBemController.objeto.id}">
+								<p:dataTable id="dataTablePatrimDepreciacaoBem" var="obj"
+									value="#{patrimBemController.objeto.listaPatrimDepreciacaoBem}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									resizableColumns="true">
+
+									<f:facet name="header">
+										<p:commandButton title="Calcular Depreciação" icon="ui-icon-calculator"
+											actionListener="#{patrimBemController.calculaDepreciacao}"
+											update="dataTablePatrimDepreciacaoBem" />
+									</f:facet>
+
+									<p:column headerText="Data Depreciacao">
+										<h:outputLabel value="#{obj.dataDepreciacao}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Dias">
+										<h:outputLabel value="#{obj.dias}" />
+									</p:column>
+									<p:column headerText="Taxa">
+										<h:outputLabel value="#{obj.taxa}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Indice">
+										<h:outputLabel value="#{obj.indice}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Valor">
+										<h:outputLabel value="#{obj.valor}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Depreciacao Acumulada">
+										<h:outputLabel value="#{obj.depreciacaoAcumulada}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+
+							<p:tab title="Patrim Movimentacao Bem"
+								disabled="#{empty patrimBemController.objeto.id}">
+								<p:dataTable id="dataTablePatrimMovimentacaoBem" var="obj"
+									value="#{patrimBemController.objeto.listaPatrimMovimentacaoBem}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{patrimBemController.patrimMovimentacaoBemSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{patrimBemController.incluirPatrimMovimentacaoBem}"
+											oncomplete="PF('dialogPatrimMovimentacaoBem').show()"
+											update=":formOutrasTelas3:panelPatrimMovimentacaoBem,dataTablePatrimMovimentacaoBem" />
+										<p:commandButton process="dataTablePatrimMovimentacaoBem"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{patrimBemController.alterarPatrimMovimentacaoBem}"
+											oncomplete="PF('dialogPatrimMovimentacaoBem').show()"
+											update=":formOutrasTelas3:panelPatrimMovimentacaoBem,dataTablePatrimMovimentacaoBem" />
+										<p:commandButton process="dataTablePatrimMovimentacaoBem"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTablePatrimMovimentacaoBem"
+											actionListener="#{patrimBemController.excluirPatrimMovimentacaoBem}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Tipo Movimentacao">
+										<h:outputLabel value="#{obj.patrimTipoMovimentacao.nome}" />
+									</p:column>
+									<p:column headerText="Data Movimentacao">
+										<h:outputLabel value="#{obj.dataMovimentacao}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Responsavel">
+										<h:outputLabel value="#{obj.responsavel}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+						</p:tabView>
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogPatrimDocumentoBem"
+				header="Inclusão/Alteração Documentação"
+				widgetVar="dialogPatrimDocumentoBem" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false" width="800">
+
+				<p:outputPanel id="panelPatrimDocumentoBem">
+					<t2ti:campoTexto styleClass="t2ti-campo-100"
+						idComponente="patrimDocumentoBemNome" label="Nome"
+						nomeAtributo="#{patrimBemController.patrimDocumentoBem.nome}"
+						tamanhoMaximo="50" />
+					<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+						idComponente="patrimDocumentoBemDescricao" label="Descricao"
+						nomeAtributo="#{patrimBemController.patrimDocumentoBem.descricao}" />
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{patrimBemController.salvarPatrimDocumentoBem}"
+						update=":formOutrasTelas:panelPatrimDocumentoBem,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogPatrimDocumentoBem').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogPatrimDocumentoBem').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas3">
+		<h:form id="formOutrasTelas3">
+
+			<p:dialog id="dialogPatrimMovimentacaoBem"
+				header="Inclusão/Alteração Movimentação Bem"
+				widgetVar="dialogPatrimMovimentacaoBem" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false">
+
+				<p:outputPanel id="panelPatrimMovimentacaoBem">
+					<div class="t2ti-campo-80">
+						<p:outputLabel value="Tipo Movimentacao"
+							for="patrimMovimentacaoBemPatrimTipoMovimentacao" />
+						<br />
+						<p:autoComplete id="patrimMovimentacaoBemPatrimTipoMovimentacao"
+							value="#{patrimBemController.patrimMovimentacaoBem.patrimTipoMovimentacao}"
+							completeMethod="#{patrimBemController.getListaPatrimTipoMovimentacao}"
+							var="patrimTipoMovimentacao"
+							itemLabel="#{patrimTipoMovimentacao.nome}"
+							itemValue="#{patrimTipoMovimentacao}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="10"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="patrimMovimentacaoBemDataMovimentacao"
+						label="Data"
+						nomeAtributo="#{patrimBemController.patrimMovimentacaoBem.dataMovimentacao}"
+						requerido="true" />
+
+					<t2ti:campoTexto styleClass="t2ti-campo-100"
+						idComponente="patrimMovimentacaoBemResponsavel"
+						label="Responsavel"
+						nomeAtributo="#{patrimBemController.patrimMovimentacaoBem.responsavel}"
+						tamanhoMaximo="50" requerido="true" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{patrimBemController.salvarPatrimMovimentacaoBem}"
+						update=":formOutrasTelas3:panelPatrimMovimentacaoBem,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogPatrimMovimentacaoBem').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogPatrimMovimentacaoBem').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

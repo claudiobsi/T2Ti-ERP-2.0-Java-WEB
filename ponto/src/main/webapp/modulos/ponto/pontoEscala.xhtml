@@ -1,0 +1,423 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Ponto Escala"
+			rendered="#{!pontoEscalaController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{pontoEscalaController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Ponto Escala"
+					rendered="#{pontoEscalaController.podeConsultar()}">
+
+					<p:dataTable id="dataTablePontoEscala" var="obj"
+						value="#{pontoEscalaController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{pontoEscalaController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{pontoEscalaController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!pontoEscalaController.podeInserir()}" />
+							<p:commandButton process="dataTablePontoEscala" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{pontoEscalaController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTablePontoEscala" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{pontoEscalaController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!pontoEscalaController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Nome">
+							<h:outputLabel value="#{obj.nome}" />
+						</p:column>
+						<p:column headerText="Desconto Hora Dia">
+							<h:outputLabel value="#{obj.descontoHoraDia}" />
+						</p:column>
+						<p:column headerText="Desconto DSR">
+							<h:outputLabel value="#{obj.descontoDsr}" />
+						</p:column>
+						<p:column headerText="Cod Domingo">
+							<h:outputLabel value="#{obj.codigoHorarioDomingo}" />
+						</p:column>
+						<p:column headerText="Cod Segunda">
+							<h:outputLabel value="#{obj.codigoHorarioSegunda}" />
+						</p:column>
+						<p:column headerText="Cod Terca">
+							<h:outputLabel value="#{obj.codigoHorarioTerca}" />
+						</p:column>
+						<p:column headerText="Cod Quarta">
+							<h:outputLabel value="#{obj.codigoHorarioQuarta}" />
+						</p:column>
+						<p:column headerText="Cod Quinta">
+							<h:outputLabel value="#{obj.codigoHorarioQuinta}" />
+						</p:column>
+						<p:column headerText="Cod Sexta">
+							<h:outputLabel value="#{obj.codigoHorarioSexta}" />
+						</p:column>
+						<p:column headerText="Cod Sabado">
+							<h:outputLabel value="#{obj.codigoHorarioSabado}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!pontoEscalaController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Ponto Escala">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty pontoEscalaController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{pontoEscalaController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty pontoEscalaController.objeto}" />
+
+					<p:outputPanel rendered="#{not empty pontoEscalaController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+								<t2ti:campoTexto styleClass="t2ti-campo-60"
+									idComponente="pontoEscalaNome" label="Nome"
+									nomeAtributo="#{pontoEscalaController.objeto.nome}"
+									tamanhoMaximo="50" />
+								<t2ti:campoMascara styleClass="t2ti-campo-20"
+									idComponente="pontoEscalaDescontoHoraDia"
+									label="Desconto Hora Dia"
+									nomeAtributo="#{pontoEscalaController.objeto.descontoHoraDia}"
+									mascara="99:99:99" />
+								<t2ti:campoMascara styleClass="t2ti-campo-20"
+									idComponente="pontoEscalaDescontoDsr" label="Desconto Dsr"
+									nomeAtributo="#{pontoEscalaController.objeto.descontoDsr}"
+									mascara="99:99:99" />
+
+
+								<div class="t2ti-campo-100">
+									<p:outputLabel value="Codigo Horario Domingo"
+										for="pontoEscalaCodigoHorarioDomingo" />
+									<br />
+									<p:autoComplete id="pontoEscalaCodigoHorarioDomingo"
+										value="#{pontoEscalaController.horarioDomingo}"
+										completeMethod="#{pontoEscalaController.getListaPontoHorario}"
+										var="codigoHorarioDomingo"
+										itemLabel="#{codigoHorarioDomingo.nome}"
+										itemValue="#{codigoHorarioDomingo}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										style="width: 58%; padding-right: 2%;"
+										emptyMessage="Nenhum registro encontrado">
+
+										<p:ajax event="itemSelect"
+											listener="#{pontoEscalaController.selecionaHorarioDomingo}"
+											update="CodigoHorarioDomingo" />
+
+									</p:autoComplete>
+									<p:inputText id="CodigoHorarioDomingo"
+										value="#{pontoEscalaController.objeto.codigoHorarioDomingo}"
+										style="width: 38%" readonly="true" />
+								</div>
+
+								<div class="t2ti-campo-100">
+									<p:outputLabel value="Codigo Horario Segunda"
+										for="pontoEscalaCodigoHorarioSegunda" />
+									<br />
+									<p:autoComplete id="pontoEscalaCodigoHorarioSegunda"
+										value="#{pontoEscalaController.horarioSegunda}"
+										completeMethod="#{pontoEscalaController.getListaPontoHorario}"
+										var="codigoHorarioSegunda"
+										itemLabel="#{codigoHorarioSegunda.nome}"
+										itemValue="#{codigoHorarioSegunda}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										style="width: 58%; padding-right: 2%;"
+										emptyMessage="Nenhum registro encontrado">
+
+										<p:ajax event="itemSelect"
+											listener="#{pontoEscalaController.selecionaHorarioSegunda}"
+											update="CodigoHorarioSegunda, CodigoHorarioTerca, CodigoHorarioQuarta, CodigoHorarioQuinta, CodigoHorarioSexta" />
+
+									</p:autoComplete>
+									<p:inputText id="CodigoHorarioSegunda"
+										value="#{pontoEscalaController.objeto.codigoHorarioSegunda}"
+										style="width: 38%" readonly="true" />
+								</div>
+
+								<div class="t2ti-campo-100">
+									<p:outputLabel value="Codigo Horario Terca"
+										for="pontoEscalaCodigoHorarioTerca" />
+									<br />
+									<p:autoComplete id="pontoEscalaCodigoHorarioTerca"
+										value="#{pontoEscalaController.horarioTerca}"
+										completeMethod="#{pontoEscalaController.getListaPontoHorario}"
+										var="codigoHorarioTerca"
+										itemLabel="#{codigoHorarioTerca.nome}"
+										itemValue="#{codigoHorarioTerca}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										style="width: 58%; padding-right: 2%;"
+										emptyMessage="Nenhum registro encontrado">
+
+										<p:ajax event="itemSelect"
+											listener="#{pontoEscalaController.selecionaHorarioTerca}"
+											update="CodigoHorarioTerca" />
+
+									</p:autoComplete>
+									<p:inputText id="CodigoHorarioTerca"
+										value="#{pontoEscalaController.objeto.codigoHorarioTerca}"
+										style="width: 38%" readonly="true" />
+								</div>
+
+								<div class="t2ti-campo-100">
+									<p:outputLabel value="Codigo Horario Quarta"
+										for="pontoEscalaCodigoHorarioQuarta" />
+									<br />
+									<p:autoComplete id="pontoEscalaCodigoHorarioQuarta"
+										value="#{pontoEscalaController.horarioQuarta}"
+										completeMethod="#{pontoEscalaController.getListaPontoHorario}"
+										var="codigoHorarioQuarta"
+										itemLabel="#{codigoHorarioQuarta.nome}"
+										itemValue="#{codigoHorarioQuarta}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										style="width: 58%; padding-right: 2%;"
+										emptyMessage="Nenhum registro encontrado">
+
+										<p:ajax event="itemSelect"
+											listener="#{pontoEscalaController.selecionaHorarioQuarta}"
+											update="CodigoHorarioQuarta" />
+
+									</p:autoComplete>
+									<p:inputText id="CodigoHorarioQuarta"
+										value="#{pontoEscalaController.objeto.codigoHorarioQuarta}"
+										style="width: 38%" readonly="true" />
+								</div>
+
+								<div class="t2ti-campo-100">
+									<p:outputLabel value="Codigo Horario Quinta"
+										for="pontoEscalaCodigoHorarioQuinta" />
+									<br />
+									<p:autoComplete id="pontoEscalaCodigoHorarioQuinta"
+										value="#{pontoEscalaController.horarioQuinta}"
+										completeMethod="#{pontoEscalaController.getListaPontoHorario}"
+										var="codigoHorarioQuinta"
+										itemLabel="#{codigoHorarioQuinta.nome}"
+										itemValue="#{codigoHorarioQuinta}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										style="width: 58%; padding-right: 2%;"
+										emptyMessage="Nenhum registro encontrado">
+
+										<p:ajax event="itemSelect"
+											listener="#{pontoEscalaController.selecionaHorarioQuinta}"
+											update="CodigoHorarioQuinta" />
+
+									</p:autoComplete>
+									<p:inputText id="CodigoHorarioQuinta"
+										value="#{pontoEscalaController.objeto.codigoHorarioQuinta}"
+										style="width: 38%" readonly="true" />
+								</div>
+
+								<div class="t2ti-campo-100">
+									<p:outputLabel value="Codigo Horario Sexta"
+										for="pontoEscalaCodigoHorarioSexta" />
+									<br />
+									<p:autoComplete id="pontoEscalaCodigoHorarioSexta"
+										value="#{pontoEscalaController.horarioSexta}"
+										completeMethod="#{pontoEscalaController.getListaPontoHorario}"
+										var="codigoHorarioSexta"
+										itemLabel="#{codigoHorarioSexta.nome}"
+										itemValue="#{codigoHorarioSexta}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										style="width: 58%; padding-right: 2%;"
+										emptyMessage="Nenhum registro encontrado">
+
+										<p:ajax event="itemSelect"
+											listener="#{pontoEscalaController.selecionaHorarioSexta}"
+											update="CodigoHorarioSexta" />
+
+									</p:autoComplete>
+									<p:inputText id="CodigoHorarioSexta"
+										value="#{pontoEscalaController.objeto.codigoHorarioSexta}"
+										style="width: 38%" readonly="true" />
+								</div>
+
+								<div class="t2ti-campo-100">
+									<p:outputLabel value="Codigo Horario Sabado"
+										for="pontoEscalaCodigoHorarioSabado" />
+									<br />
+									<p:autoComplete id="pontoEscalaCodigoHorarioSabado"
+										value="#{pontoEscalaController.horarioSbado}"
+										completeMethod="#{pontoEscalaController.getListaPontoHorario}"
+										var="codigoHorarioSabado"
+										itemLabel="#{codigoHorarioSabado.nome}"
+										itemValue="#{codigoHorarioSabado}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										style="width: 58%; padding-right: 2%;"
+										emptyMessage="Nenhum registro encontrado">
+
+										<p:ajax event="itemSelect"
+											listener="#{pontoEscalaController.selecionaHorarioSabado}"
+											update="CodigoHorarioSabado" />
+
+									</p:autoComplete>
+									<p:inputText id="CodigoHorarioSabado"
+										value="#{pontoEscalaController.objeto.codigoHorarioSabado}"
+										style="width: 38%" readonly="true" />
+								</div>
+
+								<p:outputPanel
+									rendered="#{not empty pontoEscalaController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty pontoEscalaController.objeto.id}"
+										actionListener="#{pontoEscalaController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!pontoEscalaController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty pontoEscalaController.objeto.id}"
+										actionListener="#{pontoEscalaController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!pontoEscalaController.podeAlterar()}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{pontoEscalaController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+
+								</p:outputPanel>
+							</p:tab>
+
+							<p:tab title="Turmas"
+								disabled="#{empty pontoEscalaController.objeto.id}">
+								<p:dataTable id="dataTablePontoTurma" var="obj"
+									value="#{pontoEscalaController.objeto.listaPontoTurma}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{pontoEscalaController.pontoTurmaSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{pontoEscalaController.incluirPontoTurma}"
+											oncomplete="PF('dialogPontoTurma').show()"
+											update=":formOutrasTelas:panelPontoTurma,dataTablePontoTurma" />
+										<p:commandButton process="dataTablePontoTurma"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{pontoEscalaController.alterarPontoTurma}"
+											oncomplete="PF('dialogPontoTurma').show()"
+											update=":formOutrasTelas:panelPontoTurma,dataTablePontoTurma" />
+										<p:commandButton process="dataTablePontoTurma" title="Excluir"
+											icon="ui-icon-trash" update="dataTablePontoTurma"
+											actionListener="#{pontoEscalaController.excluirPontoTurma}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Codigo">
+										<h:outputLabel value="#{obj.codigo}" />
+									</p:column>
+									<p:column headerText="Nome">
+										<h:outputLabel value="#{obj.nome}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+						</p:tabView>
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogPontoTurma" header="Inclusão/Alteração Turma"
+				widgetVar="dialogPontoTurma" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="false" width="600px">
+
+				<p:outputPanel id="panelPontoTurma">
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="pontoTurmaCodigo" label="Codigo"
+						nomeAtributo="#{pontoEscalaController.pontoTurma.codigo}"
+						tamanhoMaximo="5" />
+					<t2ti:campoTexto styleClass="t2ti-campo-80"
+						idComponente="pontoTurmaNome" label="Nome"
+						nomeAtributo="#{pontoEscalaController.pontoTurma.nome}"
+						tamanhoMaximo="50" />
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{pontoEscalaController.salvarPontoTurma}"
+						update=":formOutrasTelas:panelPontoTurma,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogPontoTurma').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogPontoTurma').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

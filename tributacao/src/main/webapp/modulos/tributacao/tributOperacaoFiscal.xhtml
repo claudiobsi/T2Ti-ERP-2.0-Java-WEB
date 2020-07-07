@@ -1,0 +1,178 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Tribut Operacao Fiscal"
+			rendered="#{!tributOperacaoFiscalController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{tributOperacaoFiscalController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Tribut Operacao Fiscal"
+					rendered="#{tributOperacaoFiscalController.podeConsultar()}">
+
+					<p:dataTable id="dataTableTributOperacaoFiscal" var="obj"
+						value="#{tributOperacaoFiscalController.dataModel}"
+						paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{tributOperacaoFiscalController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{tributOperacaoFiscalController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!tributOperacaoFiscalController.podeInserir()}" />
+							<p:commandButton process="dataTableTributOperacaoFiscal"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{tributOperacaoFiscalController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableTributOperacaoFiscal"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{tributOperacaoFiscalController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!tributOperacaoFiscalController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Descricao">
+							<h:outputLabel value="#{obj.descricao}" />
+						</p:column>
+						<p:column headerText="Descricao na Nota Fiscal">
+							<h:outputLabel value="#{obj.descricaoNaNf}" />
+						</p:column>
+						<p:column headerText="CFOP">
+							<h:outputLabel value="#{obj.cfop}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!tributOperacaoFiscalController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Tribut Operacao Fiscal">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty tributOperacaoFiscalController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{tributOperacaoFiscalController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty tributOperacaoFiscalController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty tributOperacaoFiscalController.objeto}">
+
+						<div class="t2ti-campo-100">
+							<p:outputLabel value="CFOP" for="tributOperacaoFiscalCfop" />
+							<br />
+							<p:autoComplete id="tributOperacaoFiscalCfop"
+								value="#{tributOperacaoFiscalController.cfop}"
+								completeMethod="#{tributOperacaoFiscalController.getListaCfop}"
+								var="cfop" itemLabel="#{cfop.descricao}" itemValue="#{cfop}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="10"
+								style="width: 58%; padding-right: 2%;"
+								emptyMessage="Nenhum registro encontrado">
+
+								<p:ajax event="itemSelect"
+									listener="#{tributOperacaoFiscalController.selecionaCFOP}"
+									update="CFOP" />
+
+							</p:autoComplete>
+							<p:inputText id="CFOP"
+								value="#{tributOperacaoFiscalController.objeto.cfop}"
+								style="width: 38%" readonly="true" />
+
+						</div>
+
+						<t2ti:campoTexto styleClass="t2ti-campo-100"
+							idComponente="tributOperacaoFiscalDescricao" label="Descricao"
+							nomeAtributo="#{tributOperacaoFiscalController.objeto.descricao}"
+							tamanhoMaximo="100" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-100"
+							idComponente="tributOperacaoFiscalDescricaoNaNf"
+							label="Descricao na Nota Fiscal"
+							nomeAtributo="#{tributOperacaoFiscalController.objeto.descricaoNaNf}"
+							tamanhoMaximo="100" />
+
+						<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+							idComponente="tributOperacaoFiscalObservacao" label="Observacao"
+							nomeAtributo="#{tributOperacaoFiscalController.objeto.observacao}" />
+					</p:outputPanel>
+					<p:outputPanel
+						rendered="#{not empty tributOperacaoFiscalController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty tributOperacaoFiscalController.objeto.id}"
+							actionListener="#{tributOperacaoFiscalController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!tributOperacaoFiscalController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty tributOperacaoFiscalController.objeto.id}"
+							actionListener="#{tributOperacaoFiscalController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!tributOperacaoFiscalController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{tributOperacaoFiscalController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+</ui:composition>

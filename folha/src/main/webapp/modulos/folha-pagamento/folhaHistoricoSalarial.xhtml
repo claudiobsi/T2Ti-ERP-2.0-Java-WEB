@@ -1,0 +1,188 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+    <ui:define name="gridDados">
+        <p:panel style="border: none" header="Folha Historico Salarial"
+            rendered="#{!folhaHistoricoSalarialController.podeConsultar()}">
+            <p:outputLabel value="Você não possui acesso a esta função" />
+        </p:panel>
+
+        <p:outputPanel id="outputPanelGrid">
+
+            <p:outputPanel rendered="#{folhaHistoricoSalarialController.telaGrid}">
+
+                <p:panel id="panelCentroGrid" style="border: none" header="Folha Historico Salarial"
+                     rendered="#{folhaHistoricoSalarialController.podeConsultar()}">
+
+                    <p:dataTable id="dataTableFolhaHistoricoSalarial" var="obj"
+                        value="#{folhaHistoricoSalarialController.dataModel}" paginator="true"
+                        rows="10" rowsPerPageTemplate="5,10,15,20"
+                        selection="#{folhaHistoricoSalarialController.objetoSelecionado}"
+                        selectionMode="single" resizableColumns="true" lazy="true">
+
+                        <f:facet name="header">
+                            <p:commandButton title="Novo" icon="ui-icon-plus"
+                                actionListener="#{folhaHistoricoSalarialController.incluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!folhaHistoricoSalarialController.podeInserir()}" />
+                            <p:commandButton process="dataTableFolhaHistoricoSalarial" title="Detalhes"
+                                icon="ui-icon-zoomin"
+                                actionListener="#{folhaHistoricoSalarialController.alterar()}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+                            <p:commandButton process="dataTableFolhaHistoricoSalarial" title="Excluir"
+                                icon="ui-icon-trash"
+                                actionListener="#{folhaHistoricoSalarialController.excluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!folhaHistoricoSalarialController.podeExcluir()}">
+                                <p:confirm header="Confirmação" message="Confirma Exclusão?"
+                                    icon="ui-icon-alert" />
+                            </p:commandButton>
+                        </f:facet>
+
+                        <p:column headerText="Colaborador">
+                            <h:outputLabel value="#{obj.colaborador.pessoa.nome}" />
+                        </p:column>
+                        <p:column headerText="Competencia">
+                            <h:outputLabel value="#{obj.competencia}" />
+                        </p:column>
+                        <p:column headerText="Salario Atual">
+                            <h:outputLabel value="#{obj.salarioAtual}" >
+                            	<f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="% Aumento">
+                            <h:outputLabel value="#{obj.percentualAumento}" >
+                            	<f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Salario Novo">
+                            <h:outputLabel value="#{obj.salarioNovo}" >
+                            	<f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Valido A Partir">
+                            <h:outputLabel value="#{obj.validoAPartir}" >
+                            	<f:convertDateTime pattern="dd/MM/yyyy"/>
+                            </h:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+
+    <ui:define name="telaInclusaoAlteracao">
+
+        <p:outputPanel id="outputPanelDetalhe">
+
+            <p:outputPanel rendered="#{!folhaHistoricoSalarialController.telaGrid}">
+                <p:panel id="panelCentroDetalhe" style="border: none" header="Folha Historico Salarial">
+
+                    <p:outputLabel value="Nenhum registro selecionado."
+                        rendered="#{empty folhaHistoricoSalarialController.objeto}" />
+                    <p:commandButton value="Voltar"
+                        actionListener="#{folhaHistoricoSalarialController.voltar()}"
+                        update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                        rendered="#{empty folhaHistoricoSalarialController.objeto}" />
+
+                    <p:outputPanel rendered="#{not empty folhaHistoricoSalarialController.objeto}">
+
+                        <div class="t2ti-campo-100">
+                            <p:outputLabel value="Colaborador" for="folhaHistoricoSalarialColaborador" />
+                            <br />
+                            <p:autoComplete id="folhaHistoricoSalarialColaborador"
+                                value="#{folhaHistoricoSalarialController.objeto.colaborador}"
+                                completeMethod="#{folhaHistoricoSalarialController.getListaColaborador}" var="colaborador"
+                                itemLabel="#{colaborador.pessoa.nome}" itemValue="#{colaborador}"
+                                converter="com.t2tierp.model.bean.converter.defaultConverter" forceSelection="true"
+                                minQueryLength="3" maxResults="10"
+                                required="true" style="width: 100%"
+                                emptyMessage="Nenhum registro encontrado" />
+                        </div>
+
+                        <t2ti:campoMascara styleClass="t2ti-campo-20"
+                            idComponente="folhaHistoricoSalarialCompetencia" label="Competencia"
+                            nomeAtributo="#{folhaHistoricoSalarialController.objeto.competencia}"
+                            mascara="99/9999" />
+                        <t2ti:campoDecimal styleClass="t2ti-campo-20"
+                            idComponente="folhaHistoricoSalarialSalarioAtual" label="Salario Atual"
+                            nomeAtributo="#{folhaHistoricoSalarialController.objeto.salarioAtual}" />
+                        <t2ti:campoDecimal styleClass="t2ti-campo-20"
+                            idComponente="folhaHistoricoSalarialPercentualAumento" label="% Aumento"
+                            nomeAtributo="#{folhaHistoricoSalarialController.objeto.percentualAumento}" />
+                        <t2ti:campoDecimal styleClass="t2ti-campo-20"
+                            idComponente="folhaHistoricoSalarialSalarioNovo" label="Salario Novo"
+                            nomeAtributo="#{folhaHistoricoSalarialController.objeto.salarioNovo}" />
+                        <t2ti:campoMascara styleClass="t2ti-campo-20"
+                            idComponente="folhaHistoricoSalarialValidoAPartir" label="Valido A Partir"
+                            nomeAtributo="#{folhaHistoricoSalarialController.objeto.validoAPartir}"
+                            mascara="99/9999" />
+                        
+                        <t2ti:campoTexto styleClass="t2ti-campo-100"
+                            idComponente="folhaHistoricoSalarialMotivo" label="Motivo"
+                            nomeAtributo="#{folhaHistoricoSalarialController.objeto.motivo}"
+                            tamanhoMaximo="100" />
+                    </p:outputPanel>
+                    <p:outputPanel rendered="#{not empty folhaHistoricoSalarialController.objeto}" styleClass="t2ti-campo-100" >
+
+                        <p:commandButton value="Incluir"
+                            rendered="#{empty folhaHistoricoSalarialController.objeto.id}"
+                            actionListener="#{folhaHistoricoSalarialController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!folhaHistoricoSalarialController.podeInserir()}" />
+                        <p:commandButton value="Alterar"
+                            rendered="#{not empty folhaHistoricoSalarialController.objeto.id}"
+                            actionListener="#{folhaHistoricoSalarialController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!folhaHistoricoSalarialController.podeAlterar()}" />
+                        <p:commandButton value="Fechar"
+                            actionListener="#{folhaHistoricoSalarialController.voltar()}"
+                            update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            process="@this" />
+
+                    </p:outputPanel>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+</ui:composition>

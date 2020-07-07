@@ -1,0 +1,506 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Lancamento Receber"
+			rendered="#{!finLancamentoReceberController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{finLancamentoReceberController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Lancamento Receber"
+					rendered="#{finLancamentoReceberController.podeConsultar()}">
+
+					<p:dataTable id="dataTableFinLancamentoReceber" var="obj"
+						value="#{finLancamentoReceberController.dataModel}"
+						paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{finLancamentoReceberController.lancamentosSelecionados}"
+						selectionMode="multiple" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{finLancamentoReceberController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!finLancamentoReceberController.podeInserir()}" />
+							<p:commandButton process="dataTableFinLancamentoReceber"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{finLancamentoReceberController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableFinLancamentoReceber"
+								title="Mesclar Lançamentos" icon="ui-icon-copy"
+								actionListener="#{finLancamentoReceberController.mesclarLancamentos()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe">
+								<p:confirm header="Confirmação" message="Confirma Mesclagem?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+							<p:commandButton process="dataTableFinLancamentoReceber"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{finLancamentoReceberController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!finLancamentoReceberController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Doc. Origem">
+							<h:outputLabel value="#{obj.finDocumentoOrigem.descricao}" />
+						</p:column>
+						<p:column headerText="Cliente">
+							<h:outputLabel value="#{obj.cliente.pessoa.nome}" />
+						</p:column>
+						<p:column headerText="Qtde Parcela">
+							<h:outputLabel value="#{obj.quantidadeParcela}" />
+						</p:column>
+						<p:column headerText="Valor A Receber">
+							<h:outputLabel value="#{obj.valorAReceber}">
+								<f:convertNumber pattern="#,##0.00" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Data Lancamento">
+							<h:outputLabel value="#{obj.dataLancamento}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="1º Vencimento">
+							<h:outputLabel value="#{obj.primeiroVencimento}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Mesclado">
+							<h:outputLabel value="#{obj.mescladoPara}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!finLancamentoReceberController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Lancamento Receber">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty finLancamentoReceberController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{finLancamentoReceberController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty finLancamentoReceberController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty finLancamentoReceberController.objeto}">
+
+						<p:tabView id="telasCadastroPessoa" style="border: 0px;">
+							<p:tab title="Dados Principais">
+
+								<div class="t2ti-campo-100">
+									<p:outputLabel value="Cliente"
+										for="finLancamentoReceberCliente" />
+									<br />
+									<p:autoComplete id="finLancamentoReceberCliente"
+										value="#{finLancamentoReceberController.objeto.cliente}"
+										completeMethod="#{finLancamentoReceberController.getListaCliente}"
+										var="cliente" itemLabel="#{cliente.pessoa.nome}"
+										itemValue="#{cliente}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<div class="t2ti-campo-60">
+									<p:outputLabel value="Documento Origem"
+										for="finLancamentoReceberFinDocumentoOrigem" />
+									<br />
+									<p:autoComplete id="finLancamentoReceberFinDocumentoOrigem"
+										value="#{finLancamentoReceberController.objeto.finDocumentoOrigem}"
+										completeMethod="#{finLancamentoReceberController.getListaFinDocumentoOrigem}"
+										var="finDocumentoOrigem"
+										itemLabel="#{finDocumentoOrigem.descricao}"
+										itemValue="#{finDocumentoOrigem}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="100"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+								<t2ti:campoTexto styleClass="t2ti-campo-40"
+									idComponente="finLancamentoReceberNumeroDocumento"
+									label="Numero Documento"
+									nomeAtributo="#{finLancamentoReceberController.objeto.numeroDocumento}"
+									tamanhoMaximo="50" requerido="true" />
+
+
+								<t2ti:campoInteiro styleClass="t2ti-campo-20"
+									idComponente="finLancamentoReceberQuantidadeParcela"
+									label="Qtde Parcela" requerido="true"
+									nomeAtributo="#{finLancamentoReceberController.objeto.quantidadeParcela}" />
+								<t2ti:campoInteiro styleClass="t2ti-campo-40"
+									idComponente="finLancamentoReceberIntervaloEntreParcelas"
+									label="Intervalo Entre Parcelas" requerido="true"
+									nomeAtributo="#{finLancamentoReceberController.objeto.intervaloEntreParcelas}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="finLancamentoReceberValorTotal"
+									label="Valor Total" requerido="true"
+									nomeAtributo="#{finLancamentoReceberController.objeto.valorTotal}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="finLancamentoReceberValorAReceber"
+									label="Valor A Receber" requerido="true"
+									nomeAtributo="#{finLancamentoReceberController.objeto.valorAReceber}" />
+
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="finLancamentoReceberDataLancamento"
+									label="Data Lancamento" requerido="true"
+									nomeAtributo="#{finLancamentoReceberController.objeto.dataLancamento}" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="finLancamentoReceberPrimeiroVencimento"
+									label="Primeiro Vencimento" requerido="true"
+									nomeAtributo="#{finLancamentoReceberController.objeto.primeiroVencimento}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="finLancamentoReceberTaxaComissao"
+									label="Taxa Comissao"
+									nomeAtributo="#{finLancamentoReceberController.objeto.taxaComissao}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="finLancamentoReceberValorComissao"
+									label="Valor Comissao"
+									nomeAtributo="#{finLancamentoReceberController.objeto.valorComissao}" />
+
+								<t2ti:separador label="Dados para geração das parcelas" />
+
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Conta Caixa"
+										for="finLancamentoReceberContaCaixa" />
+									<br />
+									<p:autoComplete id="finLancamentoReceberContaCaixa"
+										value="#{finLancamentoReceberController.contaCaixa}"
+										completeMethod="#{finLancamentoReceberController.getListaContaCaixa}"
+										var="contaCaixa" itemLabel="#{contaCaixa.descricao}"
+										itemValue="#{contaCaixa}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="5"
+										required="#{empty finLancamentoReceberController.objeto.id}"
+										style="width: 100%" emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Natureza Financeira"
+										for="finLancamentoReceberNaturezaFinanceira" />
+									<br />
+									<p:autoComplete id="finLancamentoReceberNaturezaFinanceira"
+										value="#{finLancamentoReceberController.naturezaFinanceira}"
+										completeMethod="#{finLancamentoReceberController.getListaNaturezaFinanceira}"
+										var="naturezaFinanceira"
+										itemLabel="#{naturezaFinanceira.descricao}"
+										itemValue="#{naturezaFinanceira}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="5"
+										required="#{empty finLancamentoReceberController.objeto.id}"
+										style="width: 100%" emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<p:outputPanel
+									rendered="#{not empty finLancamentoReceberController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty finLancamentoReceberController.objeto.id}"
+										actionListener="#{finLancamentoReceberController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!finLancamentoReceberController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty finLancamentoReceberController.objeto.id}"
+										actionListener="#{finLancamentoReceberController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!finLancamentoReceberController.podeAlterar()}" />
+									<p:commandButton value="Gerar Boleto"
+										actionListener="#{finLancamentoReceberController.gerarBoleto()}"
+										ajax="false"
+										disabled="#{empty finLancamentoReceberController.objeto.id}" />
+									<p:commandButton value="Gerar Arquivo Remessa"
+										actionListener="#{finLancamentoReceberController.gerarRemessa()}"
+										ajax="false"
+										disabled="#{empty finLancamentoReceberController.objeto.id}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{finLancamentoReceberController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+
+								</p:outputPanel>
+							</p:tab>
+							<p:tab title="Parcelas"
+								disabled="#{empty finLancamentoReceberController.objeto.id}">
+
+								<p:dataTable id="dataTableFinParcelaReceber" var="obj"
+									value="#{finLancamentoReceberController.objeto.listaFinParcelaReceber}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{finLancamentoReceberController.finParcelaReceberSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton process="dataTableFinParcelaReceber"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{finLancamentoReceberController.alterarFinParcelaReceber}"
+											oncomplete="PF('dialogFinParcelaReceber').show()"
+											update=":formOutrasTelas:panelFinParcelaReceber,dataTableFinParcelaReceber" />
+									</f:facet>
+
+									<p:column headerText="Numero Parcela">
+										<h:outputLabel value="#{obj.numeroParcela}" />
+									</p:column>
+									<p:column headerText="Data Emissao">
+										<h:outputLabel value="#{obj.dataEmissao}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Data Vencimento">
+										<h:outputLabel value="#{obj.dataVencimento}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Desconto Ate">
+										<h:outputLabel value="#{obj.descontoAte}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Valor">
+										<h:outputLabel value="#{obj.valor}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Status">
+										<h:outputLabel value="#{obj.finStatusParcela.descricao}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+							<p:tab title="Natureza Financeira"
+								disabled="#{empty finLancamentoReceberController.objeto.id}">
+								<p:dataTable id="dataTableFinLctoReceberNtFinanceira" var="obj"
+									value="#{finLancamentoReceberController.objeto.listaFinLctoReceberNtFinanceira}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{finLancamentoReceberController.finLctoReceberNtFinanceiraSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{finLancamentoReceberController.incluirFinLctoReceberNtFinanceira}"
+											oncomplete="PF('dialogFinLctoReceberNtFinanceira').show()"
+											update=":formOutrasTelas2:panelFinLctoReceberNtFinanceira,dataTableFinLctoReceberNtFinanceira" />
+										<p:commandButton process="dataTableFinLctoReceberNtFinanceira"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{finLancamentoReceberController.alterarFinLctoReceberNtFinanceira}"
+											oncomplete="PF('dialogFinLctoReceberNtFinanceira').show()"
+											update=":formOutrasTelas2:panelFinLctoReceberNtFinanceira,dataTableFinLctoReceberNtFinanceira" />
+										<p:commandButton process="dataTableFinLctoReceberNtFinanceira"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableFinLctoReceberNtFinanceira"
+											actionListener="#{finLancamentoReceberController.excluirFinLctoReceberNtFinanceira}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Natureza Financeira">
+										<h:outputLabel value="#{obj.naturezaFinanceira.descricao}" />
+									</p:column>
+									<p:column headerText="Data Inclusao">
+										<h:outputLabel value="#{obj.dataInclusao}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Valor">
+										<h:outputLabel value="#{obj.valor}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+						</p:tabView>
+
+					</p:outputPanel>
+
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogFinParcelaReceber"
+				header="Inclusão/Alteração Fin Parcela Receber"
+				widgetVar="dialogFinParcelaReceber" showEffect="slide" width="800"
+				hideEffect="slide" resizable="true" modal="true" closable="false">
+
+				<p:outputPanel id="panelFinParcelaReceber">
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="finParcelaReceberNumeroParcela" label="Nr Parcela"
+						somenteLeitura="true"
+						nomeAtributo="#{finLancamentoReceberController.finParcelaReceber.numeroParcela}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="finParcelaReceberDataEmissao" label="Data Emissao"
+						somenteLeitura="true"
+						nomeAtributo="#{finLancamentoReceberController.finParcelaReceber.dataEmissao}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="finParcelaReceberDataVencimento"
+						label="Data Vencimento"
+						nomeAtributo="#{finLancamentoReceberController.finParcelaReceber.dataVencimento}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="finParcelaReceberDescontoAte" label="Desconto Ate"
+						nomeAtributo="#{finLancamentoReceberController.finParcelaReceber.descontoAte}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="finParcelaReceberValor" label="Valor"
+						nomeAtributo="#{finLancamentoReceberController.finParcelaReceber.valor}" />
+
+					<div class="t2ti-campo-100" />
+
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="finParcelaReceberTaxaJuro" label="Taxa Juro"
+						somenteLeitura="true"
+						nomeAtributo="#{finLancamentoReceberController.finParcelaReceber.taxaJuro}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="finParcelaReceberTaxaMulta" label="Taxa Multa"
+						somenteLeitura="true"
+						nomeAtributo="#{finLancamentoReceberController.finParcelaReceber.taxaMulta}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="finParcelaReceberTaxaDesconto" label="Taxa Desconto"
+						somenteLeitura="true"
+						nomeAtributo="#{finLancamentoReceberController.finParcelaReceber.taxaDesconto}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="finParcelaReceberValorJuro" label="Valor Juro"
+						somenteLeitura="true"
+						nomeAtributo="#{finLancamentoReceberController.finParcelaReceber.valorJuro}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="finParcelaReceberValorMulta" label="Valor Multa"
+						somenteLeitura="true"
+						nomeAtributo="#{finLancamentoReceberController.finParcelaReceber.valorMulta}" />
+
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="finParcelaReceberValorDesconto"
+						label="Valor Desconto"
+						nomeAtributo="#{finLancamentoReceberController.finParcelaReceber.valorDesconto}" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="finParcelaReceberEmitiuBoleto" label="Emitiu Boleto"
+						nomeAtributo="#{finLancamentoReceberController.finParcelaReceber.emitiuBoleto}"
+						itens="#{finLancamentoReceberController.simNao}" />
+					<t2ti:campoTexto styleClass="t2ti-campo-40"
+						idComponente="finParcelaReceberBoletoNossoNumero"
+						label="Boleto Nosso Numero"
+						nomeAtributo="#{finLancamentoReceberController.finParcelaReceber.boletoNossoNumero}"
+						tamanhoMaximo="50" />
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="finParcelaReceberFinStatusParcela"
+						label="Status Parcela"
+						nomeAtributo="#{finLancamentoReceberController.finParcelaReceber.finStatusParcela.descricao}"
+						somenteLeitura="true" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{finLancamentoReceberController.salvarFinParcelaReceber}"
+						update=":formOutrasTelas:panelFinParcelaReceber,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogFinParcelaReceber').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogFinParcelaReceber').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas2">
+		<h:form id="formOutrasTelas2">
+
+			<p:dialog id="dialogFinLctoReceberNtFinanceira"
+				header="Inclusão/Alteração Natureza Financeira"
+				widgetVar="dialogFinLctoReceberNtFinanceira" showEffect="slide"
+				hideEffect="slide" width="600" resizable="true" modal="true"
+				closable="false">
+
+				<p:outputPanel id="panelFinLctoReceberNtFinanceira">
+					<div class="t2ti-campo-50">
+						<p:outputLabel value="Natureza Financeira"
+							for="finLctoReceberNtFinanceiraNaturezaFinanceira" />
+						<br />
+						<p:autoComplete id="finLctoReceberNtFinanceiraNaturezaFinanceira"
+							value="#{finLancamentoReceberController.finLctoReceberNtFinanceira.naturezaFinanceira}"
+							completeMethod="#{finLancamentoReceberController.getListaNaturezaFinanceira}"
+							var="naturezaFinanceira"
+							itemLabel="#{naturezaFinanceira.descricao}"
+							itemValue="#{naturezaFinanceira}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="100"
+							required="false" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="finLctoReceberNtFinanceiraDataInclusao"
+						label="Data Inclusao"
+						nomeAtributo="#{finLancamentoReceberController.finLctoReceberNtFinanceira.dataInclusao}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-30"
+						idComponente="finLctoReceberNtFinanceiraValor" label="Valor"
+						nomeAtributo="#{finLancamentoReceberController.finLctoReceberNtFinanceira.valor}" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{finLancamentoReceberController.salvarFinLctoReceberNtFinanceira}"
+						update=":formOutrasTelas2:panelFinLctoReceberNtFinanceira,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogFinLctoReceberNtFinanceira').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogFinLctoReceberNtFinanceira').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

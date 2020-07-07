@@ -1,0 +1,121 @@
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+
+	<ui:define name="gridDados">
+		<c:set var="podeConsultar"
+			value="#{request.isUserInRole('ADMIN') or request.isUserInRole('BANCO_CONSULTA')}"
+			scope="request" />
+		<c:set var="podeInserir"
+			value="#{request.isUserInRole('ADMIN') or request.isUserInRole('BANCO_INSERE')}"
+			scope="request" />
+		<c:set var="podeAlterar"
+			value="#{request.isUserInRole('ADMIN') or request.isUserInRole('BANCO_ALTERA')}"
+			scope="request" />
+		<c:set var="podeExcluir"
+			value="#{request.isUserInRole('ADMIN') or request.isUserInRole('BANCO_EXCLUI')}"
+			scope="request" />
+
+		<p:panel style="border: none" header="Banco"
+			rendered="#{!podeConsultar}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:panel id="panelCentro" style="border: none" header="Banco"
+			rendered="#{podeConsultar}">
+
+			<p:dataTable id="dataTableBanco" var="b"
+				value="#{bancoController.bancos}" paginator="true" rows="10"
+				rowsPerPageTemplate="5,10,15,20"
+				selection="#{bancoController.bancoSelecionado}"
+				selectionMode="single" rowKey="#{b.id}">
+
+				<f:facet name="header">
+					<p:commandButton title="Novo" icon="ui-icon-plus"
+						actionListener="#{bancoController.incluir}"
+						oncomplete="PF('dialogBanco').show()"
+						update=":form2:panelGridBanco,:form2:dialogBanco"
+						disabled="#{!podeInserir}" />
+					<p:commandButton process="dataTableBanco" title="Detalhes"
+						icon="ui-icon-zoomin" oncomplete="PF('dialogBanco').show()"
+						update=":form2:panelGridBanco,:form2:dialogBanco" />
+					<p:commandButton process="dataTableBanco" title="Excluir"
+						icon="ui-icon-trash" update="dataTableBanco"
+						actionListener="#{bancoController.excluirProcessa}"
+						disabled="#{!podeExcluir}">
+						<p:confirm header="Confirmação" message="Confirma Exclusão?"
+							icon="ui-icon-alert" />
+					</p:commandButton>
+				</f:facet>
+
+				<p:column headerText="ID">
+					<h:outputLabel value="#{b.id}" />
+				</p:column>
+				<p:column headerText="Código">
+					<h:outputLabel value="#{b.codigo}" />
+				</p:column>
+				<p:column headerText="Nome">
+					<h:outputLabel value="#{b.nome}" />
+				</p:column>
+				<p:column headerText="URL">
+					<h:outputLabel value="#{b.url}" />
+				</p:column>
+			</p:dataTable>
+		</p:panel>
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<h:form id="form2">
+			<p:dialog id="dialogBanco" header="Inclusão/Alteração de Banco"
+				widgetVar="dialogBanco" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true">
+
+				<p:outputPanel id="panelGridBanco">
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty bancoController.bancoSelecionado}" />
+					<h:panelGrid columns="2"
+						rendered="#{not empty bancoController.bancoSelecionado}">
+
+						<h:outputLabel value="Código: " />
+						<p:inputText id="codigoBanco"
+							value="#{bancoController.bancoSelecionado.codigo}"
+							required="true" requiredMessage="É necessário informar o código" />
+
+						<h:outputLabel value="Nome: " />
+						<p:inputText id="nomeBanco"
+							value="#{bancoController.bancoSelecionado.nome}" required="true"
+							requiredMessage="É necessário informar o nome" />
+
+						<h:outputLabel value="URL: " />
+						<p:inputText value="#{bancoController.bancoSelecionado.url}" />
+
+					</h:panelGrid>
+				</p:outputPanel>
+
+				<f:facet name="footer">
+					<p:commandButton value="Incluir"
+						rendered="#{empty bancoController.bancoSelecionado.id}"
+						actionListener="#{bancoController.incluirProcessa}"
+						update=":form2:panelGridBanco,:form1:growl,:form1:dataTableBanco"
+						oncomplete="if (!args.validationFailed) {PF('dialogBanco').hide();}"
+						disabled="#{!podeInserir}" />
+					<p:commandButton value="Alterar"
+						rendered="#{not empty bancoController.bancoSelecionado.id}"
+						actionListener="#{bancoController.alterarProcessa}"
+						update=":form2:panelGridBanco,:form1:growl,:form1:dataTableBanco"
+						oncomplete="if (!args.validationFailed) {PF('dialogBanco').hide();}"
+						disabled="#{!podeAlterar}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogBanco').hide()" />
+				</f:facet>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

@@ -1,0 +1,302 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="ICMS Customizado"
+			rendered="#{!tributIcmsCustomCabController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{tributIcmsCustomCabController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="ICMS Customizado"
+					rendered="#{tributIcmsCustomCabController.podeConsultar()}">
+
+					<p:dataTable id="dataTableTributIcmsCustomCab" var="obj"
+						value="#{tributIcmsCustomCabController.dataModel}"
+						paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{tributIcmsCustomCabController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{tributIcmsCustomCabController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!tributIcmsCustomCabController.podeInserir()}" />
+							<p:commandButton process="dataTableTributIcmsCustomCab"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{tributIcmsCustomCabController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableTributIcmsCustomCab"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{tributIcmsCustomCabController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!tributIcmsCustomCabController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Descricao">
+							<h:outputLabel value="#{obj.descricao}" />
+						</p:column>
+						<p:column headerText="Origem Mercadoria">
+							<h:outputLabel
+								value="#{tributIcmsCustomCabController.keyFromValue(tributIcmsCustomCabController.origemMercadoria, obj.origemMercadoria)}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!tributIcmsCustomCabController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="ICMS Customizado">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty tributIcmsCustomCabController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{tributIcmsCustomCabController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty tributIcmsCustomCabController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty tributIcmsCustomCabController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+								<t2ti:campoTexto styleClass="t2ti-campo-80"
+									idComponente="tributIcmsCustomCabDescricao" label="Descricao"
+									nomeAtributo="#{tributIcmsCustomCabController.objeto.descricao}"
+									tamanhoMaximo="100" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="tributIcmsCustomCabOrigemMercadoria"
+									label="Origem Mercadoria"
+									nomeAtributo="#{tributIcmsCustomCabController.objeto.origemMercadoria}"
+									itens="#{tributIcmsCustomCabController.origemMercadoria}" />
+
+								<p:outputPanel
+									rendered="#{not empty tributIcmsCustomCabController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty tributIcmsCustomCabController.objeto.id}"
+										actionListener="#{tributIcmsCustomCabController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!tributIcmsCustomCabController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty tributIcmsCustomCabController.objeto.id}"
+										actionListener="#{tributIcmsCustomCabController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!tributIcmsCustomCabController.podeAlterar()}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{tributIcmsCustomCabController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+
+								</p:outputPanel>
+							</p:tab>
+
+							<p:tab title="ICMS UF"
+								disabled="#{empty tributIcmsCustomCabController.objeto.id}">
+								<p:dataTable id="dataTableTributIcmsCustomDet" var="obj"
+									value="#{tributIcmsCustomCabController.objeto.listaTributIcmsCustomDet}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{tributIcmsCustomCabController.tributIcmsCustomDetSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{tributIcmsCustomCabController.incluirTributIcmsCustomDet}"
+											oncomplete="PF('dialogTributIcmsCustomDet').show()"
+											update=":formOutrasTelas:panelTributIcmsCustomDet,dataTableTributIcmsCustomDet" />
+										<p:commandButton process="dataTableTributIcmsCustomDet"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{tributIcmsCustomCabController.alterarTributIcmsCustomDet}"
+											oncomplete="PF('dialogTributIcmsCustomDet').show()"
+											update=":formOutrasTelas:panelTributIcmsCustomDet,dataTableTributIcmsCustomDet" />
+										<p:commandButton process="dataTableTributIcmsCustomDet"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableTributIcmsCustomDet"
+											actionListener="#{tributIcmsCustomCabController.excluirTributIcmsCustomDet}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="UF Destino">
+										<h:outputLabel value="#{obj.ufDestino}" />
+									</p:column>
+									<p:column headerText="CFOP">
+										<h:outputLabel value="#{obj.cfop}" />
+									</p:column>
+									<p:column headerText="CSOSN B">
+										<h:outputLabel value="#{obj.csosnB}" />
+									</p:column>
+									<p:column headerText="CST B">
+										<h:outputLabel value="#{obj.cstB}" />
+									</p:column>
+									<p:column headerText="Aliquota">
+										<h:outputLabel value="#{obj.aliquota}" />
+									</p:column>
+									<p:column headerText="Valor Pauta">
+										<h:outputLabel value="#{obj.valorPauta}" />
+									</p:column>
+									<p:column headerText="MVA">
+										<h:outputLabel value="#{obj.mva}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+						</p:tabView>
+
+					</p:outputPanel>
+
+				</p:panel>
+			</p:outputPanel>
+		</p:outputPanel>
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogTributIcmsCustomDet"
+				header="Inclusão/Alteração Tribut Icms Custom Det"
+				widgetVar="dialogTributIcmsCustomDet" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+
+				<p:outputPanel id="panelTributIcmsCustomDet">
+					
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="tributIcmsCustomDetUfDestino" label="UF Destino"
+						nomeAtributo="#{tributIcmsCustomCabController.tributIcmsCustomDet.ufDestino}"
+						tamanhoMaximo="2" />
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="tributIcmsCustomDetCfop" label="CFOP"
+						nomeAtributo="#{tributIcmsCustomCabController.tributIcmsCustomDet.cfop}" />
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="tributIcmsCustomDetCsosnB" label="CSOSN B"
+						nomeAtributo="#{tributIcmsCustomCabController.tributIcmsCustomDet.csosnB}"
+						tamanhoMaximo="3" />
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="tributIcmsCustomDetCstB" label="CST B"
+						nomeAtributo="#{tributIcmsCustomCabController.tributIcmsCustomDet.cstB}"
+						tamanhoMaximo="2" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="tributIcmsCustomDetModalidadeBc"
+						label="Modalidade BC"
+						nomeAtributo="#{tributIcmsCustomCabController.tributIcmsCustomDet.modalidadeBc}"
+						itens="#{tributIcmsCustomCabController.tributIcmsBaseCalculo}" />
+					
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="tributIcmsCustomDetAliquota" label="Aliquota"
+						nomeAtributo="#{tributIcmsCustomCabController.tributIcmsCustomDet.aliquota}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="tributIcmsCustomDetValorPauta" label="Valor Pauta"
+						nomeAtributo="#{tributIcmsCustomCabController.tributIcmsCustomDet.valorPauta}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="tributIcmsCustomDetValorPrecoMaximo"
+						label="Valor Preco Maximo"
+						nomeAtributo="#{tributIcmsCustomCabController.tributIcmsCustomDet.valorPrecoMaximo}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="tributIcmsCustomDetMva" label="MVA"
+						nomeAtributo="#{tributIcmsCustomCabController.tributIcmsCustomDet.mva}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="tributIcmsCustomDetPorcentoBc" label="Porcento BC"
+						nomeAtributo="#{tributIcmsCustomCabController.tributIcmsCustomDet.porcentoBc}" />
+					
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="tributIcmsCustomDetModalidadeBcSt"
+						label="Modalidade BC ST"
+						nomeAtributo="#{tributIcmsCustomCabController.tributIcmsCustomDet.modalidadeBcSt}"
+						itens="#{tributIcmsCustomCabController.tributIcmsStBaseCalculo}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="tributIcmsCustomDetAliquotaInternaSt"
+						label="Aliquota Interna ST"
+						nomeAtributo="#{tributIcmsCustomCabController.tributIcmsCustomDet.aliquotaInternaSt}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-30"
+						idComponente="tributIcmsCustomDetAliquotaInterestadualSt"
+						label="Aliquota Interestadual St"
+						nomeAtributo="#{tributIcmsCustomCabController.tributIcmsCustomDet.aliquotaInterestadualSt}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-30"
+						idComponente="tributIcmsCustomDetPorcentoBcSt"
+						label="Porcento BC ST"
+						nomeAtributo="#{tributIcmsCustomCabController.tributIcmsCustomDet.porcentoBcSt}" />
+					
+					<div class="t2ti-campo-100" />
+					
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="tributIcmsCustomDetAliquotaIcmsSt"
+						label="Aliquota ICMS ST"
+						nomeAtributo="#{tributIcmsCustomCabController.tributIcmsCustomDet.aliquotaIcmsSt}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="tributIcmsCustomDetValorPautaSt"
+						label="Valor Pauta ST"
+						nomeAtributo="#{tributIcmsCustomCabController.tributIcmsCustomDet.valorPautaSt}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="tributIcmsCustomDetValorPrecoMaximoSt"
+						label="Valor Preco Maximo ST"
+						nomeAtributo="#{tributIcmsCustomCabController.tributIcmsCustomDet.valorPrecoMaximoSt}" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{tributIcmsCustomCabController.salvarTributIcmsCustomDet}"
+						update=":formOutrasTelas:panelTributIcmsCustomDet,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogTributIcmsCustomDet').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogTributIcmsCustomDet').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

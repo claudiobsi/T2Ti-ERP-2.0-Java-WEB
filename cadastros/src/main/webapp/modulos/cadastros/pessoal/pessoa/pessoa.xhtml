@@ -1,0 +1,653 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Pessoa"
+			rendered="#{!pessoaController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+			<p:outputPanel rendered="#{pessoaController.telaGrid}">
+				<p:panel id="panelCentroGrid" style="border: none" header="Pessoa"
+					rendered="#{pessoaController.podeConsultar()}">
+
+					<p:dataTable id="dataTablePessoa" var="obj"
+						value="#{pessoaController.dataModel}" paginator="true" rows="10"
+						rowsPerPageTemplate="5,10,15,20"
+						selection="#{pessoaController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{pessoaController.incluir}"
+								disabled="#{!pessoaController.podeInserir()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTablePessoa" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{pessoaController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTablePessoa" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{pessoaController.excluir}"
+								disabled="#{!pessoaController.podeExcluir()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Nome" width="150">
+							<h:outputLabel value="#{obj.nome}" />
+						</p:column>
+						<p:column headerText="Tipo">
+							<h:outputLabel
+								value="#{pessoaController.keyFromValue(pessoaController.tipoPessoa, obj.tipo)}" />
+						</p:column>
+						<p:column headerText="Email" width="100">
+							<h:outputLabel value="#{obj.email}" />
+						</p:column>
+						<p:column headerText="Cliente">
+							<h:outputLabel
+								value="#{pessoaController.keyFromValue(pessoaController.simNao, obj.cliente)}" />
+						</p:column>
+						<p:column headerText="Fornecedor">
+							<h:outputLabel
+								value="#{pessoaController.keyFromValue(pessoaController.simNao, obj.fornecedor)}" />
+						</p:column>
+						<p:column headerText="Colaborador">
+							<h:outputLabel
+								value="#{pessoaController.keyFromValue(pessoaController.simNao, obj.colaborador)}" />
+						</p:column>
+						<p:column headerText="Transportadora">
+							<h:outputLabel
+								value="#{pessoaController.keyFromValue(pessoaController.simNao, obj.transportadora)}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+			<p:outputPanel rendered="#{!pessoaController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Pessoa">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty pessoaController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{pessoaController.voltar()}"
+						rendered="#{empty pessoaController.objeto}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+
+					<p:outputPanel rendered="#{not empty pessoaController.objeto}">
+
+						<p:tabView id="telasCadastroPessoa" style="border: 0px;">
+							<p:tab title="Informações da Pessoa">
+								<t2ti:campoTexto styleClass="t2ti-campo-80"
+									idComponente="pessoaNome" label="Nome"
+									nomeAtributo="#{pessoaController.objeto.nome}"
+									tamanhoMaximo="150" requerido="true" />
+
+								<t2ti:campoSelectChangeListener styleClass="t2ti-campo-20"
+									idComponente="pessoaTipo" label="Tipo"
+									nomeAtributo="#{pessoaController.objeto.tipo}"
+									itens="#{pessoaController.tipoPessoa}"
+									desabilitado="#{not empty pessoaController.objeto.id}"
+									atualizar=":form1:outputPanelDetalhe" />
+
+								<t2ti:campoTexto styleClass="t2ti-campo-50"
+									idComponente="pessoaEmail" label="Email"
+									nomeAtributo="#{pessoaController.objeto.email}"
+									tamanhoMaximo="250" />
+								<t2ti:campoTexto styleClass="t2ti-campo-50"
+									idComponente="pessoaSite" label="Site"
+									nomeAtributo="#{pessoaController.objeto.site}"
+									tamanhoMaximo="250" />
+
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="pessoaCliente" label="Cliente"
+									nomeAtributo="#{pessoaController.objeto.cliente}"
+									itens="#{pessoaController.simNao}" />
+								<t2ti:campoSelect styleClass="t2ti-campo-30"
+									idComponente="pessoaFornecedor" label="Fornecedor"
+									nomeAtributo="#{pessoaController.objeto.fornecedor}"
+									itens="#{pessoaController.simNao}" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="pessoaColaborador" label="Colaborador"
+									nomeAtributo="#{pessoaController.objeto.colaborador}"
+									itens="#{pessoaController.simNao}" />
+								<t2ti:campoSelect styleClass="t2ti-campo-30"
+									idComponente="pessoaTransportadora" label="Transportadora"
+									nomeAtributo="#{pessoaController.objeto.transportadora}"
+									itens="#{pessoaController.simNao}" />
+
+								<p:outputPanel id="panelPessoaFisica">
+
+									<p:outputPanel id="dadosPessoaFisica"
+										rendered="#{pessoaController.objeto.tipo == 'F'}">
+
+										<t2ti:campoCpf styleClass="t2ti-campo-20"
+											idComponente="pessoaFisicaCpf" label="Cpf"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.cpf}"
+											requerido="true" />
+										<t2ti:campoData styleClass="t2ti-campo-20"
+											idComponente="pessoaFisicaDataNascimento"
+											label="Data Nascimento"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.dataNascimento}" />
+										<t2ti:campoSelect styleClass="t2ti-campo-10"
+											idComponente="pessoaFisicaSexo" label="Sexo"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.sexo}"
+											itens="#{pessoaController.simNao}" />
+										<t2ti:campoSelect styleClass="t2ti-campo-10"
+											idComponente="pessoaFisicaRaca" label="Raca"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.raca}"
+											itens="#{pessoaController.racaCor}" />
+										<t2ti:campoSelect styleClass="t2ti-campo-20"
+											idComponente="pessoaFisicaTipoSangue" label="Tipo Sangue"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.tipoSangue}"
+											itens="#{pessoaController.tipoSangue}" />
+										<div class="t2ti-campo-20">
+											<p:outputLabel value="Estado Civil"
+												for="pessoaFisicaEstadoCivil" />
+											<br />
+											<p:autoComplete id="pessoaFisicaEstadoCivil"
+												value="#{pessoaController.objeto.pessoaFisica.estadoCivil}"
+												completeMethod="#{pessoaController.getListaEstadoCivil}"
+												var="estadoCivil" itemLabel="#{estadoCivil.nome}"
+												itemValue="#{estadoCivil}" converter="com.t2tierp.model.bean.converter.defaultConverter"
+												forceSelection="true" minQueryLength="3" required="true" />
+										</div>
+
+										<div class="t2ti-campo-100"></div>
+
+										<t2ti:campoTexto styleClass="t2ti-campo-20"
+											idComponente="pessoaFisicaNaturalidade" label="Naturalidade"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.naturalidade}"
+											tamanhoMaximo="100" />
+										<t2ti:campoTexto styleClass="t2ti-campo-20"
+											idComponente="pessoaFisicaNacionalidade"
+											label="Nacionalidade"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.nacionalidade}"
+											tamanhoMaximo="100" />
+										<t2ti:campoTexto styleClass="t2ti-campo-30"
+											idComponente="pessoaFisicaNomeMae" label="Nome Mae"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.nomeMae}"
+											tamanhoMaximo="100" />
+										<t2ti:campoTexto styleClass="t2ti-campo-30"
+											idComponente="pessoaFisicaNomePai" label="Nome Pai"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.nomePai}"
+											tamanhoMaximo="100" />
+
+										<t2ti:campoTexto styleClass="t2ti-campo-10"
+											idComponente="pessoaFisicaRg" label="Rg"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.rg}"
+											tamanhoMaximo="20" />
+										<t2ti:campoTexto styleClass="t2ti-campo-10"
+											idComponente="pessoaFisicaOrgaoRg" label="Orgao Rg"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.orgaoRg}"
+											tamanhoMaximo="20" />
+										<t2ti:campoData styleClass="t2ti-campo-20"
+											idComponente="pessoaFisicaDataEmissaoRg"
+											label="Data Emissao Rg"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.dataEmissaoRg}" />
+										<t2ti:campoTexto styleClass="t2ti-campo-20"
+											idComponente="pessoaFisicaCnhNumero" label="Cnh Numero"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.cnhNumero}"
+											tamanhoMaximo="20" />
+										<t2ti:campoTexto styleClass="t2ti-campo-20"
+											idComponente="pessoaFisicaCnhCategoria" label="Cnh Categoria"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.cnhCategoria}"
+											tamanhoMaximo="2" />
+										<t2ti:campoData styleClass="t2ti-campo-20"
+											idComponente="pessoaFisicaCnhVencimento"
+											label="Cnh Vencimento"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.cnhVencimento}" />
+
+										<t2ti:campoTexto styleClass="t2ti-campo-30"
+											idComponente="pessoaFisicaTituloEleitoralNumero"
+											label="Titulo Eleitoral Numero"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.tituloEleitoralNumero}"
+											tamanhoMaximo="20" />
+										<t2ti:campoInteiro styleClass="t2ti-campo-30"
+											idComponente="pessoaFisicaTituloEleitoralZona" label="Zona"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.tituloEleitoralZona}" />
+										<t2ti:campoInteiro styleClass="t2ti-campo-30"
+											idComponente="pessoaFisicaTituloEleitoralSecao" label="Secao"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.tituloEleitoralSecao}" />
+
+										<t2ti:campoTexto styleClass="t2ti-campo-30"
+											idComponente="pessoaFisicaReservistaNumero"
+											label="Reservista Numero"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.reservistaNumero}"
+											tamanhoMaximo="20" />
+										<t2ti:campoInteiro styleClass="t2ti-campo-30"
+											idComponente="pessoaFisicaReservistaCategoria"
+											label="Reservista Categoria"
+											nomeAtributo="#{pessoaController.objeto.pessoaFisica.reservistaCategoria}" />
+
+
+									</p:outputPanel>
+
+									<p:outputPanel id="dadosPessoaJuridica"
+										rendered="#{pessoaController.objeto.tipo == 'J'}">
+
+										<t2ti:campoCnpj styleClass="t2ti-campo-20"
+											idComponente="pessoaJuridicaCnpj" label="Cnpj"
+											nomeAtributo="#{pessoaController.objeto.pessoaJuridica.cnpj}"
+											requerido="true" />
+										<t2ti:campoTexto styleClass="t2ti-campo-80"
+											idComponente="pessoaJuridicaFantasia" label="Fantasia"
+											nomeAtributo="#{pessoaController.objeto.pessoaJuridica.fantasia}"
+											tamanhoMaximo="150" />
+
+										<t2ti:campoTexto styleClass="t2ti-campo-30"
+											idComponente="pessoaJuridicaInscricaoMunicipal"
+											label="Inscricao Municipal"
+											nomeAtributo="#{pessoaController.objeto.pessoaJuridica.inscricaoMunicipal}"
+											tamanhoMaximo="30" />
+										<t2ti:campoTexto styleClass="t2ti-campo-30"
+											idComponente="pessoaJuridicaInscricaoEstadual"
+											label="Inscricao Estadual"
+											nomeAtributo="#{pessoaController.objeto.pessoaJuridica.inscricaoEstadual}"
+											tamanhoMaximo="30" />
+										<t2ti:campoTexto styleClass="t2ti-campo-20"
+											idComponente="pessoaJuridicaSuframa" label="Suframa"
+											nomeAtributo="#{pessoaController.objeto.pessoaJuridica.suframa}"
+											tamanhoMaximo="9" />
+										<t2ti:campoData styleClass="t2ti-campo-20"
+											idComponente="pessoaJuridicaDataConstituicao"
+											label="Data Constituicao"
+											nomeAtributo="#{pessoaController.objeto.pessoaJuridica.dataConstituicao}" />
+
+										<t2ti:campoSelect styleClass="t2ti-campo-30"
+											idComponente="pessoaJuridicaCrt" label="Crt"
+											nomeAtributo="#{pessoaController.objeto.pessoaJuridica.crt}"
+											itens="#{pessoaController.crt}" />
+										<t2ti:campoSelect styleClass="t2ti-campo-30"
+											idComponente="pessoaJuridicaTipoRegime" label="Tipo Regime"
+											nomeAtributo="#{pessoaController.objeto.pessoaJuridica.tipoRegime}"
+											itens="#{pessoaController.tipoRegimeEmpresa}" />
+
+									</p:outputPanel>
+								</p:outputPanel>
+
+								<p:outputPanel rendered="#{not empty pessoaController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty pessoaController.objeto.id}"
+										actionListener="#{pessoaController.salvar()}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!pessoaController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty pessoaController.objeto.id}"
+										actionListener="#{pessoaController.salvar()}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!pessoaController.podeAlterar()}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{pessoaController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" 
+										process="@this" />
+
+								</p:outputPanel>
+
+							</p:tab>
+
+							<p:tab title="Contatos"
+								disabled="#{empty pessoaController.objeto.id}">
+
+								<p:dataTable id="dataTablePessoaContato" var="obj"
+									value="#{pessoaController.objeto.listaPessoaContato}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{pessoaController.pessoaContatoSelecionado}"
+									selectionMode="single" rowKey="#{obj.id}">
+
+									<f:facet name="header">
+
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{pessoaController.incluirContato}"
+											oncomplete="PF('dialogContato').show()"
+											update=":formOutrasTelas:panelPessoaContato,dataTablePessoaContato" />
+										<p:commandButton process="dataTablePessoaContato"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{pessoaController.alterarContato}"
+											oncomplete="PF('dialogContato').show()"
+											update=":formOutrasTelas:panelPessoaContato,:formOutrasTelas:dialogContato" />
+										<p:commandButton process="dataTablePessoaContato"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTablePessoaContato"
+											actionListener="#{pessoaController.excluirContato}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+
+									</f:facet>
+
+									<p:column headerText="Nome">
+										<h:outputLabel value="#{obj.nome}" />
+									</p:column>
+									<p:column headerText="Email">
+										<h:outputLabel value="#{obj.email}" />
+									</p:column>
+									<p:column headerText="Fone Comercial">
+										<h:outputLabel value="#{obj.foneComercial}" />
+									</p:column>
+									<p:column headerText="Fone Residencial">
+										<h:outputLabel value="#{obj.foneResidencial}" />
+									</p:column>
+									<p:column headerText="Fone Celular">
+										<h:outputLabel value="#{obj.foneCelular}" />
+									</p:column>
+								</p:dataTable>
+
+							</p:tab>
+
+							<p:tab title="Endereços"
+								disabled="#{empty pessoaController.objeto.id}">
+
+								<p:dataTable id="dataTablePessoaEndereco" var="obj"
+									value="#{pessoaController.objeto.listaPessoaEndereco}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{pessoaController.pessoaEnderecoSelecionado}"
+									selectionMode="single" rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{pessoaController.incluirEndereco()}"
+											oncomplete="PF('dialogEndereco').show()"
+											update=":formOutrasTelas2:panelPessoaEndereco,dataTablePessoaEndereco" />
+										<p:commandButton process="dataTablePessoaEndereco"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{pessoaController.alterarEndereco}"
+											oncomplete="PF('dialogEndereco').show()"
+											update=":formOutrasTelas2:panelPessoaEndereco,:formOutrasTelas2:dialogEndereco" />
+										<p:commandButton process="dataTablePessoaEndereco"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTablePessoaEndereco"
+											actionListener="#{pessoaController.excluirEndereco}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Cidade">
+										<h:outputLabel value="#{obj.cidade}" />
+									</p:column>
+									<p:column headerText="Uf">
+										<h:outputLabel value="#{obj.uf}" />
+									</p:column>
+									<p:column headerText="Fone">
+										<h:outputLabel value="#{obj.fone}" />
+									</p:column>
+									<p:column headerText="Principal">
+										<h:outputLabel
+											value="#{pessoaController.keyFromValue(pessoaController.simNao, obj.principal)}" />
+									</p:column>
+									<p:column headerText="Entrega">
+										<h:outputLabel
+											value="#{pessoaController.keyFromValue(pessoaController.simNao, obj.entrega)}" />
+									</p:column>
+									<p:column headerText="Cobranca">
+										<h:outputLabel
+											value="#{pessoaController.keyFromValue(pessoaController.simNao, obj.cobranca)}" />
+									</p:column>
+									<p:column headerText="Correspondencia">
+										<h:outputLabel
+											value="#{pessoaController.keyFromValue(pessoaController.simNao, obj.correspondencia)}" />
+									</p:column>
+
+								</p:dataTable>
+
+							</p:tab>
+
+							<p:tab title="Telefones"
+								disabled="#{empty pessoaController.objeto.id}">
+
+								<p:dataTable id="dataTablePessoaTelefone" var="obj"
+									value="#{pessoaController.objeto.listaPessoaTelefone}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{pessoaController.pessoaTelefoneSelecionado}"
+									selectionMode="single" rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{pessoaController.incluirTelefone}"
+											oncomplete="PF('dialogTelefone').show()"
+											update=":formOutrasTelas3:panelPessoaTelefone,dataTablePessoaTelefone" />
+										<p:commandButton process="dataTablePessoaTelefone"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{pessoaController.alterarTelefone()}"
+											oncomplete="PF('dialogTelefone').show()"
+											update=":formOutrasTelas3:panelPessoaTelefone,dataTablePessoaTelefone" />
+										<p:commandButton process="dataTablePessoaTelefone"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTablePessoaTelefone"
+											actionListener="#{pessoaController.excluirTelefone()}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Tipo">
+										<h:outputLabel
+											value="#{pessoaController.keyFromValue(pessoaController.tipoTelefone, obj.tipo)}" />
+									</p:column>
+									<p:column headerText="Numero">
+										<h:outputLabel value="#{obj.numero}" />
+									</p:column>
+									<p:column headerText="Observacao">
+										<h:outputLabel value="#{obj.observacao}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+						</p:tabView>
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+		</p:outputPanel>
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogContato" header="Inclusão/Alteração de Contato"
+				widgetVar="dialogContato" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="false">
+
+				<p:outputPanel id="panelPessoaContato">
+					<t2ti:campoTexto styleClass="t2ti-campo-60"
+						idComponente="pessoaContatoNome" label="Nome"
+						nomeAtributo="#{pessoaController.pessoaContato.nome}"
+						tamanhoMaximo="100" />
+					<t2ti:campoTexto styleClass="t2ti-campo-40"
+						idComponente="pessoaContatoEmail" label="Email"
+						nomeAtributo="#{pessoaController.pessoaContato.email}"
+						tamanhoMaximo="250" />
+
+					<t2ti:campoTexto styleClass="t2ti-campo-30"
+						idComponente="pessoaContatoFoneComercial" label="Fone Comercial"
+						nomeAtributo="#{pessoaController.pessoaContato.foneComercial}"
+						tamanhoMaximo="14" />
+					<t2ti:campoTexto styleClass="t2ti-campo-30"
+						idComponente="pessoaContatoFoneResidencial"
+						label="Fone Residencial"
+						nomeAtributo="#{pessoaController.pessoaContato.foneResidencial}"
+						tamanhoMaximo="14" />
+					<t2ti:campoTexto styleClass="t2ti-campo-30"
+						idComponente="pessoaContatoFoneCelular" label="Fone Celular"
+						nomeAtributo="#{pessoaController.pessoaContato.foneCelular}"
+						tamanhoMaximo="14" />
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{pessoaController.salvarContato}"
+						update=":formOutrasTelas:panelPessoaContato,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogContato').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogContato').hide();" />
+
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas2">
+		<h:form id="formOutrasTelas2">
+			<p:dialog id="dialogEndereco" header="Inclusão/Alteração de Endereço"
+				widgetVar="dialogEndereco" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="false">
+
+				<p:outputPanel id="panelPessoaEndereco">
+
+					<t2ti:campoTexto styleClass="t2ti-campo-80"
+						idComponente="pessoaEnderecoLogradouro" label="Logradouro"
+						nomeAtributo="#{pessoaController.pessoaEndereco.logradouro}"
+						tamanhoMaximo="60" />
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="pessoaEnderecoNumero" label="Numero"
+						nomeAtributo="#{pessoaController.pessoaEndereco.numero}"
+						tamanhoMaximo="10" />
+
+					<t2ti:campoTexto styleClass="t2ti-campo-50"
+						idComponente="pessoaEnderecoComplemento" label="Complemento"
+						nomeAtributo="#{pessoaController.pessoaEndereco.complemento}"
+						tamanhoMaximo="60" />
+					<t2ti:campoTexto styleClass="t2ti-campo-50"
+						idComponente="pessoaEnderecoBairro" label="Bairro"
+						nomeAtributo="#{pessoaController.pessoaEndereco.bairro}"
+						tamanhoMaximo="60" />
+
+					<t2ti:campoTexto styleClass="t2ti-campo-40"
+						idComponente="pessoaEnderecoCidade" label="Cidade"
+						nomeAtributo="#{pessoaController.pessoaEndereco.cidade}"
+						tamanhoMaximo="60" />
+					<t2ti:campoMascara styleClass="t2ti-campo-20"
+						idComponente="pessoaEnderecoCep" label="Cep"
+						nomeAtributo="#{pessoaController.pessoaEndereco.cep}"
+						mascara="99.999-999" />
+					<t2ti:campoTexto styleClass="t2ti-campo-10"
+						idComponente="pessoaEnderecoUf" label="Uf"
+						nomeAtributo="#{pessoaController.pessoaEndereco.uf}"
+						tamanhoMaximo="2" />
+					<t2ti:campoInteiro styleClass="t2ti-campo-30"
+						idComponente="pessoaEnderecoMunicipioIbge" label="Municipio Ibge"
+						nomeAtributo="#{pessoaController.pessoaEndereco.municipioIbge}" />
+
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="pessoaEnderecoFone" label="Fone"
+						nomeAtributo="#{pessoaController.pessoaEndereco.fone}"
+						tamanhoMaximo="14" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="pessoaEnderecoPrincipal" label="Principal"
+						nomeAtributo="#{pessoaController.pessoaEndereco.principal}"
+						itens="#{pessoaController.simNao}" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="pessoaEnderecoEntrega" label="Entrega"
+						nomeAtributo="#{pessoaController.pessoaEndereco.entrega}"
+						itens="#{pessoaController.simNao}" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="pessoaEnderecoCobranca" label="Cobranca"
+						nomeAtributo="#{pessoaController.pessoaEndereco.cobranca}"
+						itens="#{pessoaController.simNao}" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="pessoaEnderecoCorrespondencia"
+						label="Correspondencia"
+						nomeAtributo="#{pessoaController.pessoaEndereco.correspondencia}"
+						itens="#{pessoaController.simNao}" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{pessoaController.salvarEndereco}"
+						update=":formOutrasTelas2:panelPessoaEndereco,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogEndereco').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogEndereco').hide();" />
+
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas3">
+		<h:form id="formOutrasTelas3">
+			<p:dialog id="dialogTelefone" header="Inclusão/Alteração de Telefone"
+				widgetVar="dialogTelefone" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="false">
+
+				<p:outputPanel id="panelPessoaTelefone">
+
+					<t2ti:campoSelectIntegerConverter styleClass="t2ti-campo-30"
+						idComponente="pessoaTelefoneTipo" label="Tipo"
+						nomeAtributo="#{pessoaController.pessoaTelefone.tipo}"
+						itens="#{pessoaController.tipoTelefone}" />
+
+					<t2ti:campoTexto styleClass="t2ti-campo-40"
+						idComponente="pessoaTelefoneNumero" label="Numero"
+						nomeAtributo="#{pessoaController.pessoaTelefone.numero}"
+						tamanhoMaximo="14" />
+
+					<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+						idComponente="pessoaTelefoneObservacao" label="Observacao"
+						nomeAtributo="#{pessoaController.pessoaTelefone.observacao}" />
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{pessoaController.salvarTelefone}"
+						update=":formOutrasTelas3:panelPessoaTelefone,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogTelefone').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogTelefone').hide();" />
+
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

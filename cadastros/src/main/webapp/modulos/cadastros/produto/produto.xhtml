@@ -1,0 +1,438 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Produto"
+			rendered="#{!produtoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{produtoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none" header="Produto"
+					rendered="#{produtoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableProduto" var="obj"
+						value="#{produtoController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{produtoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{produtoController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!produtoController.podeInserir()}" />
+							<p:commandButton process="dataTableProduto" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{produtoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableProduto" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{produtoController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!produtoController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+						<p:column headerText="Nome" width="300">
+							<h:outputLabel value="#{obj.nome}" />
+						</p:column>
+						<p:column headerText="Gtin">
+							<h:outputLabel value="#{obj.gtin}" />
+						</p:column>
+						<p:column headerText="Valor">
+							<h:outputLabel value="#{obj.valorVenda}">
+								<f:convertNumber pattern="#,###,##0.00" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Qtd Estoque">
+							<h:outputLabel value="#{obj.quantidadeEstoque}">
+								<f:convertNumber pattern="#,##0.000" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Unidade">
+							<h:outputLabel value="#{obj.unidadeProduto.sigla}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel id="panelProdutoDetalhe"
+				rendered="#{!produtoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Produto">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty produtoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{produtoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty produtoController.objeto}" />
+
+					<p:outputPanel rendered="#{not empty produtoController.objeto}">
+
+						<div class="t2ti-campo-100">
+							<p:outputLabel value="Sub Grupo" for="produtoSubGrupo" />
+							<br />
+							<p:autoComplete id="produtoSubGrupo"
+								value="#{produtoController.objeto.produtoSubGrupo}"
+								completeMethod="#{produtoController.getListaSubGrupo}"
+								var="subGrupo" itemLabel="#{subGrupo.nome}"
+								itemValue="#{subGrupo}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="true" style="width: 58%; padding-right: 2%;"
+								emptyMessage="Nenhum registro encontrado">
+
+								<p:ajax event="itemSelect" update="nomeGrupo" />
+
+							</p:autoComplete>
+							<p:inputText id="nomeGrupo"
+								value="#{produtoController.objeto.produtoSubGrupo.produtoGrupo.nome}"
+								style="width: 38%" readonly="true" />
+						</div>
+
+						<div class="t2ti-campo-30">
+							<p:outputLabel value="Unidade" for="produtoUnidadeProduto" />
+							<br />
+							<p:autoComplete id="produtoUnidadeProduto"
+								value="#{produtoController.objeto.unidadeProduto}"
+								completeMethod="#{produtoController.getListaUnidadeProduto}"
+								var="unidadeProduto" itemLabel="#{unidadeProduto.sigla}"
+								itemValue="#{unidadeProduto}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="true" style="width: 100%"
+								emptyMessage="Nenhum registro encontrado" />
+						</div>
+						<div class="t2ti-campo-30">
+							<p:outputLabel value="Marca" for="produtoMarcaProduto" />
+							<br />
+							<p:autoComplete id="produtoMarcaProduto"
+								value="#{produtoController.objeto.produtoMarca}"
+								completeMethod="#{produtoController.getListaProdutoMarca}"
+								var="marcaProduto" itemLabel="#{marcaProduto.nome}"
+								itemValue="#{marcaProduto}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="false" style="width: 100%"
+								emptyMessage="Nenhum registro encontrado" />
+						</div>
+						<div class="t2ti-campo-40">
+							<p:outputLabel value="Almoxarifado" for="produtoAlmoxarifado" />
+							<br />
+							<p:autoComplete id="produtoAlmoxarifado"
+								value="#{produtoController.objeto.almoxarifado}"
+								completeMethod="#{produtoController.getListaAlmoxarifado}"
+								var="almoxarifado" itemLabel="#{almoxarifado.nome}"
+								itemValue="#{almoxarifado}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="false" style="width: 100%"
+								emptyMessage="Nenhum registro encontrado" />
+						</div>
+
+						<div class="t2ti-campo-50">
+							<p:outputLabel value="ICMS Customizado"
+								for="produtoTributIcmsCustomCab" />
+							<br />
+							<p:autoComplete id="produtoTributIcmsCustomCab"
+								value="#{produtoController.objeto.tributIcmsCustomCab}"
+								completeMethod="#{produtoController.getListaTributIcmsCustomCab}"
+								var="tributIcmsCustomCab"
+								itemLabel="#{tributIcmsCustomCab.descricao}"
+								itemValue="#{tributIcmsCustomCab}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="false" style="width: 100%"
+								emptyMessage="Nenhum registro encontrado">
+
+								<p:ajax event="itemSelect"
+									listener="#{produtoController.alteraTributacao()}"
+									update="produtoGrupoTributario" />
+
+							</p:autoComplete>
+						</div>
+						<div class="t2ti-campo-50">
+							<p:outputLabel value="Grupo Tributario"
+								for="produtoGrupoTributario" />
+							<br />
+							<p:autoComplete id="produtoGrupoTributario"
+								value="#{produtoController.objeto.tributGrupoTributario}"
+								completeMethod="#{produtoController.getListaTributGrupoTributario}"
+								var="grupoTributario" itemLabel="#{grupoTributario.descricao}"
+								itemValue="#{grupoTributario}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="false" style="width: 100%"
+								emptyMessage="Nenhum registro encontrado">
+
+								<p:ajax event="itemSelect"
+									listener="#{produtoController.alteraTributacao()}"
+									update="produtoTributIcmsCustomCab" />
+
+							</p:autoComplete>
+						</div>
+
+						<t2ti:campoTexto styleClass="t2ti-campo-50"
+							idComponente="produtoNome" label="Nome"
+							nomeAtributo="#{produtoController.objeto.nome}"
+							tamanhoMaximo="100" requerido="true" />
+						<t2ti:campoTexto styleClass="t2ti-campo-50"
+							idComponente="produtoDescricaoPdv" label="Descricao Pdv"
+							nomeAtributo="#{produtoController.objeto.descricaoPdv}"
+							tamanhoMaximo="30" requerido="true" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="produtoGtin" label="Gtin"
+							nomeAtributo="#{produtoController.objeto.gtin}"
+							tamanhoMaximo="14" requerido="true" />
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="produtoCodigoInterno" label="Codigo Interno"
+							nomeAtributo="#{produtoController.objeto.codigoInterno}"
+							tamanhoMaximo="60" />
+						<t2ti:campoTexto styleClass="t2ti-campo-10"
+							idComponente="produtoNcm" label="Ncm"
+							nomeAtributo="#{produtoController.objeto.ncm}" tamanhoMaximo="8" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="produtoInativo" label="Inativo"
+							nomeAtributo="#{produtoController.objeto.inativo}"
+							itens="#{produtoController.simNao}" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="produtoClasseAbc" label="Classe Abc"
+							nomeAtributo="#{produtoController.objeto.classeAbc}"
+							itens="#{produtoController.produtoClasse}" />
+
+						<t2ti:campoDecimal styleClass="t2ti-campo-20"
+							idComponente="produtoValorCompra" label="Valor Compra"
+							nomeAtributo="#{produtoController.objeto.valorCompra}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-20"
+							idComponente="produtoValorVenda" label="Valor Venda"
+							nomeAtributo="#{produtoController.objeto.valorVenda}"
+							requerido="true" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="produtoPrecoVendaMinimo" label="Preco Venda Minimo"
+							nomeAtributo="#{produtoController.objeto.precoVendaMinimo}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="produtoPrecoSugerido" label="Preco Sugerido"
+							nomeAtributo="#{produtoController.objeto.precoSugerido}" />
+
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="produtoCustoMedioLiquido"
+							label="Custo Medio Liquido"
+							nomeAtributo="#{produtoController.objeto.custoMedioLiquido}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="produtoPrecoLucroZero" label="Preco Lucro Zero"
+							nomeAtributo="#{produtoController.objeto.precoLucroZero}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="produtoPrecoLucroMinimo" label="Preco Lucro Minimo"
+							nomeAtributo="#{produtoController.objeto.precoLucroMinimo}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-10"
+							idComponente="produtoMarkup" label="Markup"
+							nomeAtributo="#{produtoController.objeto.markup}" />
+
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="produtoPrecoLucroMaximo" label="Preco Lucro Maximo"
+							nomeAtributo="#{produtoController.objeto.precoLucroMaximo}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="produtoQuantidadeEstoque" label="Qtd Estoque"
+							nomeAtributo="#{produtoController.objeto.quantidadeEstoque}"
+							requerido="true" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="produtoQuantidadeEstoqueAnterior"
+							label="Qtd Estoque Anterior"
+							nomeAtributo="#{produtoController.objeto.quantidadeEstoqueAnterior}" />
+
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="produtoEstoqueMinimo" label="Estoque Minimo"
+							nomeAtributo="#{produtoController.objeto.estoqueMinimo}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="produtoEstoqueMaximo" label="Estoque Maximo"
+							nomeAtributo="#{produtoController.objeto.estoqueMaximo}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="produtoEstoqueIdeal" label="Estoque Ideal"
+							nomeAtributo="#{produtoController.objeto.estoqueIdeal}" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="produtoExTipi" label="Ex Tipi"
+							nomeAtributo="#{produtoController.objeto.exTipi}"
+							tamanhoMaximo="3" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="produtoCodigoLst" label="Codigo Lst"
+							nomeAtributo="#{produtoController.objeto.codigoLst}"
+							tamanhoMaximo="4" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="produtoIat" label="Iat"
+							nomeAtributo="#{produtoController.objeto.iat}"
+							itens="#{produtoController.produtoIat}" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="produtoIppt" label="Ippt"
+							nomeAtributo="#{produtoController.objeto.ippt}"
+							itens="#{produtoController.produtoIppt}" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="produtoTipo" label="Tipo"
+							nomeAtributo="#{produtoController.objeto.tipo}"
+							itens="#{produtoController.produtoTipo}" />
+
+
+						<t2ti:campoSelect styleClass="t2ti-campo-30"
+							idComponente="produtoTipoItemSped" label="Tipo Item Sped"
+							nomeAtributo="#{produtoController.objeto.tipoItemSped}"
+							itens="#{produtoController.tipoItemSped}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="produtoTotalizadorParcial"
+							label="Totalizador Parcial"
+							nomeAtributo="#{produtoController.objeto.totalizadorParcial}"
+							tamanhoMaximo="10" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-20"
+							idComponente="produtoCodigoBalanca" label="Codigo Balanca"
+							nomeAtributo="#{produtoController.objeto.codigoBalanca}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-20"
+							idComponente="produtoPeso" label="Peso"
+							nomeAtributo="#{produtoController.objeto.peso}" />
+
+						<div class="t2ti-campo-100" />
+
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="produtoPorcentoComissao" label="Porcento Comissao"
+							nomeAtributo="#{produtoController.objeto.porcentoComissao}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="produtoPontoPedido" label="Ponto Pedido"
+							nomeAtributo="#{produtoController.objeto.pontoPedido}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="produtoLoteEconomicoCompra"
+							label="Lote Economico Compra"
+							nomeAtributo="#{produtoController.objeto.loteEconomicoCompra}" />
+
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="produtoAliquotaIcmsPaf" label="Aliquota Icms Paf"
+							nomeAtributo="#{produtoController.objeto.aliquotaIcmsPaf}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-30"
+							idComponente="produtoAliquotaIssqnPaf" label="Aliquota Issqn Paf"
+							nomeAtributo="#{produtoController.objeto.aliquotaIssqnPaf}" />
+
+						<div class="t2ti-campo-100" />
+
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="produtoExcluido" label="Excluido"
+							nomeAtributo="#{produtoController.objeto.excluido}"
+							itens="#{produtoController.simNao}" desabilitado="true" />
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="produtoDataCadastro" label="Data Cadastro"
+							nomeAtributo="#{produtoController.objeto.dataCadastro}"
+							somenteLeitura="true" />
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="produtoDataAlteracao" label="Data Alteracao"
+							nomeAtributo="#{produtoController.objeto.dataAlteracao}"
+							somenteLeitura="true" />
+
+						<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+							idComponente="produtoDescricao" label="Descricao"
+							nomeAtributo="#{produtoController.objeto.descricao}" />
+
+						<div class="t2ti-campo-100">
+							<p:outputLabel value="Foto Produto" />
+							<p:commandButton title="Selecionar Imagem"
+								value="Selecionar Imagem" oncomplete="PF('dialogUpload').show()"
+								update=":formUpload:panelUpload" />
+							<br /> <br />
+							<p:outputLabel id="imagemProduto">
+								<img src="#{produtoController.objeto.fotoProduto}" />
+							</p:outputLabel>
+						</div>
+
+					</p:outputPanel>
+					<p:outputPanel rendered="#{not empty produtoController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty produtoController.objeto.id}"
+							actionListener="#{produtoController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!produtoController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty produtoController.objeto.id}"
+							actionListener="#{produtoController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!produtoController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{produtoController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+	<ui:define name="outrasTelas">
+		<h:form id="formUpload" enctype="multipart/form-data">
+			<p:dialog id="dialogUpload" header="Upload Foto Produto"
+				widgetVar="dialogUpload" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="false" width="800">
+				<p:outputPanel id="panelUpload">
+					<div class="t2ti-campo-100">
+						<p:fileUpload
+							fileUploadListener="#{produtoController.uploadImagem}"
+							mode="advanced" fileLimit="1"
+							allowTypes="/(\.|\/)(gif|jpe?g|png)$/" update=":form1:growl" />
+					</div>
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Fechar" update=":form1:imagemProduto"
+						oncomplete="PF('dialogUpload').hide();" process="@this" />
+				</f:facet>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+</ui:composition>

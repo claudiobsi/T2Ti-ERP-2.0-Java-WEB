@@ -1,0 +1,290 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+    <ui:define name="gridDados">
+        <p:panel style="border: none" header="Contabil Parametro"
+            rendered="#{!contabilParametroController.podeConsultar()}">
+            <p:outputLabel value="Você não possui acesso a esta função" />
+        </p:panel>
+
+        <p:outputPanel id="outputPanelGrid">
+
+            <p:outputPanel rendered="#{contabilParametroController.telaGrid}">
+
+                <p:panel id="panelCentroGrid" style="border: none" header="Contabil Parametro"
+                     rendered="#{contabilParametroController.podeConsultar()}">
+
+                    <p:dataTable id="dataTableContabilParametro" var="obj"
+                        value="#{contabilParametroController.dataModel}" paginator="true"
+                        rows="10" rowsPerPageTemplate="5,10,15,20"
+                        selection="#{contabilParametroController.objetoSelecionado}"
+                        selectionMode="single" resizableColumns="true" lazy="true">
+
+                        <f:facet name="header">
+                            <p:commandButton title="Novo" icon="ui-icon-plus"
+                                actionListener="#{contabilParametroController.incluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!contabilParametroController.podeInserir()}" />
+                            <p:commandButton process="dataTableContabilParametro" title="Detalhes"
+                                icon="ui-icon-zoomin"
+                                actionListener="#{contabilParametroController.alterar()}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+                            <p:commandButton process="dataTableContabilParametro" title="Excluir"
+                                icon="ui-icon-trash"
+                                actionListener="#{contabilParametroController.excluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!contabilParametroController.podeExcluir()}">
+                                <p:confirm header="Confirmação" message="Confirma Exclusão?"
+                                    icon="ui-icon-alert" />
+                            </p:commandButton>
+                        </f:facet>
+
+                        <p:column headerText="Mascara">
+                            <h:outputLabel value="#{obj.mascara}" />
+                        </p:column>
+                        <p:column headerText="Niveis">
+                            <h:outputLabel value="#{obj.niveis}" />
+                        </p:column>
+                        <p:column headerText="Conta Ativo">
+                            <h:outputLabel value="#{obj.contaAtivo}" />
+                        </p:column>
+                        <p:column headerText="Conta Passivo">
+                            <h:outputLabel value="#{obj.contaPassivo}" />
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+
+    <ui:define name="telaInclusaoAlteracao">
+
+        <p:outputPanel id="outputPanelDetalhe">
+
+            <p:outputPanel rendered="#{!contabilParametroController.telaGrid}">
+                <p:panel id="panelCentroDetalhe" style="border: none" header="Contabil Parametro">
+
+                    <p:outputLabel value="Nenhum registro selecionado."
+                        rendered="#{empty contabilParametroController.objeto}" />
+                    <p:commandButton value="Voltar"
+                        actionListener="#{contabilParametroController.voltar()}"
+                        update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                        rendered="#{empty contabilParametroController.objeto}" />
+
+                    <p:outputPanel rendered="#{not empty contabilParametroController.objeto}">
+
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="contabilParametroMascara" label="Mascara"
+                            nomeAtributo="#{contabilParametroController.objeto.mascara}"
+                            tamanhoMaximo="30" />
+                        <t2ti:campoInteiro styleClass="t2ti-campo-20"
+                            idComponente="contabilParametroNiveis" label="Niveis"
+                            nomeAtributo="#{contabilParametroController.objeto.niveis}" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-20"
+                            idComponente="contabilParametroInformarContaPor" label="Informar Conta Por"
+                            nomeAtributo="#{contabilParametroController.objeto.informarContaPor}"
+                            itens="#{contabilParametroController.informarContaContabil}" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-20"
+                            idComponente="contabilParametroCompartilhaPlanoConta" label="Compartilha Plano Conta"
+                            nomeAtributo="#{contabilParametroController.objeto.compartilhaPlanoConta}"
+                            itens="#{contabilParametroController.simNao}" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-20"
+                            idComponente="contabilParametroCompartilhaHistoricos" label="Compartilha Historicos"
+                            nomeAtributo="#{contabilParametroController.objeto.compartilhaHistoricos}"
+                            itens="#{contabilParametroController.simNao}" />
+                        
+                        <t2ti:campoSelect styleClass="t2ti-campo-30"
+                            idComponente="contabilParametroAlteraLancamentoOutro" label="Altera Lancamento Outro"
+                            nomeAtributo="#{contabilParametroController.objeto.alteraLancamentoOutro}"
+                            itens="#{contabilParametroController.simNao}" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-20"
+                            idComponente="contabilParametroHistoricoObrigatorio" label="Historico Obrigatorio"
+                            nomeAtributo="#{contabilParametroController.objeto.historicoObrigatorio}"
+                            itens="#{contabilParametroController.simNao}" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-30"
+                            idComponente="contabilParametroPermiteLancamentoZerado" label="Permite Lancamento Zerado"
+                            nomeAtributo="#{contabilParametroController.objeto.permiteLancamentoZerado}"
+                            itens="#{contabilParametroController.simNao}" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-20"
+                            idComponente="contabilParametroGeraInformativoSped" label="Gera Informativo Sped"
+                            nomeAtributo="#{contabilParametroController.objeto.geraInformativoSped}"
+                            itens="#{contabilParametroController.simNao}" />
+                        
+                        <t2ti:campoTexto styleClass="t2ti-campo-30"
+                            idComponente="contabilParametroSpedFormaEscritDiario" label="Sped Forma Escrit Diario"
+                            nomeAtributo="#{contabilParametroController.objeto.spedFormaEscritDiario}"
+                            tamanhoMaximo="3" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-30"
+                            idComponente="contabilParametroSpedNomeLivroDiario" label="Sped Nome Livro Diario"
+                            nomeAtributo="#{contabilParametroController.objeto.spedNomeLivroDiario}"
+                            tamanhoMaximo="100" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="contabilParametroContaAtivo" label="Conta Ativo"
+                            nomeAtributo="#{contabilParametroController.objeto.contaAtivo}"
+                            tamanhoMaximo="30" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="contabilParametroContaPassivo" label="Conta Passivo"
+                            nomeAtributo="#{contabilParametroController.objeto.contaPassivo}"
+                            tamanhoMaximo="30" />
+                        
+                        <t2ti:campoTexto styleClass="t2ti-campo-30"
+                            idComponente="contabilParametroContaPatrimonioLiquido" label="Conta Patrimonio Liquido"
+                            nomeAtributo="#{contabilParametroController.objeto.contaPatrimonioLiquido}"
+                            tamanhoMaximo="30" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-30"
+                            idComponente="contabilParametroContaDepreciacaoAcumulada" label="Conta Depreciacao Acumulada"
+                            nomeAtributo="#{contabilParametroController.objeto.contaDepreciacaoAcumulada}"
+                            tamanhoMaximo="30" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="contabilParametroContaCapitalSocial" label="Conta Capital Social"
+                            nomeAtributo="#{contabilParametroController.objeto.contaCapitalSocial}"
+                            tamanhoMaximo="30" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="contabilParametroContaResultadoExercicio" label="Conta Resultado Exercicio"
+                            nomeAtributo="#{contabilParametroController.objeto.contaResultadoExercicio}"
+                            tamanhoMaximo="30" />
+                        
+                        <t2ti:campoTexto styleClass="t2ti-campo-30"
+                            idComponente="contabilParametroContaPrejuizoAcumulado" label="Conta Prejuizo Acumulado"
+                            nomeAtributo="#{contabilParametroController.objeto.contaPrejuizoAcumulado}"
+                            tamanhoMaximo="30" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-30"
+                            idComponente="contabilParametroContaLucroAcumulado" label="Conta Lucro Acumulado"
+                            nomeAtributo="#{contabilParametroController.objeto.contaLucroAcumulado}"
+                            tamanhoMaximo="30" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="contabilParametroContaTituloPagar" label="Conta Titulo Pagar"
+                            nomeAtributo="#{contabilParametroController.objeto.contaTituloPagar}"
+                            tamanhoMaximo="30" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="contabilParametroContaTituloReceber" label="Conta Titulo Receber"
+                            nomeAtributo="#{contabilParametroController.objeto.contaTituloReceber}"
+                            tamanhoMaximo="30" />
+                        
+                        <t2ti:campoTexto styleClass="t2ti-campo-30"
+                            idComponente="contabilParametroContaJurosPassivo" label="Conta Juros Passivo"
+                            nomeAtributo="#{contabilParametroController.objeto.contaJurosPassivo}"
+                            tamanhoMaximo="30" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-30"
+                            idComponente="contabilParametroContaJurosAtivo" label="Conta Juros Ativo"
+                            nomeAtributo="#{contabilParametroController.objeto.contaJurosAtivo}"
+                            tamanhoMaximo="30" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="contabilParametroContaDescontoObtido" label="Conta Desc Obtido"
+                            nomeAtributo="#{contabilParametroController.objeto.contaDescontoObtido}"
+                            tamanhoMaximo="30" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="contabilParametroContaDescontoConcedido" label="Conta Desc Concedido"
+                            nomeAtributo="#{contabilParametroController.objeto.contaDescontoConcedido}"
+                            tamanhoMaximo="30" />
+                        
+                        <t2ti:campoTexto styleClass="t2ti-campo-30"
+                            idComponente="contabilParametroContaVendaServico" label="Conta Venda Servico"
+                            nomeAtributo="#{contabilParametroController.objeto.contaVendaServico}"
+                            tamanhoMaximo="30" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-30"
+                            idComponente="contabilParametroContaEstoque" label="Conta Estoque"
+                            nomeAtributo="#{contabilParametroController.objeto.contaEstoque}"
+                            tamanhoMaximo="30" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="contabilParametroContaCmv" label="Conta Cmv"
+                            nomeAtributo="#{contabilParametroController.objeto.contaCmv}"
+                            tamanhoMaximo="30" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="contabilParametroContaVenda" label="Conta Venda"
+                            nomeAtributo="#{contabilParametroController.objeto.contaVenda}"
+                            tamanhoMaximo="30" />
+
+                        <t2ti:campoTexto styleClass="t2ti-campo-30"
+                            idComponente="contabilParametroContaApuraResultado" label="Conta Apura Resultado"
+                            nomeAtributo="#{contabilParametroController.objeto.contaApuraResultado}"
+                            tamanhoMaximo="30" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-30"
+                            idComponente="contabilParametroContaJurosApropriar" label="Conta Juros Apropriar"
+                            nomeAtributo="#{contabilParametroController.objeto.contaJurosApropriar}"
+                            tamanhoMaximo="30" />
+                        
+                        <div class="t2ti-campo-100" />
+                        
+                        <t2ti:campoInteiro styleClass="t2ti-campo-30"
+                            idComponente="contabilParametroIdHistPadraoResultado" label="Id Hist Padrao Resultado"
+                            nomeAtributo="#{contabilParametroController.objeto.idHistPadraoResultado}" />
+                        <t2ti:campoInteiro styleClass="t2ti-campo-30"
+                            idComponente="contabilParametroIdHistPadraoLucro" label="Id Hist Padrao Lucro"
+                            nomeAtributo="#{contabilParametroController.objeto.idHistPadraoLucro}" />
+                        <t2ti:campoInteiro styleClass="t2ti-campo-30"
+                            idComponente="contabilParametroIdHistPadraoPrejuizo" label="Id Hist Padrao Prejuizo"
+                            nomeAtributo="#{contabilParametroController.objeto.idHistPadraoPrejuizo}" />
+                            
+                            
+                        <t2ti:campoAreaTexto styleClass="t2ti-campo-50"
+                            idComponente="contabilParametroAssinaturaDireita" label="Assinatura Direita"
+                            nomeAtributo="#{contabilParametroController.objeto.assinaturaDireita}" />
+                        <t2ti:campoAreaTexto styleClass="t2ti-campo-50"
+                            idComponente="contabilParametroAssinaturaEsquerda" label="Assinatura Esquerda"
+                            nomeAtributo="#{contabilParametroController.objeto.assinaturaEsquerda}" />
+                            
+                    </p:outputPanel>
+                    <p:outputPanel rendered="#{not empty contabilParametroController.objeto}" styleClass="t2ti-campo-100" >
+
+                        <p:commandButton value="Incluir"
+                            rendered="#{empty contabilParametroController.objeto.id}"
+                            actionListener="#{contabilParametroController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!contabilParametroController.podeInserir()}" />
+                        <p:commandButton value="Alterar"
+                            rendered="#{not empty contabilParametroController.objeto.id}"
+                            actionListener="#{contabilParametroController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!contabilParametroController.podeAlterar()}" />
+                        <p:commandButton value="Fechar"
+                            actionListener="#{contabilParametroController.voltar()}"
+                            update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            process="@this" />
+
+                    </p:outputPanel>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+</ui:composition>

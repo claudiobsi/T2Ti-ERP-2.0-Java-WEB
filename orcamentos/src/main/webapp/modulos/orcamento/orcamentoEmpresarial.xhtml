@@ -1,0 +1,263 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Orcamento Empresarial"
+			rendered="#{!orcamentoEmpresarialController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{orcamentoEmpresarialController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Orcamento Empresarial"
+					rendered="#{orcamentoEmpresarialController.podeConsultar()}">
+
+					<p:dataTable id="dataTableOrcamentoEmpresarial" var="obj"
+						value="#{orcamentoEmpresarialController.dataModel}"
+						paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{orcamentoEmpresarialController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{orcamentoEmpresarialController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!orcamentoEmpresarialController.podeInserir()}" />
+							<p:commandButton process="dataTableOrcamentoEmpresarial"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{orcamentoEmpresarialController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableOrcamentoEmpresarial"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{orcamentoEmpresarialController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!orcamentoEmpresarialController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Orcamento Periodo">
+							<h:outputLabel value="#{obj.orcamentoPeriodo.nome}" />
+						</p:column>
+						<p:column headerText="Nome">
+							<h:outputLabel value="#{obj.nome}" />
+						</p:column>
+						<p:column headerText="Data Inicial">
+							<h:outputLabel value="#{obj.dataInicial}" />
+						</p:column>
+						<p:column headerText="Numero Periodos">
+							<h:outputLabel value="#{obj.numeroPeriodos}" />
+						</p:column>
+						<p:column headerText="Data Base">
+							<h:outputLabel value="#{obj.dataBase}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!orcamentoEmpresarialController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Orcamento Empresarial">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty orcamentoEmpresarialController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{orcamentoEmpresarialController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty orcamentoEmpresarialController.objeto}" />
+
+					<p:tabView id="tabviewOrcamento" style="border: 0px;">
+						<p:tab title="Dados Principais">
+
+							<p:outputPanel
+								rendered="#{not empty orcamentoEmpresarialController.objeto}">
+
+								<div class="t2ti-campo-100">
+									<p:outputLabel value="Plano Natureza Financeira"
+										for="orcamentoEmpresarialPlanoNaturezaFinanceira" />
+									<br />
+									<p:autoComplete id="orcamentoEmpresarialPlanoNaturezaFinanceira"
+										value="#{orcamentoEmpresarialController.objeto.planoNaturezaFinanceira}"
+										completeMethod="#{orcamentoEmpresarialController.getListaPlanoNaturezaFinanceira}"
+										var="planoNaturezaFinanceira"
+										itemLabel="#{planoNaturezaFinanceira.nome}"
+										itemValue="#{planoNaturezaFinanceira}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="100"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Orcamento Periodo"
+										for="orcamentoEmpresarialOrcamentoPeriodo" />
+									<br />
+									<p:autoComplete id="orcamentoEmpresarialOrcamentoPeriodo"
+										value="#{orcamentoEmpresarialController.objeto.orcamentoPeriodo}"
+										completeMethod="#{orcamentoEmpresarialController.getListaOrcamentoPeriodo}"
+										var="orcamentoPeriodo" itemLabel="#{orcamentoPeriodo.nome}"
+										itemValue="#{orcamentoPeriodo}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="100"
+										required="false" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+								<t2ti:campoTexto styleClass="t2ti-campo-50"
+									idComponente="orcamentoEmpresarialNome" label="Nome"
+									nomeAtributo="#{orcamentoEmpresarialController.objeto.nome}"
+									tamanhoMaximo="30" />
+
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="orcamentoEmpresarialDataInicial"
+									label="Data Inicial"
+									nomeAtributo="#{orcamentoEmpresarialController.objeto.dataInicial}" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="orcamentoEmpresarialDataBase" label="Data Base"
+									nomeAtributo="#{orcamentoEmpresarialController.objeto.dataBase}" />
+								<t2ti:campoInteiro styleClass="t2ti-campo-20"
+									idComponente="orcamentoEmpresarialNumeroPeriodos"
+									label="Numero Periodos"
+									nomeAtributo="#{orcamentoEmpresarialController.objeto.numeroPeriodos}" />
+									
+								<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+									idComponente="orcamentoEmpresarialDescricao" label="Descricao"
+									nomeAtributo="#{orcamentoEmpresarialController.objeto.descricao}" />
+									
+							</p:outputPanel>
+						</p:tab>
+
+						<p:tab title="Detalhes">
+							<p:dataTable id="dataTableOrcamentoDetalhe" var="obj"
+								value="#{orcamentoEmpresarialController.objeto.listaOrcamentoDetalhe}" paginator="true"
+								rows="10" rowsPerPageTemplate="5,10,15,20"
+								resizableColumns="true" editable="true" editMode="cell">
+
+								<f:facet name="header">
+									<p:commandButton title="Buscar Realizado"
+										icon="ui-icon-transferthick-e-w"
+										actionListener="#{orcamentoEmpresarialController.buscaValorRealizado}"
+										update="dataTableOrcamentoDetalhe" process="@this" />
+									<p:commandButton title="Calcular Variação"
+										icon="ui-icon-calculator"
+										actionListener="#{orcamentoEmpresarialController.calcularVariacao}"
+										update="dataTableOrcamentoDetalhe" process="@this" />
+								</f:facet>
+
+								<p:ajax event="cellEdit"
+									listener="#{orcamentoEmpresarialController.alteraDetalhe}" />
+
+								<p:column headerText="Natureza Financeira">
+									<h:outputLabel value="#{obj.naturezaFinanceira.descricao}" />
+								</p:column>
+								<p:column headerText="Periodo">
+									<h:outputLabel value="#{obj.periodo}" />
+								</p:column>
+								<p:column headerText="Valor Orcado" style="text-align: right;">
+									<p:cellEditor>
+										<f:facet name="output">
+											<h:outputLabel value="#{obj.valorOrcado}">
+												<f:convertNumber pattern="#,##0.00" />
+											</h:outputLabel>
+										</f:facet>
+										<f:facet name="input">
+											<pe:inputNumber value="#{obj.valorOrcado}" decimalPlaces="2" />
+										</f:facet>
+									</p:cellEditor>
+								</p:column>
+								<p:column headerText="Valor Realizado"
+									style="text-align: right;">
+									<h:outputLabel value="#{obj.valorRealizado}">
+										<f:convertNumber pattern="#,##0.00" />
+									</h:outputLabel>
+								</p:column>
+								<p:column headerText="Taxa Variacao (%)" style="text-align: right;">
+									<h:outputLabel value="#{obj.taxaVariacao}">
+										<f:convertNumber pattern="#,##0.00" />
+									</h:outputLabel>
+								</p:column>
+								<p:column headerText="Valor Variacao" style="text-align: right;">
+									<h:outputLabel value="#{obj.valorVariacao}">
+										<f:convertNumber pattern="#,##0.00" />
+									</h:outputLabel>
+								</p:column>
+							</p:dataTable>
+						</p:tab>
+
+					</p:tabView>
+
+					<p:outputPanel
+						rendered="#{not empty orcamentoEmpresarialController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty orcamentoEmpresarialController.objeto.id}"
+							actionListener="#{orcamentoEmpresarialController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!orcamentoEmpresarialController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty orcamentoEmpresarialController.objeto.id}"
+							actionListener="#{orcamentoEmpresarialController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!orcamentoEmpresarialController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{orcamentoEmpresarialController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+</ui:composition>

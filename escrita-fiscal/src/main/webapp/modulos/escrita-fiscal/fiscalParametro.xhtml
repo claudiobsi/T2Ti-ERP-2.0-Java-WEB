@@ -1,0 +1,203 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+    <ui:define name="gridDados">
+        <p:panel style="border: none" header="Fiscal Parametro"
+            rendered="#{!fiscalParametroController.podeConsultar()}">
+            <p:outputLabel value="Você não possui acesso a esta função" />
+        </p:panel>
+
+        <p:outputPanel id="outputPanelGrid">
+
+            <p:outputPanel rendered="#{fiscalParametroController.telaGrid}">
+
+                <p:panel id="panelCentroGrid" style="border: none" header="Fiscal Parametro"
+                     rendered="#{fiscalParametroController.podeConsultar()}">
+
+                    <p:dataTable id="dataTableFiscalParametro" var="obj"
+                        value="#{fiscalParametroController.dataModel}" paginator="true"
+                        rows="10" rowsPerPageTemplate="5,10,15,20"
+                        selection="#{fiscalParametroController.objetoSelecionado}"
+                        selectionMode="single" resizableColumns="true" lazy="true">
+
+                        <f:facet name="header">
+                            <p:commandButton title="Novo" icon="ui-icon-plus"
+                                actionListener="#{fiscalParametroController.incluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!fiscalParametroController.podeInserir()}" />
+                            <p:commandButton process="dataTableFiscalParametro" title="Detalhes"
+                                icon="ui-icon-zoomin"
+                                actionListener="#{fiscalParametroController.alterar()}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+                            <p:commandButton process="dataTableFiscalParametro" title="Excluir"
+                                icon="ui-icon-trash"
+                                actionListener="#{fiscalParametroController.excluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!fiscalParametroController.podeExcluir()}">
+                                <p:confirm header="Confirmação" message="Confirma Exclusão?"
+                                    icon="ui-icon-alert" />
+                            </p:commandButton>
+                        </f:facet>
+
+                        <p:column headerText="Vigencia">
+                            <h:outputLabel value="#{obj.vigencia}" />
+                        </p:column>
+                        <p:column headerText="Descricao Vigencia">
+                            <h:outputLabel value="#{obj.descricaoVigencia}" />
+                        </p:column>
+                        <p:column headerText="Criterio Lancamento">
+                            <h:outputLabel value="#{fiscalParametroController.keyFromValue(fiscalParametroController.criterioLancamentoFechamento, obj.criterioLancamento)}" />
+                        </p:column>
+                        <p:column headerText="Apuracao">
+                            <h:outputLabel value="#{fiscalParametroController.keyFromValue(fiscalParametroController.fiscalParametrosApuracao, obj.apuracao)}" />
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+
+    <ui:define name="telaInclusaoAlteracao">
+
+        <p:outputPanel id="outputPanelDetalhe">
+
+            <p:outputPanel rendered="#{!fiscalParametroController.telaGrid}">
+                <p:panel id="panelCentroDetalhe" style="border: none" header="Fiscal Parametro">
+
+                    <p:outputLabel value="Nenhum registro selecionado."
+                        rendered="#{empty fiscalParametroController.objeto}" />
+                    <p:commandButton value="Voltar"
+                        actionListener="#{fiscalParametroController.voltar()}"
+                        update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                        rendered="#{empty fiscalParametroController.objeto}" />
+
+                    <p:outputPanel rendered="#{not empty fiscalParametroController.objeto}">
+
+                        <t2ti:campoMascara styleClass="t2ti-campo-20"
+                            idComponente="fiscalParametroVigencia" label="Vigencia"
+                            nomeAtributo="#{fiscalParametroController.objeto.vigencia}"
+                            mascara="99/9999" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-60"
+                            idComponente="fiscalParametroDescricaoVigencia" label="Descricao Vigencia"
+                            nomeAtributo="#{fiscalParametroController.objeto.descricaoVigencia}"
+                            tamanhoMaximo="100" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-20"
+                            idComponente="fiscalParametroCriterioLancamento" label="Criterio Lancamento"
+                            nomeAtributo="#{fiscalParametroController.objeto.criterioLancamento}"
+                            itens="#{fiscalParametroController.criterioLancamentoFechamento}" />
+                        
+                        <t2ti:separador label="Federal" />
+                        
+                        <t2ti:campoSelect styleClass="t2ti-campo-20"
+                            idComponente="fiscalParametroApuracao" label="Apuracao"
+                            nomeAtributo="#{fiscalParametroController.objeto.apuracao}"
+                            itens="#{fiscalParametroController.simNao}" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-30"
+                            idComponente="fiscalParametroMicroempreeIndividual" label="Microempreendedor Individual"
+                            nomeAtributo="#{fiscalParametroController.objeto.microempreeIndividual}"
+                            itens="#{fiscalParametroController.simNao}" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-30"
+                            idComponente="fiscalParametroCalcPisCofinsEfd" label="Calculo Pis Cofins Efd"
+                            nomeAtributo="#{fiscalParametroController.objeto.calcPisCofinsEfd}"
+                            itens="#{fiscalParametroController.fiscalParametrosCalculoPisCofins}" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="fiscalParametroSimplesCodigoAcesso" label="Simples Codigo Acesso"
+                            nomeAtributo="#{fiscalParametroController.objeto.simplesCodigoAcesso}"
+                            tamanhoMaximo="50" />
+                        
+                        <div class="t2ti-campo-100"/>
+                        
+                        <t2ti:campoSelect styleClass="t2ti-campo-20"
+                            idComponente="fiscalParametroSimplesTabela" label="Simples Tabela"
+                            nomeAtributo="#{fiscalParametroController.objeto.simplesTabela}"
+                            itens="#{fiscalParametroController.simplesNacionalCabecalho}" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-30"
+                            idComponente="fiscalParametroSimplesAtividade" label="Simples Atividade"
+                            nomeAtributo="#{fiscalParametroController.objeto.simplesAtividade}"
+                            itens="#{fiscalParametroController.fiscalParametrosSimplesAtividade}" />
+                        
+                        <t2ti:separador label="Estadual" />
+                        
+                        <t2ti:campoSelect styleClass="t2ti-campo-20"
+                            idComponente="fiscalParametroPerfilSped" label="Perfil Sped"
+                            nomeAtributo="#{fiscalParametroController.objeto.perfilSped}"
+                            itens="#{fiscalParametroController.spedPerfil}" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-40"
+                            idComponente="fiscalParametroApuracaoConsolidada" label="Apuracao Consolidada"
+                            nomeAtributo="#{fiscalParametroController.objeto.apuracaoConsolidada}"
+                            itens="#{fiscalParametroController.simNao}" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-40"
+                            idComponente="fiscalParametroSubstituicaoTributaria" label="Substituicao Tributaria"
+                            nomeAtributo="#{fiscalParametroController.objeto.substituicaoTributaria}"
+                            itens="#{fiscalParametroController.simNao}" />
+                        
+                        <t2ti:separador label="Municipal" />
+                        
+                        <t2ti:campoSelect styleClass="t2ti-campo-40"
+                            idComponente="fiscalParametroFormaCalculoIss" label="Forma Calculo Iss"
+                            nomeAtributo="#{fiscalParametroController.objeto.formaCalculoIss}"
+                            itens="#{fiscalParametroController.fiscalParametrosFormaCalculoIss}" />
+                    </p:outputPanel>
+                    <p:outputPanel rendered="#{not empty fiscalParametroController.objeto}" styleClass="t2ti-campo-100" >
+
+                        <p:commandButton value="Incluir"
+                            rendered="#{empty fiscalParametroController.objeto.id}"
+                            actionListener="#{fiscalParametroController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!fiscalParametroController.podeInserir()}" />
+                        <p:commandButton value="Alterar"
+                            rendered="#{not empty fiscalParametroController.objeto.id}"
+                            actionListener="#{fiscalParametroController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!fiscalParametroController.podeAlterar()}" />
+                        <p:commandButton value="Fechar"
+                            actionListener="#{fiscalParametroController.voltar()}"
+                            update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            process="@this" />
+
+                    </p:outputPanel>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+</ui:composition>

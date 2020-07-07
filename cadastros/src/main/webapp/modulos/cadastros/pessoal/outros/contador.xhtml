@@ -1,0 +1,211 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Contador"
+			rendered="#{!contadorController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{contadorController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none" header="Contador"
+					rendered="#{contadorController.podeConsultar()}">
+
+					<p:dataTable id="dataTableContador" var="obj"
+						value="#{contadorController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{contadorController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{contadorController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!contadorController.podeInserir()}" />
+							<p:commandButton process="dataTableContador" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{contadorController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableContador" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{contadorController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!contadorController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Nome">
+							<h:outputLabel value="#{obj.nome}" />
+						</p:column>
+						<p:column headerText="Inscricao Crc">
+							<h:outputLabel value="#{obj.inscricaoCrc}" />
+						</p:column>
+						<p:column headerText="Uf Crc">
+							<h:outputLabel value="#{obj.ufCrc}" />
+						</p:column>
+						<p:column headerText="Fone">
+							<h:outputLabel value="#{obj.fone}" />
+						</p:column>
+						<p:column headerText="Email">
+							<h:outputLabel value="#{obj.email}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!contadorController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Contador">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty contadorController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{contadorController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty contadorController.objeto}" />
+
+					<p:outputPanel rendered="#{not empty contadorController.objeto}">
+
+						<t2ti:campoTexto styleClass="t2ti-campo-100"
+							idComponente="contadorNome" label="Nome"
+							nomeAtributo="#{contadorController.objeto.nome}"
+							tamanhoMaximo="150" requerido="true" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="contadorInscricaoCrc" label="Inscricao Crc"
+							nomeAtributo="#{contadorController.objeto.inscricaoCrc}"
+							tamanhoMaximo="15" />
+						<t2ti:campoTexto styleClass="t2ti-campo-10"
+							idComponente="contadorUfCrc" label="Uf Crc"
+							nomeAtributo="#{contadorController.objeto.ufCrc}"
+							tamanhoMaximo="2" />
+						<t2ti:campoCpf styleClass="t2ti-campo-20"
+							idComponente="contadorCpf" label="Cpf"
+							nomeAtributo="#{contadorController.objeto.cpf}" />
+						<t2ti:campoCnpj styleClass="t2ti-campo-20"
+							idComponente="contadorCnpj" label="Cnpj"
+							nomeAtributo="#{contadorController.objeto.cnpj}" />
+							
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="contadorLogradouro" label="Logradouro"
+							nomeAtributo="#{contadorController.objeto.logradouro}"
+							tamanhoMaximo="100" />
+						<t2ti:campoTexto styleClass="t2ti-campo-10"
+							idComponente="contadorNumero" label="Numero"
+							nomeAtributo="#{contadorController.objeto.numero}"
+							tamanhoMaximo="10" />
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="contadorComplemento" label="Complemento"
+							nomeAtributo="#{contadorController.objeto.complemento}"
+							tamanhoMaximo="100" />
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="contadorBairro" label="Bairro"
+							nomeAtributo="#{contadorController.objeto.bairro}"
+							tamanhoMaximo="60" />
+						
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="contadorCidade" label="Cidade"
+							nomeAtributo="#{contadorController.objeto.cidade}"
+							tamanhoMaximo="60" />
+						<t2ti:campoTexto styleClass="t2ti-campo-10"
+							idComponente="contadorCep" label="Cep"
+							nomeAtributo="#{contadorController.objeto.cep}" tamanhoMaximo="8" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-20"
+							idComponente="contadorMunicipioIbge" label="Municipio Ibge"
+							nomeAtributo="#{contadorController.objeto.municipioIbge}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-10"
+							idComponente="contadorUf" label="Uf"
+							nomeAtributo="#{contadorController.objeto.uf}" tamanhoMaximo="2" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="contadorFone" label="Fone"
+							nomeAtributo="#{contadorController.objeto.fone}"
+							tamanhoMaximo="14" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="contadorFax" label="Fax"
+							nomeAtributo="#{contadorController.objeto.fax}"
+							tamanhoMaximo="14" />
+						
+						<t2ti:campoTexto styleClass="t2ti-campo-40"
+							idComponente="contadorEmail" label="Email"
+							nomeAtributo="#{contadorController.objeto.email}"
+							tamanhoMaximo="250" />
+						<t2ti:campoTexto styleClass="t2ti-campo-60"
+							idComponente="contadorSite" label="Site"
+							nomeAtributo="#{contadorController.objeto.site}"
+							tamanhoMaximo="250" />
+					</p:outputPanel>
+					<p:outputPanel rendered="#{not empty contadorController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty contadorController.objeto.id}"
+							actionListener="#{contadorController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!contadorController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty contadorController.objeto.id}"
+							actionListener="#{contadorController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!contadorController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{contadorController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+</ui:composition>

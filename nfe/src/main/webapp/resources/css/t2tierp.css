@@ -1,0 +1,111 @@
+.ui-layout-north {
+	z-index: 20 !important;
+	overflow: visible !important;;
+}
+
+.ui-layout-north .ui-layout-unit-content {
+	overflow: visible !important;
+}
+
+.ui-layout-south {
+	z-index: 20 !important;
+	overflow: visible !important;;
+}
+
+.ui-layout-south .ui-layout-unit-content {
+	overflow: visible !important;
+}
+
+.ui-panel .ui-panel-content {
+	padding: 0 !important;
+}
+
+.ui-widget {
+	font-size: 90% !important;
+}
+
+.ui-outputpanel {
+	font-size: 100% !important;
+}
+
+.ui-datatable .ui-datatable-header {
+	text-align: left !important;
+}
+
+.ui-autocomplete-input {
+	width: 100%;
+}
+
+.ui-inputfield {
+	width: 100% !important;
+}
+
+.t2ti-campo-10 {
+	float: left;
+	width: 8%;
+	padding-right: 2%;
+	padding-bottom: 1%;
+}
+
+.t2ti-campo-20 {
+	float: left;
+	width: 18%;
+	padding-right: 2%;
+	padding-bottom: 1%;
+}
+
+.t2ti-campo-30 {
+	float: left;
+	width: 28%;
+	padding-right: 2%;
+	padding-bottom: 1%;
+}
+
+.t2ti-campo-40 {
+	float: left;
+	width: 38%;
+	padding-right: 2%;
+	padding-bottom: 1%;
+}
+
+.t2ti-campo-50 {
+	float: left;
+	width: 48%;
+	padding-right: 2%;
+	padding-bottom: 1%;
+}
+
+.t2ti-campo-60 {
+	float: left;
+	width: 58%;
+	padding-right: 2%;
+	padding-bottom: 1%;
+}
+
+.t2ti-campo-70 {
+	float: left;
+	width: 68%;
+	padding-right: 2%;
+	padding-bottom: 1%;
+}
+
+.t2ti-campo-80 {
+	float: left;
+	width: 78%;
+	padding-right: 2%;
+	padding-bottom: 1%;
+}
+
+.t2ti-campo-90 {
+	float: left;
+	width: 88%;
+	padding-right: 2%;
+	padding-bottom: 1%;
+}
+
+.t2ti-campo-100 {
+	float: left;
+	width: 98%;
+	padding-right: 2%;
+	padding-bottom: 1%;
+}

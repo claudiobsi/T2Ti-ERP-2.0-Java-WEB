@@ -1,0 +1,898 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Entrada Nota Fiscal"
+			rendered="#{!entradaNotaFiscalController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{entradaNotaFiscalController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Entrada Nota Fiscal"
+					rendered="#{entradaNotaFiscalController.podeConsultar()}">
+
+					<p:dataTable id="dataTableNfeCabecalho" var="obj"
+						value="#{entradaNotaFiscalController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{entradaNotaFiscalController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true"
+						sortBy="#{obj.numero}" sortOrder="descending">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{entradaNotaFiscalController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!entradaNotaFiscalController.podeInserir()}" />
+							<p:commandButton process="dataTableNfeCabecalho" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{entradaNotaFiscalController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableNfeCabecalho" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{entradaNotaFiscalController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="true">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Fornecedor" width="150">
+							<h:outputLabel value="#{obj.fornecedor.pessoa.nome}" />
+						</p:column>
+						<p:column headerText="Serie" width="30">
+							<h:outputLabel value="#{obj.serie}" />
+						</p:column>
+						<p:column headerText="Numero">
+							<h:outputLabel value="#{obj.numero}" />
+						</p:column>
+						<p:column headerText="Data Emissao">
+							<h:outputLabel value="#{obj.dataHoraEmissao}">
+								<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Valor Total">
+							<h:outputLabel value="#{obj.valorTotal}">
+								<f:convertNumber pattern="#,###,##0.00" />
+							</h:outputLabel>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+			<p:outputPanel rendered="#{!entradaNotaFiscalController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Entrada Nota Fiscal">
+
+					<f:facet name="header">
+
+						<p:outputLabel value="Entrada Nota Fiscal" />
+
+						<p:commandButton title="Salvar" icon="ui-icon-disk"
+							actionListener="#{entradaNotaFiscalController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!entradaNotaFiscalController.podeInserir() || !entradaNotaFiscalController.podeAlterar()}" />
+						<p:commandButton title="Importar XML" icon="ui-icon-arrowthick-1-n"
+							update=":formUploadArquivo:dialogUploadArquivo"
+							oncomplete="PF('dialogUploadArquivo').show()" />
+						<p:commandButton title="Fechar"
+							icon="ui-icon-arrowreturnthick-1-w"
+							actionListener="#{entradaNotaFiscalController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+					</f:facet>
+
+					<p:tabView id="tabNfe" style="border: 0px;">
+						<p:tab title="Dados Principais">
+							<p:outputPanel
+								rendered="#{!entradaNotaFiscalController.telaGrid}">
+
+								<p:outputLabel value="Nenhum registro selecionado."
+									rendered="#{empty entradaNotaFiscalController.objeto}" />
+								<p:commandButton value="Voltar"
+									actionListener="#{entradaNotaFiscalController.voltar()}"
+									update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+									rendered="#{empty entradaNotaFiscalController.objeto}" />
+
+								<p:outputPanel
+									rendered="#{not empty entradaNotaFiscalController.objeto}">
+
+									<t2ti:campoSelect styleClass="t2ti-campo-30"
+										idComponente="nfeCabecalhoCodigoModelo" label="Codigo Modelo"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.codigoModelo}"
+										itens="#{entradaNotaFiscalController.codigoModeloNfe}" />
+									<t2ti:campoTexto styleClass="t2ti-campo-70"
+										idComponente="nfeCabecalhoNaturezaOperacao"
+										label="Natureza Operacao"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.naturezaOperacao}"
+										tamanhoMaximo="60" id="campoNfeCabecalhoNaturezaOperacao" />
+
+									<div class="t2ti-campo-100" />
+									
+									<t2ti:campoTexto styleClass="t2ti-campo-40"
+										idComponente="nfeCabecalhoChaveAcesso" label="Chave Acesso"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.chaveAcesso}"
+										tamanhoMaximo="44" somenteLeitura="true" />
+									<t2ti:campoTexto styleClass="t2ti-campo-10"
+										idComponente="nfeCabecalhoDigitoChaveAcesso" label="DV"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.digitoChaveAcesso}"
+										itens="#{entradaNotaFiscalController.simNao}"
+										somenteLeitura="true" />
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoCodigoNumerico"
+										label="Codigo Numerico"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.codigoNumerico}"
+										tamanhoMaximo="8" somenteLeitura="true" />
+									<t2ti:campoTexto styleClass="t2ti-campo-10"
+										idComponente="nfeCabecalhoSerie" label="Serie"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.serie}"
+										tamanhoMaximo="3" somenteLeitura="true" />
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoNumero" label="Numero"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.numero}"
+										tamanhoMaximo="9" somenteLeitura="true" />
+
+									<t2ti:campoData styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoDataHoraEmissao"
+										label="Data/Hora Emissao"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.dataHoraEmissao}"
+										somenteLeitura="true" formato="dd/MM/yyyy HH:mm" />
+									<t2ti:campoData styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoDataHoraEntradaSaida"
+										label="Data/Hora Entrada Saida"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.dataHoraEntradaSaida}"
+										somenteLeitura="true" formato="dd/MM/yyyy HH:mm" />
+									<t2ti:campoSelect styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoLocalDestino" label="Local Destino"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.localDestino}"
+										itens="#{entradaNotaFiscalController.localDestinoNfe}" />
+									<t2ti:campoSelect styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoConsumidorOperacao"
+										label="Consumidor Operacao"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.consumidorOperacao}"
+										itens="#{entradaNotaFiscalController.consumidorOperacaoNfe}" />
+									<t2ti:campoSelect styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoConsumidorPresenca"
+										label="Consumidor Presenca"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.consumidorPresenca}"
+										itens="#{entradaNotaFiscalController.consumidorPresencaNfe}" />
+
+									<t2ti:campoSelect styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoTipoOperacao" label="Tipo Operacao"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.tipoOperacao}"
+										itens="#{entradaNotaFiscalController.tipoOperacaoNfe}" />
+									<t2ti:campoSelect styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoTipoEmissao" label="Tipo Emissao"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.tipoEmissao}"
+										itens="#{entradaNotaFiscalController.tipoEmissaoNfe}" />
+									<t2ti:campoSelect styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoFinalidadeEmissao"
+										label="Finalidade"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.finalidadeEmissao}"
+										itens="#{entradaNotaFiscalController.finalidadeEmissaoNfe}" />
+									<t2ti:campoSelect styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoFormatoImpressaoDanfe"
+										label="Formato Danfe"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.formatoImpressaoDanfe}"
+										itens="#{entradaNotaFiscalController.formatoImpressaoDanfeNfe}" />
+									<t2ti:campoSelect styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoIndicadorFormaPagamento"
+										label="Forma Pagamento"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.indicadorFormaPagamento}"
+										itens="#{entradaNotaFiscalController.indicadorFormaPagamentoNfe}" />
+
+									<p:outputPanel id="outputPanelTotais">
+										<t2ti:separador label="Totais" />
+
+										<t2ti:campoDecimal styleClass="t2ti-campo-30"
+											idComponente="nfeCabecalhoBaseCalculoIcms"
+											label="Base Calculo Icms"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.baseCalculoIcms}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorIcms" label="Valor Icms"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorIcms}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-30"
+											idComponente="nfeCabecalhoBaseCalculoIcmsSt"
+											label="Base Calculo Icms St"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.baseCalculoIcmsSt}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorIcmsSt" label="Valor Icms St"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorIcmsSt}" />
+
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorPis" label="Valor Pis"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorPis}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorCofins" label="Valor Cofins"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorCofins}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-30"
+											idComponente="nfeCabecalhoValorIpi" label="Valor Ipi"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorIpi}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-30"
+											idComponente="nfeCabecalhoValorImpostoImportacao"
+											label="Valor Imposto Importacao"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorImpostoImportacao}" />
+
+										<t2ti:campoDecimal styleClass="t2ti-campo-30"
+											idComponente="nfeCabecalhoValorDespesasAcessorias"
+											label="Valor Despesas Acessorias"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorDespesasAcessorias}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorFrete" label="Valor Frete"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorFrete}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorSeguro" label="Valor Seguro"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorSeguro}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-30"
+											idComponente="nfeCabecalhoValorDesconto"
+											label="Valor Desconto"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorDesconto}" />
+
+										<t2ti:campoDecimal styleClass="t2ti-campo-30"
+											idComponente="nfeCabecalhoValorTotalProdutos"
+											label="Valor Total Produtos"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorTotalProdutos}"
+											somenteLeitura="true" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-30"
+											idComponente="nfeCabecalhoValorTotal" label="Valor Total"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorTotal}"
+											somenteLeitura="true" />
+
+										<t2ti:separador label="Outros Totais" />
+
+
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoBaseCalculoIssqn"
+											label="Base Calculo Issqn"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.baseCalculoIssqn}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorIssqn" label="Valor Issqn"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorIssqn}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorPisIssqn"
+											label="Valor Pis Issqn"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorPisIssqn}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorCofinsIssqn"
+											label="Valor Cofins Issqn"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorCofinsIssqn}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorServicos"
+											label="Valor Servicos"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorServicos}" />
+
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorRetidoPis"
+											label="Valor Retido Pis"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorRetidoPis}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorRetidoCofins"
+											label="Valor Retido Cofins"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorRetidoCofins}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorRetidoCsll"
+											label="Valor Retido Csll"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorRetidoCsll}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoBaseCalculoIrrf"
+											label="Base Calculo Irrf"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.baseCalculoIrrf}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorRetidoIrrf"
+											label="Valor Retido Irrf"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorRetidoIrrf}" />
+
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoBaseCalculoPrevidencia"
+											label="Base Calculo Previdencia"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.baseCalculoPrevidencia}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorRetidoPrevidencia"
+											label="Valor Retido Previdencia"
+											nomeAtributo="#{entradaNotaFiscalController.objeto.valorRetidoPrevidencia}" />
+									</p:outputPanel>
+
+									<t2ti:separador label="Informações Adicionais" />
+
+									<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+										idComponente="nfeCabecalhoInformacoesAddFisco"
+										label="Informacoes Add Fisco"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.informacoesAddFisco}" />
+									<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+										idComponente="nfeCabecalhoInformacoesAddContribuinte"
+										label="Informacoes Add Contribuinte"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.informacoesAddContribuinte}" />
+								</p:outputPanel>
+
+							</p:outputPanel>
+						</p:tab>
+
+						<p:tab title="Emitente"
+							disabled="#{empty entradaNotaFiscalController.objeto}">
+
+							<p:outputPanel id="outputPanelEmitente">
+
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfeEmitenteCpfCnpj" label="Cpf Cnpj"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.cpfCnpj}"
+									tamanhoMaximo="14" />
+								<t2ti:campoTexto styleClass="t2ti-campo-40"
+									idComponente="nfeEmitenteNome" label="Razao Social"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.nome}"
+									tamanhoMaximo="60" />
+								<t2ti:campoTexto styleClass="t2ti-campo-40"
+									idComponente="nfeEmitenteFantasia" label="Fantasia"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.fantasia}"
+									tamanhoMaximo="60" />
+
+								<t2ti:campoTexto styleClass="t2ti-campo-30"
+									idComponente="nfeEmitenteLogradouro" label="Logradouro"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.logradouro}"
+									tamanhoMaximo="60" />
+								<t2ti:campoTexto styleClass="t2ti-campo-10"
+									idComponente="nfeEmitenteNumero" label="Numero"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.numero}"
+									tamanhoMaximo="60" />
+								<t2ti:campoTexto styleClass="t2ti-campo-30"
+									idComponente="nfeEmitenteComplemento" label="Complemento"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.complemento}"
+									tamanhoMaximo="60" />
+								<t2ti:campoTexto styleClass="t2ti-campo-30"
+									idComponente="nfeEmitenteBairro" label="Bairro"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.bairro}"
+									tamanhoMaximo="60" />
+
+								<t2ti:campoInteiro styleClass="t2ti-campo-20"
+									idComponente="nfeEmitenteCodigoMunicipio"
+									label="Codigo Municipio"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.codigoMunicipio}" />
+								<t2ti:campoTexto styleClass="t2ti-campo-30"
+									idComponente="nfeEmitenteNomeMunicipio" label="Nome Municipio"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.nomeMunicipio}"
+									tamanhoMaximo="60" />
+								<t2ti:campoTexto styleClass="t2ti-campo-10"
+									idComponente="nfeEmitenteUf" label="UF"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.uf}"
+									tamanhoMaximo="2" />
+								<t2ti:campoTexto styleClass="t2ti-campo-10"
+									idComponente="nfeEmitenteCep" label="Cep"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.cep}"
+									tamanhoMaximo="8" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfeEmitenteTelefone" label="Telefone"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.telefone}"
+									tamanhoMaximo="14" />
+
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfeEmitenteInscricaoEstadual"
+									label="Inscricao Estadual"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.inscricaoEstadual}"
+									tamanhoMaximo="14" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfeEmitenteInscricaoEstadualSt"
+									label="Inscricao Estadual ST"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.inscricaoEstadualSt}"
+									tamanhoMaximo="14" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfeEmitenteInscricaoMunicipal"
+									label="Inscricao Municipal"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.inscricaoMunicipal}"
+									tamanhoMaximo="15" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfeEmitenteCnae" label="Cnae"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.cnae}"
+									tamanhoMaximo="7" />
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="nfeEmitenteCrt" label="Crt"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.crt}"
+									itens="#{entradaNotaFiscalController.crt}" />
+
+								<t2ti:campoTexto styleClass="t2ti-campo-40"
+									idComponente="nfeEmitenteEmail" label="Email"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.email}"
+									tamanhoMaximo="60" />
+								<t2ti:campoInteiro styleClass="t2ti-campo-60"
+									idComponente="nfeEmitenteSuframa" label="Suframa"
+									nomeAtributo="#{entradaNotaFiscalController.objeto.emitente.suframa}" />
+
+							</p:outputPanel>
+						</p:tab>
+
+						<p:tab title="Produtos/Serviços">
+							<p:dataTable id="dataTableNfeDetalhe" var="obj"
+								value="#{entradaNotaFiscalController.objeto.listaNfeDetalhe}"
+								paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+								selection="#{entradaNotaFiscalController.nfeDetalheSelecionado}"
+								selectionMode="single" rowKey="#{obj.numeroItem}"
+								resizableColumns="true" sortOrder="numeroitem">
+
+								<f:facet name="header">
+									<p:commandButton title="Novo" icon="ui-icon-plus"
+										actionListener="#{entradaNotaFiscalController.incluiProduto()}"
+										update=":form1:growl,:formOutrasTelas:panelNfeDetalhe,:formOutrasTelas:dialogNfeDetalhe"
+										oncomplete="PF('dialogNfeDetalhe').show()"
+										process="@this" />
+									<p:commandButton process="dataTableNfeDetalhe" title="Alterar"
+										icon="ui-icon-pencil"
+										oncomplete="PF('dialogNfeDetalhe').show()"
+										actionListener="#{entradaNotaFiscalController.alteraProduto}"
+										update=":formOutrasTelas:panelNfeDetalhe" />
+									<p:commandButton process="dataTableNfeDetalhe"
+										title="Detalhes Impostos" icon="ui-icon-zoomin"
+										oncomplete="PF('dialogDetalheImposto').show()"
+										actionListener="#{entradaNotaFiscalController.detalheImposto()}"
+										update=":formDetalheImposto:panelDetalheImposto" />
+									<p:commandButton process="dataTableNfeDetalhe" title="Excluir"
+										icon="ui-icon-trash"
+										actionListener="#{entradaNotaFiscalController.excluirProduto}"
+										update="dataTableNfeDetalhe,:form1:tabNfe:outputPanelTotais">
+										<p:confirm header="Confirmação" message="Confirma Exclusão?"
+											icon="ui-icon-alert" />
+									</p:commandButton>
+								</f:facet>
+
+								<p:column headerText="Item">
+									<h:outputLabel value="#{obj.numeroItem}" />
+								</p:column>
+								<p:column headerText="Gtin" width="100">
+									<h:outputLabel value="#{obj.gtin}" />
+								</p:column>
+								<p:column headerText="Nome Produto/Serviço" width="200">
+									<h:outputLabel value="#{obj.nomeProduto}" />
+								</p:column>
+								<p:column headerText="Und">
+									<h:outputLabel value="#{obj.unidadeComercial}" />
+								</p:column>
+								<p:column headerText="Qtde">
+									<h:outputLabel value="#{obj.quantidadeComercial}">
+										<f:convertNumber pattern="#,###,##0.000" />
+									</h:outputLabel>
+								</p:column>
+								<p:column headerText="Vlr Unit">
+									<h:outputLabel value="#{obj.valorUnitarioComercial}">
+										<f:convertNumber pattern="#,###,##0.00" />
+									</h:outputLabel>
+								</p:column>
+								<p:column headerText="Vlr Total">
+									<h:outputLabel value="#{obj.valorTotal}">
+										<f:convertNumber pattern="#,###,##0.00" />
+									</h:outputLabel>
+								</p:column>
+							</p:dataTable>
+
+						</p:tab>
+						<p:tab title="Transporte">
+
+							<p:tabView id="tabViewReboqueVolumeLacre" style="border: none">
+								<p:tab title="Principais">
+									<t2ti:campoSelect styleClass="t2ti-campo-40"
+										idComponente="nfeTransporteModalidadeFrete"
+										label="Modalidade Frete"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.transporte.modalidadeFrete}"
+										itens="#{entradaNotaFiscalController.modalidadeFreteNfe}" />
+									<t2ti:campoTexto styleClass="t2ti-campo-30"
+										idComponente="nfeTransporteVagao" label="Vagao"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.transporte.vagao}"
+										tamanhoMaximo="20" />
+									<t2ti:campoTexto styleClass="t2ti-campo-30"
+										idComponente="nfeTransporteBalsa" label="Balsa"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.transporte.balsa}"
+										tamanhoMaximo="20" />
+
+									<div class="t2ti-campo-80">
+										<p:outputLabel value="Transportadora"
+											for="nfeTransporteTransportadora" />
+										<br />
+										<p:autoComplete id="nfeTransporteTransportadora"
+											value="#{entradaNotaFiscalController.objeto.transporte.transportadora}"
+											completeMethod="#{entradaNotaFiscalController.getListaTransportadora}"
+											var="transportadora"
+											itemLabel="#{transportadora.pessoa.nome}"
+											itemValue="#{transportadora}"
+											converter="com.t2tierp.model.bean.converter.defaultConverter"
+											forceSelection="true" minQueryLength="3" maxResults="100"
+											required="false" style="width: 100%"
+											emptyMessage="Nenhum registro encontrado" />
+									</div>
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="nfeTransporteCpfCnpj" label="Cpf Cnpj"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.transporte.cpfCnpj}"
+										tamanhoMaximo="14" />
+
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="nfeTransporteInscricaoEstadual" label="IE"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.transporte.inscricaoEstadual}"
+										tamanhoMaximo="14" />
+									<t2ti:campoTexto styleClass="t2ti-campo-40"
+										idComponente="nfeTransporteEmpresaEndereco"
+										label="Empresa Endereco"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.transporte.empresaEndereco}"
+										tamanhoMaximo="60" />
+									<t2ti:campoTexto styleClass="t2ti-campo-30"
+										idComponente="nfeTransporteNomeMunicipio" label="Municipio"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.transporte.nomeMunicipio}"
+										tamanhoMaximo="60" />
+									<t2ti:campoTexto styleClass="t2ti-campo-10"
+										idComponente="nfeTransporteUf" label="Uf"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.transporte.uf}"
+										tamanhoMaximo="2" />
+
+									<t2ti:separador label="Veículo" />
+
+									<t2ti:campoTexto styleClass="t2ti-campo-30"
+										idComponente="nfeTransportePlacaVeiculo" label="Placa Veiculo"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.transporte.placaVeiculo}"
+										tamanhoMaximo="7" />
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="nfeTransporteUfVeiculo" label="Uf Veiculo"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.transporte.ufVeiculo}"
+										tamanhoMaximo="2" />
+									<t2ti:campoTexto styleClass="t2ti-campo-30"
+										idComponente="nfeTransporteRntcVeiculo" label="Rntc Veiculo"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.transporte.rntcVeiculo}"
+										tamanhoMaximo="20" />
+
+									<t2ti:separador label="Retenção ICMS" />
+
+									<t2ti:campoDecimal styleClass="t2ti-campo-20"
+										idComponente="nfeTransporteValorServico" label="Valor Servico"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.transporte.valorServico}" />
+									<t2ti:campoDecimal styleClass="t2ti-campo-20"
+										idComponente="nfeTransporteValorBcRetencaoIcms"
+										label="Valor Bc Retencao Icms"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.transporte.valorBcRetencaoIcms}" />
+									<t2ti:campoDecimal styleClass="t2ti-campo-30"
+										idComponente="nfeTransporteAliquotaRetencaoIcms"
+										label="Aliquota Retencao Icms"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.transporte.aliquotaRetencaoIcms}" />
+									<t2ti:campoDecimal styleClass="t2ti-campo-30"
+										idComponente="nfeTransporteValorIcmsRetido"
+										label="Valor Icms Retido"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.transporte.valorIcmsRetido}" />
+
+									<t2ti:campoInteiro styleClass="t2ti-campo-30"
+										idComponente="nfeTransporteCfop" label="Cfop"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.transporte.cfop}" />
+									<t2ti:campoInteiro styleClass="t2ti-campo-30"
+										idComponente="nfeTransporteMunicipio" label="Municipio"
+										nomeAtributo="#{entradaNotaFiscalController.objeto.transporte.municipio}" />
+
+								</p:tab>
+								<p:tab title="Reboque">
+									<p:dataTable id="dataTableNfeTransporteReboque" var="obj"
+										value="#{nfeTransporteReboqueController.dataModel}"
+										paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+										selection="#{entradaNotaFiscalController.nfeTransporteReboqueSelecionado}"
+										selectionMode="single" resizableColumns="true">
+
+										<p:column headerText="Placa">
+											<h:outputLabel value="#{obj.placa}" />
+										</p:column>
+										<p:column headerText="Uf">
+											<h:outputLabel value="#{obj.uf}" />
+										</p:column>
+										<p:column headerText="Rntc">
+											<h:outputLabel value="#{obj.rntc}" />
+										</p:column>
+										<p:column headerText="Nfe Transporte">
+											<h:outputLabel value="#{obj.nfeTransporte.pessoa.nome}" />
+										</p:column>
+									</p:dataTable>
+								</p:tab>
+								<p:tab title="Volumes/Lacres">
+
+								</p:tab>
+							</p:tabView>
+
+						</p:tab>
+						<p:tab title="Documentos Referenciados">
+
+						</p:tab>
+						<p:tab title="Entrega/Retirada">
+
+						</p:tab>
+						<p:tab title="Cobrança">
+
+						</p:tab>
+						<p:tab title="Escrituração">
+
+						</p:tab>
+					</p:tabView>
+
+				</p:panel>
+			</p:outputPanel>
+		</p:outputPanel>
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+			<p:dialog id="dialogNfeDetalhe"
+				header="Inclusão/Alteração de Produto/Serviço"
+				widgetVar="dialogNfeDetalhe" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="false" width="600">
+
+				<p:outputPanel id="panelNfeDetalhe">
+					<div class="t2ti-campo-80">
+						<p:outputLabel value="Produto" for="nfeDetalheProduto" />
+						<br />
+						<p:autoComplete id="nfeDetalheProduto"
+							value="#{entradaNotaFiscalController.nfeDetalhe.produto}"
+							completeMethod="#{entradaNotaFiscalController.getListaProduto}"
+							var="produto" itemLabel="#{produto.descricaoPdv}"
+							itemValue="#{produto}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="100"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfeDetalheQuantidadeComercial" label="Quantidade"
+						nomeAtributo="#{entradaNotaFiscalController.nfeDetalhe.quantidadeComercial}"
+						requerido="true" />
+
+				</p:outputPanel>
+
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{entradaNotaFiscalController.salvaProduto}"
+						update=":formOutrasTelas:panelNfeDetalhe,:form1:growl,:form1:tabNfe:dataTableNfeDetalhe,:form1:tabNfe:outputPanelTotais"
+						oncomplete="if (!args.validationFailed) {PF('dialogNfeDetalhe').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogNfeDetalhe').hide();" />
+
+				</f:facet>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas2">
+		<h:form id="formUploadArquivo" enctype="multipart/form-data">
+			<p:dialog id="dialogUploadArquivo" header="Selecionar Arquivo"
+				widgetVar="dialogUploadArquivo" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+				<p:outputPanel id="panelUploadArquivo">
+					<div class="t2ti-campo-100">
+						<p:fileUpload
+							fileUploadListener="#{entradaNotaFiscalController.importaXML}"
+							mode="advanced" fileLimit="1" allowTypes="/(\.|\/)(xml)$/"
+							update=":form1:growl,:form1:outputPanelDetalhe"
+							oncomplete="PF('dialogUploadArquivo').hide()" />
+					</div>
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogUploadArquivo').hide();" process="@this" />
+				</f:facet>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas4">
+		<h:form id="formDetalheImposto">
+			<p:dialog id="dialogDetalheImposto" header="Detalhe Imposto"
+				widgetVar="dialogDetalheImposto" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="900">
+				<p:outputPanel id="panelDetalheImposto">
+
+					<p:tabView id="tabViewDetalheImposto" style="border: none"
+						scrollable="true">
+						<p:tab title="ICMS">
+							<t2ti:campoSelect styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsOrigemMercadoria"
+								label="Origem Mercadoria"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.origemMercadoria}"
+								itens="#{entradaNotaFiscalController.origemMercadoriaNfe}" />
+							<t2ti:campoTexto styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsCstIcms" label="Cst Icms"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.cstIcms}"
+								tamanhoMaximo="2" />
+							<t2ti:campoTexto styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsCsosn" label="Csosn"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.csosn}"
+								tamanhoMaximo="3" />
+							<t2ti:campoInteiro styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsModalidadeBcIcms"
+								label="Modalidade Bc Icms"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.modalidadeBcIcms}" />
+
+							<div class="t2ti-campo-100"></div>
+
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsTaxaReducaoBcIcms"
+								label="Taxa Reducao Bc Icms"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.taxaReducaoBcIcms}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsAliquotaIcms"
+								label="Aliquota Icms"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.aliquotaIcms}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsBaseCalculoIcms"
+								label="Base Calculo Icms"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.baseCalculoIcms}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsValorIcms" label="Valor Icms"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.valorIcms}" />
+
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsValorIcmsOperacao"
+								label="Valor Operacao"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.valorIcmsOperacao}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsPercentualDiferimento"
+								label="Percentual Diferimento"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.percentualDiferimento}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsValorIcmsDiferido"
+								label="Valor Diferido"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.valorIcmsDiferido}" />
+							<t2ti:campoInteiro styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsMotivoDesoneracaoIcms"
+								label="Motivo Desoneracao"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.motivoDesoneracaoIcms}" />
+
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsValorIcmsDesonerado"
+								label="Valor Desonerado"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.valorIcmsDesonerado}" />
+							<t2ti:campoInteiro styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsModalidadeBcIcmsSt"
+								label="Modalidade Bc St"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.modalidadeBcIcmsSt}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsPercentualMvaIcmsSt"
+								label="Percentual Mva St"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.percentualMvaIcmsSt}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsPercentualReducaoBcIcmsSt"
+								label="Percentual Reducao Bc St"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.percentualReducaoBcIcmsSt}" />
+
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsValorBaseCalculoIcmsSt"
+								label="Valor Base Calculo Icms St"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.valorBaseCalculoIcmsSt}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsAliquotaIcmsSt"
+								label="Aliquota Icms St"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.aliquotaIcmsSt}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsValorIcmsSt"
+								label="Valor Icms St"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.valorIcmsSt}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsValorBcIcmsStRetido"
+								label="Valor Bc Icms St Retido"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.valorBcIcmsStRetido}" />
+
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsValorIcmsStRetido"
+								label="Valor Icms St Retido"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.valorIcmsStRetido}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsValorBcIcmsStDestino"
+								label="Valor Bc Icms St Destino"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.valorBcIcmsStDestino}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsValorIcmsStDestino"
+								label="Valor Icms St Destino"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.valorIcmsStDestino}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsAliquotaCreditoIcmsSn"
+								label="Aliquota Credito Icms Sn"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.aliquotaCreditoIcmsSn}" />
+
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsValorCreditoIcmsSn"
+								label="Valor Credito Icms Sn"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.valorCreditoIcmsSn}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-40"
+								idComponente="nfeDetalheImpostoIcmsPercentualBcOperacaoPropria"
+								label="Percentual Bc Operacao Propria"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.percentualBcOperacaoPropria}" />
+							<t2ti:campoTexto styleClass="t2ti-campo-10"
+								idComponente="nfeDetalheImpostoIcmsUfSt" label="Uf St"
+								nomeAtributo="#{entradaNotaFiscalController.nfeDetalheImpostoIcms.ufSt}"
+								tamanhoMaximo="2" />
+
+						</p:tab>
+
+						<p:tab title="PIS">
+
+						</p:tab>
+
+						<p:tab title="COFINS">
+
+						</p:tab>
+
+						<p:tab title="IPI">
+
+						</p:tab>
+
+						<p:tab title="Imposto Importação">
+
+						</p:tab>
+
+						<p:tab title="ISSQN">
+
+						</p:tab>
+
+						<p:tab title="Combustível">
+
+						</p:tab>
+
+						<p:tab title="Veículo">
+
+						</p:tab>
+
+						<p:tab title="Medicamento">
+
+						</p:tab>
+
+						<p:tab title="Armamento">
+
+						</p:tab>
+
+						<p:tab title="Declaração de Importação">
+
+						</p:tab>
+
+					</p:tabView>
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Fechar"
+						oncomplete="PF('dialogDetalheImposto').hide();" process="@this" />
+				</f:facet>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+</ui:composition>

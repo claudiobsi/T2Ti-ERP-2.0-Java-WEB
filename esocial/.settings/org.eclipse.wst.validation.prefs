@@ -1,0 +1,10 @@
+DELEGATES_PREFERENCE=delegateValidatorList
+USER_BUILD_PREFERENCE=enabledBuildValidatorListorg.jboss.tools.common.validation.ValidatorManager;org.eclipse.jst.j2ee.internal.classpathdep.ClasspathDependencyValidator;org.eclipse.wst.wsi.ui.internal.WSIMessageValidator;org.jboss.tools.seam.internal.core.validation.SeamProjectPropertyValidator;
+USER_MANUAL_PREFERENCE=enabledManualValidatorListorg.jboss.tools.common.validation.ValidatorManager;org.eclipse.jst.j2ee.internal.classpathdep.ClasspathDependencyValidator;org.eclipse.wst.wsi.ui.internal.WSIMessageValidator;org.jboss.tools.seam.internal.core.validation.SeamProjectPropertyValidator;
+USER_PREFERENCE=overrideGlobalPreferencestruedisableAllValidationfalseversion1.2.501.v201304022101
+disabled=06target
+eclipse.preferences.version=1
+override=true
+suspend=false
+vals/org.eclipse.wst.xsd.core.xsd/groups=0107include0107fileext03xsdF0107exclude0104file138src/main/webapp/modulos/esocial/schemaT02
+vf.version=3

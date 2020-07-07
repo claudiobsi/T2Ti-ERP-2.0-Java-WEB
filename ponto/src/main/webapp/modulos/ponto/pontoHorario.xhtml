@@ -1,0 +1,228 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+    <ui:define name="gridDados">
+        <p:panel style="border: none" header="Ponto Horario"
+            rendered="#{!pontoHorarioController.podeConsultar()}">
+            <p:outputLabel value="Você não possui acesso a esta função" />
+        </p:panel>
+
+        <p:outputPanel id="outputPanelGrid">
+
+            <p:outputPanel rendered="#{pontoHorarioController.telaGrid}">
+
+                <p:panel id="panelCentroGrid" style="border: none" header="Ponto Horario"
+                     rendered="#{pontoHorarioController.podeConsultar()}">
+
+                    <p:dataTable id="dataTablePontoHorario" var="obj"
+                        value="#{pontoHorarioController.dataModel}" paginator="true"
+                        rows="10" rowsPerPageTemplate="5,10,15,20"
+                        selection="#{pontoHorarioController.objetoSelecionado}"
+                        selectionMode="single" resizableColumns="true" lazy="true">
+
+                        <f:facet name="header">
+                            <p:commandButton title="Novo" icon="ui-icon-plus"
+                                actionListener="#{pontoHorarioController.incluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!pontoHorarioController.podeInserir()}" />
+                            <p:commandButton process="dataTablePontoHorario" title="Detalhes"
+                                icon="ui-icon-zoomin"
+                                actionListener="#{pontoHorarioController.alterar()}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+                            <p:commandButton process="dataTablePontoHorario" title="Excluir"
+                                icon="ui-icon-trash"
+                                actionListener="#{pontoHorarioController.excluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!pontoHorarioController.podeExcluir()}">
+                                <p:confirm header="Confirmação" message="Confirma Exclusão?"
+                                    icon="ui-icon-alert" />
+                            </p:commandButton>
+                        </f:facet>
+
+                        <p:column headerText="Tipo">
+                            <h:outputLabel value="#{pontoHorarioController.keyFromValue(pontoHorarioController.tipoHorarioPonto, obj.tipo)}" />
+                        </p:column>
+                        <p:column headerText="Codigo">
+                            <h:outputLabel value="#{obj.codigo}" />
+                        </p:column>
+                        <p:column headerText="Nome">
+                            <h:outputLabel value="#{obj.nome}" />
+                        </p:column>
+                        <p:column headerText="Tipo Trabalho">
+                            <h:outputLabel value="#{pontoHorarioController.keyFromValue(pontoHorarioController.tipoTrabalho, obj.tipoTrabalho)}" />
+                        </p:column>
+                        <p:column headerText="Carga Horaria">
+                            <h:outputLabel value="#{obj.cargaHoraria}" />
+                        </p:column>
+                        <p:column headerText="Hora Inicio Jornada">
+                            <h:outputLabel value="#{obj.horaInicioJornada}" />
+                        </p:column>
+                        <p:column headerText="Hora Fim Jornada">
+                            <h:outputLabel value="#{obj.horaFimJornada}" />
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+
+    <ui:define name="telaInclusaoAlteracao">
+
+        <p:outputPanel id="outputPanelDetalhe">
+
+            <p:outputPanel rendered="#{!pontoHorarioController.telaGrid}">
+                <p:panel id="panelCentroDetalhe" style="border: none" header="Ponto Horario">
+
+                    <p:outputLabel value="Nenhum registro selecionado."
+                        rendered="#{empty pontoHorarioController.objeto}" />
+                    <p:commandButton value="Voltar"
+                        actionListener="#{pontoHorarioController.voltar()}"
+                        update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                        rendered="#{empty pontoHorarioController.objeto}" />
+
+                    <p:outputPanel rendered="#{not empty pontoHorarioController.objeto}">
+
+                        <t2ti:campoSelect styleClass="t2ti-campo-20"
+                            idComponente="pontoHorarioTipo" label="Tipo"
+                            nomeAtributo="#{pontoHorarioController.objeto.tipo}"
+                            itens="#{pontoHorarioController.tipoHorarioPonto}" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="pontoHorarioCodigo" label="Codigo"
+                            nomeAtributo="#{pontoHorarioController.objeto.codigo}"
+                            tamanhoMaximo="4" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-40"
+                            idComponente="pontoHorarioNome" label="Nome"
+                            nomeAtributo="#{pontoHorarioController.objeto.nome}"
+                            tamanhoMaximo="50" />
+                        <t2ti:campoSelect styleClass="t2ti-campo-20"
+                            idComponente="pontoHorarioTipoTrabalho" label="Tipo Trabalho"
+                            nomeAtributo="#{pontoHorarioController.objeto.tipoTrabalho}"
+                            itens="#{pontoHorarioController.tipoTrabalho}" />
+                        
+                        <t2ti:campoMascara styleClass="t2ti-campo-20"
+                            idComponente="pontoHorarioCargaHoraria" label="Carga Horaria"
+                            nomeAtributo="#{pontoHorarioController.objeto.cargaHoraria}"
+                            mascara="99:99:99" />
+                        <t2ti:campoMascara styleClass="t2ti-campo-30"
+                            idComponente="pontoHorarioHoraInicioJornada" label="Hora Inicio Jornada"
+                            nomeAtributo="#{pontoHorarioController.objeto.horaInicioJornada}"
+                            mascara="99:99:99" />
+                        <t2ti:campoMascara styleClass="t2ti-campo-30"
+                            idComponente="pontoHorarioHoraFimJornada" label="Hora Fim Jornada"
+                            nomeAtributo="#{pontoHorarioController.objeto.horaFimJornada}"
+                            mascara="99:99:99" />
+                        
+                        <t2ti:separador />
+                        
+                        <t2ti:campoMascara styleClass="t2ti-campo-20"
+                            idComponente="pontoHorarioEntrada01" label="Entrada 01"
+                            nomeAtributo="#{pontoHorarioController.objeto.entrada01}"
+                            mascara="99:99:99" />
+                        <t2ti:campoMascara styleClass="t2ti-campo-20"
+                            idComponente="pontoHorarioSaida01" label="Saida 01"
+                            nomeAtributo="#{pontoHorarioController.objeto.saida01}"
+                            mascara="99:99:99" />
+                            
+                        <t2ti:campoMascara styleClass="t2ti-campo-20"
+                            idComponente="pontoHorarioEntrada02" label="Entrada 02"
+                            nomeAtributo="#{pontoHorarioController.objeto.entrada02}"
+                            mascara="99:99:99" />
+                        <t2ti:campoMascara styleClass="t2ti-campo-20"
+                            idComponente="pontoHorarioSaida02" label="Saida 02"
+                            nomeAtributo="#{pontoHorarioController.objeto.saida02}"
+                            mascara="99:99:99" />
+
+						<t2ti:separador />
+
+                        <t2ti:campoMascara styleClass="t2ti-campo-20"
+                            idComponente="pontoHorarioEntrada03" label="Entrada 03"
+                            nomeAtributo="#{pontoHorarioController.objeto.entrada03}"
+                            mascara="99:99:99" />
+                        <t2ti:campoMascara styleClass="t2ti-campo-20"
+                            idComponente="pontoHorarioSaida03" label="Saida 03"
+                            nomeAtributo="#{pontoHorarioController.objeto.saida03}"
+                            mascara="99:99:99" />
+
+                        <t2ti:campoMascara styleClass="t2ti-campo-20"
+                            idComponente="pontoHorarioEntrada04" label="Entrada 04"
+                            nomeAtributo="#{pontoHorarioController.objeto.entrada04}"
+                            mascara="99:99:99" />
+                        <t2ti:campoMascara styleClass="t2ti-campo-20"
+                            idComponente="pontoHorarioSaida04" label="Saida 04"
+                            nomeAtributo="#{pontoHorarioController.objeto.saida04}"
+                            mascara="99:99:99" />
+                            
+                        <t2ti:separador />
+
+                        <t2ti:campoMascara styleClass="t2ti-campo-20"
+                            idComponente="pontoHorarioEntrada05" label="Entrada 05"
+                            nomeAtributo="#{pontoHorarioController.objeto.entrada05}"
+                            mascara="99:99:99" />
+                        <t2ti:campoMascara styleClass="t2ti-campo-20"
+                            idComponente="pontoHorarioSaida05" label="Saida 05"
+                            nomeAtributo="#{pontoHorarioController.objeto.saida05}"
+                            mascara="99:99:99" />
+                    </p:outputPanel>
+                    <p:outputPanel rendered="#{not empty pontoHorarioController.objeto}" styleClass="t2ti-campo-100" >
+
+                        <p:commandButton value="Incluir"
+                            rendered="#{empty pontoHorarioController.objeto.id}"
+                            actionListener="#{pontoHorarioController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!pontoHorarioController.podeInserir()}" />
+                        <p:commandButton value="Alterar"
+                            rendered="#{not empty pontoHorarioController.objeto.id}"
+                            actionListener="#{pontoHorarioController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!pontoHorarioController.podeAlterar()}" />
+                        <p:commandButton value="Fechar"
+                            actionListener="#{pontoHorarioController.voltar()}"
+                            update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            process="@this" />
+
+                    </p:outputPanel>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,160 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Cargo"
+			rendered="#{!cargoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{cargoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none" header="Cargo"
+					rendered="#{cargoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableCargo" var="obj"
+						value="#{cargoController.dataModel}" paginator="true" rows="10"
+						rowsPerPageTemplate="5,10,15,20"
+						selection="#{cargoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{cargoController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!cargoController.podeInserir()}" />
+							<p:commandButton process="dataTableCargo" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{cargoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableCargo" title="Excluir"
+								icon="ui-icon-trash" actionListener="#{cargoController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!cargoController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Nome" width="150">
+							<h:outputLabel value="#{obj.nome}" />
+						</p:column>
+						<p:column headerText="Salario">
+							<h:outputLabel value="#{obj.salario}">
+								<f:convertNumber pattern="#,##0.00" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Cbo 1994">
+							<h:outputLabel value="#{obj.cbo1994}" />
+						</p:column>
+						<p:column headerText="Cbo 2002">
+							<h:outputLabel value="#{obj.cbo2002}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!cargoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none" header="Cargo">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty cargoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{cargoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty cargoController.objeto}" />
+
+					<p:outputPanel rendered="#{not empty cargoController.objeto}">
+
+						<t2ti:campoTexto styleClass="t2ti-campo-40"
+							idComponente="cargoNome" label="Nome"
+							nomeAtributo="#{cargoController.objeto.nome}" tamanhoMaximo="50" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-20"
+							idComponente="cargoSalario" label="Salario"
+							nomeAtributo="#{cargoController.objeto.salario}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="cargoCbo1994" label="Cbo 1994"
+							nomeAtributo="#{cargoController.objeto.cbo1994}"
+							tamanhoMaximo="10" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="cargoCbo2002" label="Cbo 2002"
+							nomeAtributo="#{cargoController.objeto.cbo2002}"
+							tamanhoMaximo="10" />
+
+						<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+							idComponente="cargoDescricao" label="Descricao"
+							nomeAtributo="#{cargoController.objeto.descricao}" />
+
+					</p:outputPanel>
+					<p:outputPanel rendered="#{not empty cargoController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty cargoController.objeto.id}"
+							actionListener="#{cargoController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!cargoController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty cargoController.objeto.id}"
+							actionListener="#{cargoController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!cargoController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{cargoController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+</ui:composition>

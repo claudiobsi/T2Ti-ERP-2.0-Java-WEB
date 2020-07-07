@@ -1,0 +1,705 @@
+<ui:composition template="template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="nfceTelaPrincipal">
+
+		<p:panel style="border: none" header="Emissão NFC-e"
+			rendered="#{!nfceController.podeInserir()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelPrincipal" styleClass="nfce"
+			rendered="#{nfceController.podeInserir()}">
+
+			<h:form id="formPrincipal">
+				<div
+					style="float: left; top: 0px; left: 0px; width: 100%; height: 200px;">
+
+					<div id="divOperador"
+						style="position: relative; top: 40px; left: 580px; width: 400px; height: 28px; text-align: right;">
+						<p:outputLabel
+							value="Operador: #{request.getUserPrincipal().getName()}"
+							style="font-weight:bold; font-size: 14px !important;" />
+					</div>
+
+					<div id="divDescricaoProduto"
+						style="position: relative; top: 110px; left: 60px; width: 900px; height: 28px; text-align: center;">
+						<p:outputLabel value="#{nfceController.descricaoProduto}"
+							style="font-weight:bold; font-size: 30px !important; color: white;" />
+					</div>
+
+				</div>
+
+				<div
+					style="float: left; top: 200px; left: 0px; width: 45%; height: 400px;">
+
+					<div id="divBobina"
+						style="position: relative; top: 30px; left: 30px; width: 400px; height: 28px;">
+
+						<p:dataTable id="dataTableItens" var="item" emptyMessage=""
+							styleClass="sem-borda"
+							rendered="#{nfceController.nfeCabecalho.listaNfeDetalhe.size() > 0}"
+							value="#{nfceController.nfeCabecalho.listaNfeDetalhe}">
+							<p:column headerText="Item" width="30" style=" border: none;">
+								<p:outputLabel value="#{item.numeroItem}" />
+							</p:column>
+							<p:column headerText="Descrição"
+								style="background-color: rgba(255, 255, 255, 0.0); border: none;">
+								<p:outputLabel value="#{item.produto.descricaoPdv}" width="320" />
+							</p:column>
+							<p:column headerText="Qtde" width="30"
+								style="background-color: rgba(255, 255, 255, 0.0); border: none;">
+								<p:outputLabel value="#{item.quantidadeComercial}">
+									<f:convertNumber pattern="#,###,##0.00" />
+								</p:outputLabel>
+							</p:column>
+							<p:column headerText="Total" width="50"
+								style="background-color: rgba(255, 255, 255, 0.0); border: none;">
+								<p:outputLabel value="#{item.valorTotal}">
+									<f:convertNumber pattern="#,###,##0.00" />
+								</p:outputLabel>
+							</p:column>
+						</p:dataTable>
+					</div>
+				</div>
+
+				<p:focus context=":outputPanelPrincipal" />
+
+				<div
+					style="float: left; top: 200px; left: 0px; width: 25%; height: 400px;">
+
+					<div id="divCodigoProduto"
+						style="position: relative; top: 55px; left: 30px; width: 190px; height: 28px;">
+						<p:inputText id="inputCodigoProduto"
+							value="#{nfceController.codigoProduto}" dir="rtl"
+							widgetVar="codigoProduto" required="true"
+							requiredMessage="Informe o código do produto"
+							onkeypress="if (event.keyCode == 13) {document.getElementById('formPrincipal:btnConsultaProduto').focus(); return false;}" />
+
+					</div>
+
+					<div id="divBtnConsultaProduto"
+						style="position: relative; top: 55px; left: 42px; width: 190px; height: 28px; text-align: right;">
+						<p:commandButton id="btnConsultaProduto" icon="ui-icon-plusthick"
+							actionListener="#{nfceController.iniciaVendaDeItens()}"
+							update="formPrincipal" />
+					</div>
+
+					<div id="divQuantidade"
+						style="position: relative; top: 102px; left: 30px; width: 190px; height: 28px;">
+						<pe:inputNumber value="#{nfceController.quantidade}"
+							required="true" style="width: 100%;" decimalPlaces="3" dir="rtl"
+							minValue="0.001" maxValue="999"
+							requiredMessage="Informe a quantidade"
+							onkeypress="if (event.keyCode == 13) {document.getElementById('formPrincipal:inputCodigoProduto').focus(); return false;}">
+						</pe:inputNumber>
+					</div>
+
+					<div id="divValorUnitario"
+						style="position: relative; top: 177px; left: 35px; width: 190px; height: 28px; text-align: right;">
+						<p:outputLabel value="#{nfceController.txtValorUnitario}"
+							style="font-weight:bold; font-size: 14px !important;" />
+					</div>
+
+					<div id="divValorTotalItem"
+						style="position: relative; top: 247px; left: 35px; width: 190px; height: 28px; text-align: right;">
+						<p:outputLabel value="#{nfceController.txtValorTotalItem}"
+							style="font-weight:bold; font-size: 14px !important;" />
+					</div>
+
+				</div>
+
+				<div
+					style="float: left; top: 200px; left: 0px; width: 30%; height: 400px;">
+
+					<div id="divImagemProduto"
+						style="position: relative; top: 55px; left: 20px; width: 230px; height: 220px; text-align: center;">
+						<p:graphicImage value="../../imagens/logo_t2ti.png" height="200" />
+					</div>
+
+					<div id="divSubTotal"
+						style="position: relative; top: 135px; left: 75px; width: 190px; height: 28px; text-align: right;">
+						<p:outputLabel value="#{nfceController.txtValorSubTotal}"
+							style="font-weight:bold; font-size: 14px !important;" />
+					</div>
+
+				</div>
+
+				<div
+					style="float: left; top: 600px; left: 0px; width: 45%; height: 90px;">
+
+					<div id="divTotalGeral"
+						style="position: relative; top: 45px; left: 140px; width: 290px; height: 28px; text-align: right;">
+						<p:outputLabel value="#{nfceController.txtValorTotalGeral}"
+							style="font-weight:bold; font-size: 30px !important; color: white;" />
+					</div>
+
+				</div>
+
+				<div
+					style="float: left; top: 600px; left: 0px; width: 55%; height: 90px;">
+
+					<div id="divLinkDanfe"
+						style="position: relative; top: 10px; left: 230px; height: 28px; text-align: center;">
+						<p:commandLink id="linkDanfe" value="Danfe" process="@this"
+							oncomplete="PF('dialogDanfe').show();"
+							update=":formDanfe:dialogDanfe">
+						</p:commandLink>
+					</div>
+
+					<div id="divMensagemOperador"
+						style="position: relative; top: 17px; left: 35px; width: 480px; height: 28px; text-align: center;">
+						<p:outputLabel id="labelMensagemOperador"
+							value="#{nfceController.mensagemOperador}"
+							style="font-weight:bold; font-size: 30px !important; color: white;" />
+					</div>
+
+				</div>
+			</h:form>
+
+
+			<div
+				style="float: left; top: 600px; left: 0px; width: 100%; height: 60px; text-align: center; padding-bottom: 2%;">
+
+				<h:form id="formBotoes">
+					<div style="float: left; width: 2%; height: 45%;"></div>
+					<div id="divPanelF1" style="float: left; width: 16%; height: 45%;">
+						<p:graphicImage value="/imagens/botoes/21botaoCliente.png" />
+						<p:commandLink value="Identifica Cliente"
+							oncomplete="PF('dialogIdentificaCliente').show();"
+							update=":formIdentificaCliente:dialogIdentificaCliente" />
+					</div>
+
+					<div id="divPanelF2" style="float: left; width: 16%; height: 45%;">
+						<p:graphicImage value="/imagens/botoes/21botaoCliente.png" />
+						<p:commandLink value="Ident. Vendedor"
+							oncomplete="PF('dialogIdentificaVendedor').show();"
+							update=":formIdentificaVendedor:dialogIdentificaVendedor" />
+					</div>
+
+					<div id="divPanelF3" style="float: left; width: 16%; height: 45%;">
+						<p:graphicImage value="/imagens/botoes/21botaoEncerraVenda.png" />
+						<p:commandLink value="Encerra Venda"
+							actionListener="#{nfceController.iniciaEncerramentoVenda()}"
+							update=":formEfetuaPagamento:dialogEfetuaPagamento"
+							oncomplete="if (args.podeAbrirEfetuaPagamento) {PF('dialogEfetuaPagamento').show();}" />
+					</div>
+
+					<div id="divPanelF4" style="float: left; width: 16%; height: 45%;">
+						<p:graphicImage value="/imagens/botoes/21botaoPesquisa.png" />
+						<p:commandLink value="Recuperar Venda"
+							actionListener="#{nfceController.filtroRecuperaVenda()}"
+							oncomplete="PF('dialogSelecionaVenda').show();"
+							update=":formSelecionaVenda:dialogSelecionaVenda" />
+					</div>
+
+					<div id="divPanelF5" style="float: left; width: 16%; height: 45%;">
+						<p:graphicImage value="/imagens/botoes/21botaoCancelaItem.png" />
+						<p:commandLink value="Cancela Item"
+							oncomplete="PF('dialogCancelaItem').show();"
+							update=":formCancelaItem:dialogCancelaItem" />
+					</div>
+
+					<div id="divPanelF6" style="float: left; width: 16%; height: 45%;">
+						<p:graphicImage value="/imagens/botoes/21botaoCancelaCupom.png" />
+						<p:commandLink value="Cancela Venda" update=":formPrincipal"
+							actionListener="#{nfceController.cancelaVenda()}">
+							<p:confirm header="Confirmação"
+								message="Confirma Cancelamento da venda?" icon="ui-icon-alert" />
+						</p:commandLink>
+					</div>
+
+					<div style="float: left; width: 2%; height: 45%;"></div>
+
+					<div style="float: left; width: 2%; height: 45%;"></div>
+
+					<div id="divPanelF7" style="float: left; width: 16%; height: 45%;">
+						<p:graphicImage value="/imagens/botoes/21botaoPesquisa.png" />
+						<p:commandLink value="Pesquisa Produto"
+							oncomplete="PF('dialogPesquisaProduto').show();"
+							update=":formPesquisaProduto:dialogPesquisaProduto" />
+					</div>
+
+					<div id="divPanelF8" style="float: left; width: 16%; height: 45%;">
+						<p:graphicImage value="/imagens/botoes/21botaoDesconto.png" />
+						<p:commandLink value="Desconto/Acréscimo"
+							oncomplete="PF('dialogDescontoAcrescimo').show();"
+							update=":formDescontoAcrescimo:dialogDescontoAcrescimo" />
+					</div>
+
+					<div id="divPanelF9" style="float: left; width: 16%; height: 45%;">
+						<p:graphicImage value="/imagens/botoes/21botaoCancelaCupom.png" />
+						<p:commandLink value="Cancela Nota"
+							actionListener="#{nfceController.filtroCancelaNfce()}"
+							oncomplete="PF('dialogSelecionaVenda').show();"
+							update=":formSelecionaVenda:dialogSelecionaVenda" />
+					</div>
+
+					<div id="divPanelF10" style="float: left; width: 16%; height: 45%;">
+						<p:graphicImage value="/imagens/botoes/21botaoMenuPrincipal.png" />
+						<p:commandLink value="Inutiliza Número"
+							actionListener="#{nfceController.filtroInutilizaNumero()}"
+							oncomplete="PF('dialogSelecionaVenda').show();"
+							update=":formSelecionaVenda:dialogSelecionaVenda" />
+					</div>
+
+					<div id="divPanelF11" style="float: left; width: 16%; height: 45%;">
+						<p:graphicImage value="/imagens/botoes/21botaoSair.png" />
+						<h:outputLink value="/nfce/j_spring_security_logout">
+							Sair
+						</h:outputLink>
+					</div>
+				</h:form>
+			</div>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="efetuaPagamento">
+		<h:form id="formEfetuaPagamento">
+			<p:dialog id="dialogEfetuaPagamento" header="Efetua Pagamento"
+				widgetVar="dialogEfetuaPagamento" showEffect="slide" width="760"
+				height="350" hideEffect="slide" resizable="true" modal="true"
+				closable="false" >
+
+				<p:outputPanel id="panelEfetuaPagamento">
+
+					<p:focus context="panelEfetuaPagamento" />
+
+					<div style="width: 50%; float: left;">
+
+						<div style="width: 47%; float: left; padding-right: 3%">
+							<p:outputLabel value="Tipo de Pagamento"
+								for="selectTipoPagamento" />
+							<br />
+							<p:selectOneMenu id="selectTipoPagamento"
+								value="#{nfceController.tipoPagamento}" style="width: 95%"
+								converter="com.t2tierp.model.bean.converter.defaultConverter">
+								<f:selectItems value="#{nfceController.listaTipoPagamento}"
+									var="tipoPagamento" itemLabel="#{tipoPagamento.descricao}" />
+							</p:selectOneMenu>
+						</div>
+
+						<div class="t2ti-campo-40">
+							<p:outputLabel value="Valor" for="valorFormaPagamento" />
+							<br />
+							<pe:inputNumber id="valorFormaPagamento"
+								value="#{nfceController.valorPagamento}" required="true"
+								style="width: 100%;" decimalPlaces="2" dir="rtl"
+								requiredMessage="Informe o valor do pagamento."
+								onkeypress="if (event.keyCode == 13) {document.getElementById('formEfetuaPagamento:btnIncluiPagamento').focus(); return false;}">
+							</pe:inputNumber>
+						</div>
+						<br />
+						<p:commandButton id="btnIncluiPagamento" icon="ui-icon-check"
+							title="Incluir Pagamento" style="width: 8%; float: right; "
+							update="panelEfetuaPagamento"
+							actionListener="#{nfceController.incluiPagamento()}"
+							disabled="#{nfceController.pagamentoParcelado}" />
+
+					</div>
+
+					<div
+						style="width: 48%; padding-left: 2%; float: right; height: 250px;">
+
+						<div
+							style="width: 100%; background-color: hsla(120, 100%, 75%, 0.3);">
+							<p:outputLabel
+								style="width: 47%; padding-left: 2%; float: left; font-size: 20px !important; color: blue;"
+								value="Total Venda:" />
+							<p:outputLabel
+								style="width: 50%; float: right; font-size: 20px !important; color: blue;"
+								value="#{nfceController.txtValorTotalGeral}" dir="rtl" />
+						</div>
+
+						<div style="width: 100%; padding-top: 10%;">
+							<p:outputLabel
+								style="width: 47%; padding-left: 2%; float: left; font-size: 20px !important; color: red;"
+								value="Desconto:" />
+							<p:outputLabel
+								style="width: 50%; float: right; font-size: 20px !important; color: red;"
+								value="#{nfceController.txtValorDesconto}" dir="rtl" />
+						</div>
+
+						<div
+							style="width: 100%; padding-top: 10%; background-color: hsla(120, 100%, 75%, 0.3);">
+							<p:outputLabel
+								style="width: 47%; padding-left: 2%; float: left; font-size: 20px !important; color: blue;"
+								value="Acréscimo:" />
+							<p:outputLabel
+								style="width: 50%; float: right; font-size: 20px !important; color: blue;"
+								value="#{nfceController.txtValorAcrescimo}" dir="rtl" />
+						</div>
+
+						<div style="width: 100%; padding-top: 10%;">
+							<p:outputLabel
+								style="width: 47%; padding-left: 2%; float: left; font-size: 20px !important; color: blue;"
+								value="Total a Receber:" />
+							<p:outputLabel
+								style="width: 50%; float: right; font-size: 20px !important; color: blue;"
+								value="#{nfceController.txtValorTotalReceber}" dir="rtl" />
+						</div>
+
+						<div
+							style="width: 100%; padding-top: 10%; background-color: hsla(120, 100%, 75%, 0.3);">
+							<p:outputLabel
+								style="width: 47%; padding-left: 2%; float: left; font-size: 20px !important; color: green;"
+								value="Total Recebido:" />
+							<p:outputLabel
+								style="width: 50%; float: right; font-size: 20px !important; color: green;"
+								value="#{nfceController.txtValorTotalRecebido}" dir="rtl" />
+						</div>
+
+						<div style="width: 100%; padding-top: 10%;">
+							<p:outputLabel
+								style="width: 47%; padding-left: 2%; float: left; font-size: 20px !important; color: blue;"
+								value="Restante:" />
+							<p:outputLabel
+								style="width: 50%; float: right; font-size: 20px !important; color: blue;"
+								value="#{nfceController.txtValorSaldoRestante}" dir="rtl" />
+						</div>
+
+						<div
+							style="width: 100%; padding-top: 10%; background-color: hsla(120, 100%, 75%, 0.3);">
+							<p:outputLabel
+								style="width: 47%; padding-left: 2%; float: left; font-size: 20px !important; color: red;"
+								value="Troco:" />
+							<p:outputLabel
+								style="width: 50%; float: right; font-size: 20px !important; color: red;"
+								value="#{nfceController.txtValorTroco}" dir="rtl" />
+						</div>
+					</div>
+
+					<div style="width: 50%; float: left; padding-top: 5px;">
+						<p:dataTable id="dataTableListaPagamentos" var="item"
+							emptyMessage="Nenhum pagamento informado."
+							style="text-align: center;"
+							value="#{nfceController.nfeCabecalho.listaNfeFormaPagamento}"
+							paginator="true" rows="5">
+
+							<f:facet name="header">Pagamentos Informados</f:facet>
+
+							<p:column headerText="Tipo Pagamento" width="80%">
+								<p:outputLabel value="#{item.nfceTipoPagamento.descricao}" />
+							</p:column>
+							<p:column headerText="Valor">
+								<p:outputLabel value="#{item.valor}">
+									<f:convertNumber pattern="#,###,##0.00" />
+								</p:outputLabel>
+							</p:column>
+						</p:dataTable>
+					</div>
+
+					<div style="width: 100%; float: left; padding-top: 5px;">
+						<t2ti:campoInteiro idComponente="pagamentoNumeroParcelas"
+							label="Qtde de Parcelas" styleClass="t2ti-campo-50"
+							rendered="#{nfceController.pagamentoParcelado}"
+							nomeAtributo="#{nfceController.quantidadeParcelas}"
+							requerido="true" />
+					</div>
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Finalizar"
+						actionListener="#{nfceController.finalizaVenda()}"
+						update="dialogEfetuaPagamento,:outputPanelPrincipal,:formPrincipal:linkDanfe,:formDanfe:dialogDanfe"
+						oncomplete="if (args.vendaFinalizada) {PF('dialogEfetuaPagamento').hide();PF('dialogDanfe').show(); }" />
+					<p:commandButton value="Cancelar"
+						actionListener="#{nfceController.cancelaPagamento()}"
+						oncomplete="PF('dialogEfetuaPagamento').hide();" />
+
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="danfe">
+		<h:form id="formDanfe">
+			<p:dialog id="dialogDanfe" header="Danfe" widgetVar="dialogDanfe"
+				showEffect="slide" width="700" height="350" hideEffect="slide"
+				resizable="true" modal="true" dynamic="true">
+				<p:outputPanel id="panelDanfe1">
+					<p:media value="#{nfceController.danfe}" width="100%" height="350"
+						player="pdf" />
+				</p:outputPanel>
+
+				<f:facet name="footer">
+					<p:commandButton value="Fechar"
+						oncomplete="PF('dialogDanfe').hide(); document.getElementById('formPrincipal:inputCodigoProduto').focus();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="identificaCliente">
+		<h:form id="formIdentificaCliente">
+			<p:dialog id="dialogIdentificaCliente" header="Identifica Cliente"
+				widgetVar="dialogIdentificaCliente" showEffect="clip" width="700"
+				height="80" hideEffect="clip" resizable="true" modal="true"
+				dynamic="true">
+				<p:outputPanel id="panelIdentificaCliente">
+					<t2ti:campoCpf idComponente="clienteCpf" styleClass="t2ti-campo-30"
+						label="CPF:" nomeAtributo="#{nfceController.cliente.cpf}"
+						requerido="true" />
+
+					<t2ti:campoTexto idComponente="clienteNome"
+						styleClass="t2ti-campo-70" label="Nome:"
+						nomeAtributo="#{nfceController.cliente.nome}" tamanhoMaximo="60" />
+
+				</p:outputPanel>
+
+				<f:facet name="footer">
+					<p:commandButton value="Confirma" icon="ui-icon-check"
+						actionListener="#{nfceController.identificaCliente()}"
+						oncomplete="if (!args.validationFailed) {PF('dialogIdentificaCliente').hide();}" />
+					<p:commandButton value="Cancelar" icon="ui-icon-circle-close"
+						oncomplete="PF('dialogIdentificaCliente').hide();" process="@this" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="cancelaItem">
+		<h:form id="formCancelaItem">
+			<p:dialog id="dialogCancelaItem" header="Cancela Item"
+				widgetVar="dialogCancelaItem" showEffect="clip" width="600"
+				height="200" hideEffect="clip" resizable="true" modal="true"
+				dynamic="true">
+				<p:outputPanel id="panelCancelaItem">
+					<t2ti:separador label="Dados Gerente/Supervisor" />
+					<t2ti:campoTexto idComponente="gerenteSupervisorLogin"
+						styleClass="t2ti-campo-50" label="Login:"
+						nomeAtributo="#{nfceController.gerenteSupervisor.login}"
+						tamanhoMaximo="60" requerido="true" />
+					<t2ti:campoSenha idComponente="gerenteSupervisorSenha"
+						styleClass="t2ti-campo-50" label="Senha:"
+						nomeAtributo="#{nfceController.gerenteSupervisor.senha}"
+						tamanhoMaximo="60" requerido="true" />
+
+					<t2ti:separador label="" />
+
+					<t2ti:campoInteiro idComponente="cancelaItemNumero"
+						styleClass="t2ti-campo-100" label="Informe o número do item:"
+						nomeAtributo="#{nfceController.numeroItemCancelar}"
+						requerido="true" />
+				</p:outputPanel>
+
+				<f:facet name="footer">
+					<p:commandButton value="Confirma" icon="ui-icon-check"
+						actionListener="#{nfceController.cancelaItem()}"
+						oncomplete="if (!args.validationFailed) {PF('dialogCancelaItem').hide();}"
+						update=":formPrincipal" />
+					<p:commandButton value="Cancelar" icon="ui-icon-circle-close"
+						oncomplete="PF('dialogCancelaItem').hide();" process="@this" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="selecionaVenda">
+		<h:form id="formSelecionaVenda">
+			<p:dialog id="dialogSelecionaVenda" header="Seleciona Venda"
+				widgetVar="dialogSelecionaVenda" showEffect="clip" width="800"
+				height="550" hideEffect="clip" resizable="true" modal="true"
+				dynamic="true">
+				<p:outputPanel id="panelSelecionaVenda">
+					<p:dataTable id="dataTableSelecionaVenda" var="item"
+						emptyMessage="Nenhum registro encontrado."
+						style="text-align: center;" value="#{nfceController.dataModel}"
+						lazy="true" paginator="true" rows="10" selectionMode="single"
+						selection="#{nfceController.vendaSelecionada}"
+						sortBy="#{item.numero}" sortOrder="descending">
+
+						<f:facet name="header">Selecione uma venda</f:facet>
+
+						<p:column headerText="Serie" width="30">
+							<h:outputLabel value="#{item.serie}" />
+						</p:column>
+						<p:column headerText="Numero" filterBy="#{item.numero}">
+							<h:outputLabel value="#{item.numero}" />
+						</p:column>
+						<p:column headerText="Data Emissao">
+							<h:outputLabel value="#{item.dataHoraEmissao}">
+								<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Chave Acesso">
+							<h:outputLabel
+								value="#{item.chaveAcesso}#{obj.digitoChaveAcesso}" />
+						</p:column>
+						<p:column headerText="Valor Total">
+							<h:outputLabel value="#{item.valorTotal}">
+								<f:convertNumber pattern="#,###,##0.00" />
+							</h:outputLabel>
+						</p:column>
+					</p:dataTable>
+
+					<t2ti:separador label="Dados Gerente/Supervisor"
+						rendered="#{nfceController.operacaoNfce > 0}" />
+					<t2ti:campoTexto idComponente="gerenteSupervisorLogin"
+						styleClass="t2ti-campo-50" label="Login:"
+						nomeAtributo="#{nfceController.gerenteSupervisor.login}"
+						tamanhoMaximo="60" requerido="true"
+						rendered="#{nfceController.operacaoNfce > 0}" />
+					<t2ti:campoSenha idComponente="gerenteSupervisorSenha"
+						styleClass="t2ti-campo-50" label="Senha:"
+						nomeAtributo="#{nfceController.gerenteSupervisor.senha}"
+						tamanhoMaximo="60" requerido="true"
+						rendered="#{nfceController.operacaoNfce > 0}" />
+					<t2ti:campoTexto idComponente="justificativa"
+						styleClass="t2ti-campo-100" label="Justificativa:"
+						nomeAtributo="#{nfceController.justificativa }"
+						tamanhoMaximo="255" requerido="true"
+						rendered="#{nfceController.operacaoNfce > 0}" />
+
+				</p:outputPanel>
+
+				<f:facet name="footer">
+					<p:commandButton value="Confirma" icon="ui-icon-check"
+						actionListener="#{nfceController.executaOperacaoNfce()}"
+						oncomplete="if (args.vendaSelecionada) {PF('dialogSelecionaVenda').hide();}"
+						update=":formPrincipal" />
+					<p:commandButton value="Cancelar" icon="ui-icon-circle-close"
+						oncomplete="PF('dialogSelecionaVenda').hide();" process="@this" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="identificaVendedor">
+		<h:form id="formIdentificaVendedor">
+			<p:dialog id="dialogIdentificaVendedor" header="Identifica Vendedor"
+				widgetVar="dialogIdentificaVendedor" showEffect="clip" width="800"
+				height="400" hideEffect="clip" resizable="true" modal="true"
+				dynamic="true">
+				<p:outputPanel id="panelIdentificaVendedor">
+					<p:dataTable id="dataTableIdentificaVendedor" var="item"
+						emptyMessage="Nenhum registro encontrado."
+						style="text-align: center;"
+						value="#{nfceController.vendedorDataModel}" lazy="true"
+						paginator="true" rows="10" selectionMode="single"
+						selection="#{nfceController.vendedorSelecionado}">
+
+						<f:facet name="header">Selecione um vendedor</f:facet>
+
+						<p:column headerText="ID">
+							<h:outputLabel value="#{item.id}" />
+						</p:column>
+						<p:column headerText="Nome" width="90%">
+							<h:outputLabel value="#{item.colaborador.pessoa.nome}" />
+						</p:column>
+					</p:dataTable>
+				</p:outputPanel>
+
+				<f:facet name="footer">
+					<p:commandButton value="Confirma" icon="ui-icon-check"
+						actionListener="#{nfceController.identificaVendedor()}"
+						oncomplete="if (args.vendedorSelecionado) {PF('dialogIdentificaVendedor').hide();}"
+						update=":formPrincipal" />
+					<p:commandButton value="Cancelar" icon="ui-icon-circle-close"
+						oncomplete="PF('dialogIdentificaVendedor').hide();"
+						process="@this" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="descontoAcrescimo">
+		<h:form id="formDescontoAcrescimo">
+			<p:dialog id="dialogDescontoAcrescimo" header="Desconto ou Acrescimo"
+				widgetVar="dialogDescontoAcrescimo" showEffect="clip" width="500"
+				height="200" hideEffect="clip" resizable="false" modal="true"
+				dynamic="true">
+				<p:outputPanel id="panelDescontoAcrescimo">
+					<t2ti:campoSelect idComponente="tipoOperacaoDescontoAcrescimo"
+						itens="#{nfceController.operacaoDescontoAcrescimo}"
+						label="Operação:"
+						nomeAtributo="#{nfceController.operacaoDescontoAcrescimoSelecionada}"
+						styleClass="t2ti-campo-100" />
+					<t2ti:campoDecimal idComponente="valorDescontoAcrescimo"
+						label="Valor:"
+						nomeAtributo="#{nfceController.valorInformadoDescontoAcrescimo}"
+						styleClass="t2ti-campo-100" />
+
+					<t2ti:separador label="Dados Gerente/Supervisor" />
+					<t2ti:campoTexto idComponente="gerenteSupervisorLogin"
+						styleClass="t2ti-campo-50" label="Login:"
+						nomeAtributo="#{nfceController.gerenteSupervisor.login}"
+						tamanhoMaximo="60" requerido="true" />
+					<t2ti:campoSenha idComponente="gerenteSupervisorSenha"
+						styleClass="t2ti-campo-50" label="Senha:"
+						nomeAtributo="#{nfceController.gerenteSupervisor.senha}"
+						tamanhoMaximo="60" requerido="true" />
+
+				</p:outputPanel>
+
+				<f:facet name="footer">
+					<p:commandButton value="Confirma" icon="ui-icon-check"
+						actionListener="#{nfceController.descontoAcrescimo()}"
+						oncomplete="if (args.valorInformado) {PF('dialogDescontoAcrescimo').hide();}"
+						update=":formPrincipal" />
+					<p:commandButton value="Cancelar" icon="ui-icon-circle-close"
+						oncomplete="PF('dialogDescontoAcrescimo').hide();" process="@this" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="pesquisaProduto">
+		<h:form id="formPesquisaProduto">
+			<p:dialog id="dialogPesquisaProduto" header="Pesquisa Produto"
+				widgetVar="dialogPesquisaProduto" showEffect="clip" width="800"
+				height="400" hideEffect="clip" resizable="true" modal="true"
+				dynamic="true">
+				<p:outputPanel id="panelPesquisaProduto">
+					<p:dataTable id="dataTablePesquisaProduto" var="item"
+						emptyMessage="Nenhum registro encontrado."
+						style="text-align: center;"
+						value="#{nfceController.produtoDataModel}" lazy="true"
+						paginator="true" rows="10" selectionMode="single"
+						selection="#{nfceController.produtoSelecionado}">
+
+						<f:facet name="header">Selecione um produto</f:facet>
+
+						<p:column headerText="GTIN">
+							<h:outputLabel value="#{item.gtin}" />
+						</p:column>
+						<p:column headerText="Nome" width="70%"
+							filterBy="#{item.descricaoPdv}">
+							<h:outputLabel value="#{item.descricaoPdv}" />
+						</p:column>
+						<p:column headerText="Valor" width="70%">
+							<h:outputLabel value="#{item.valorVenda}">
+								<f:convertNumber pattern="#,###,##0.00" />
+							</h:outputLabel>
+						</p:column>
+					</p:dataTable>
+				</p:outputPanel>
+
+				<f:facet name="footer">
+					<p:commandButton value="Confirma" icon="ui-icon-check"
+						actionListener="#{nfceController.pesquisaProduto()}"
+						oncomplete="if (args.produtoSelecionado) {PF('dialogPesquisaProduto').hide(); document.getElementById('formPrincipal:inputCodigoProduto').focus();}"
+						update=":formPrincipal" />
+					<p:commandButton value="Cancelar" icon="ui-icon-circle-close"
+						oncomplete="PF('dialogPesquisaProduto').hide();" process="@this" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

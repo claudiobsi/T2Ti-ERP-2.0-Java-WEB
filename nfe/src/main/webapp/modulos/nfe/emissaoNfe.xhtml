@@ -1,0 +1,1064 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Nota Fiscal Eletrônica"
+			rendered="#{!nfeCabecalhoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{nfeCabecalhoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Nota Fiscal Eletrônica"
+					rendered="#{nfeCabecalhoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableNfeCabecalho" var="obj"
+						value="#{nfeCabecalhoController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{nfeCabecalhoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true"
+						sortBy="#{obj.numero}" sortOrder="descending">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{nfeCabecalhoController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!nfeCabecalhoController.podeInserir()}" />
+							<p:commandButton process="dataTableNfeCabecalho" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{nfeCabecalhoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableNfeCabecalho" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{nfeCabecalhoController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="true">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Cliente" width="150">
+							<h:outputLabel value="#{obj.cliente.pessoa.nome}" />
+						</p:column>
+						<p:column headerText="Serie" width="30">
+							<h:outputLabel value="#{obj.serie}" />
+						</p:column>
+						<p:column headerText="Numero">
+							<h:outputLabel value="#{obj.numero}" />
+						</p:column>
+						<p:column headerText="Data Emissao">
+							<h:outputLabel value="#{obj.dataHoraEmissao}">
+								<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Chave Acesso">
+							<h:outputLabel value="#{obj.chaveAcesso}#{obj.digitoChaveAcesso}" />
+						</p:column>
+						<p:column headerText="Valor Total">
+							<h:outputLabel value="#{obj.valorTotal}">
+								<f:convertNumber pattern="#,###,##0.00" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Status Nota">
+							<h:outputLabel
+								value="#{nfeCabecalhoController.keyFromValue(nfeCabecalhoController.statusNfe, obj.statusNota)}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+			<p:outputPanel rendered="#{!nfeCabecalhoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Nota Fiscal Eletrônica">
+
+					<f:facet name="header">
+
+						<p:outputLabel value="Nota Fiscal Eletrônica" />
+
+						<p:commandButton title="Salvar" icon="ui-icon-disk"
+							actionListener="#{nfeCabecalhoController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe,:form1:tabNfe:outputPanelDestinatario"
+							disabled="#{!nfeCabecalhoController.podeInserir() || !nfeCabecalhoController.podeAlterar()}" />
+						<p:commandButton title="Selecionar Certificado"
+							icon="ui-icon-folder-open"
+							update=":formUploadCertificado:dialogUploadCertificado"
+							oncomplete="PF('dialogUploadCertificado').show();"
+							process="@this" />
+						<p:commandButton title="Enviar NF-e" icon="ui-icon-arrowthick-1-n"
+							actionListener="#{nfeCabecalhoController.enviaNfe()}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+						<p:commandButton title="Imprimir Danfe" icon="ui-icon-print"
+							actionListener="#{nfeCabecalhoController.impressaoDanfe()}"
+							update=":formJustificativaDanfe:panelJustificativaDanfe,:formJustificativaDanfe:dialogJustificativaDanfe"
+							ajax="#{nfeCabecalhoController.objeto.quantidadeImpressaoDanfe != null}" />
+						<p:commandButton title="Cancelar NF-e" icon="ui-icon-cancel"
+							update=":formJustificativaCancelamento:panelJustificativaCancelamento"
+							oncomplete="PF('dialogJustificativaCancelamento').show();" />
+						<p:commandButton title="Enviar email" icon="ui-icon-mail-closed"
+							actionListener="#{nfeCabecalhoController.enviaEmail()}"
+							update=":form1:growl" />
+						<p:commandButton title="Carta de Correção" icon="ui-icon-pencil"
+							update=":formCartaCorrecao:panelCartaCorrecao"
+							oncomplete="PF('dialogCartaCorrecao').show();" />
+						<p:commandButton title="Gerar Etiqueta" icon="ui-icon-tag"
+							actionListener="#{nfeCabecalhoController.etiqueta()}"
+							ajax="false" />
+						<p:commandButton title="Fechar"
+							icon="ui-icon-arrowreturnthick-1-w"
+							actionListener="#{nfeCabecalhoController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+					</f:facet>
+
+					<p:tabView id="tabNfe" style="border: 0px;">
+						<p:tab title="Dados Principais">
+							<p:outputPanel rendered="#{!nfeCabecalhoController.telaGrid}">
+
+								<p:outputLabel value="Nenhum registro selecionado."
+									rendered="#{empty nfeCabecalhoController.objeto}" />
+								<p:commandButton value="Voltar"
+									actionListener="#{nfeCabecalhoController.voltar()}"
+									update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+									rendered="#{empty nfeCabecalhoController.objeto}" />
+
+								<p:outputPanel
+									rendered="#{not empty nfeCabecalhoController.objeto}">
+
+									<div class="t2ti-campo-40">
+										<p:outputLabel value="Operacao Fiscal"
+											for="nfeCabecalhoTributOperacaoFiscal" />
+										<br />
+										<p:autoComplete id="nfeCabecalhoTributOperacaoFiscal"
+											value="#{nfeCabecalhoController.objeto.tributOperacaoFiscal}"
+											completeMethod="#{nfeCabecalhoController.getListaTributOperacaoFiscal}"
+											var="tributOperacaoFiscal"
+											itemLabel="#{tributOperacaoFiscal.descricao}"
+											itemValue="#{tributOperacaoFiscal}"
+											converter="com.t2tierp.model.bean.converter.defaultConverter"
+											forceSelection="true" minQueryLength="3" maxResults="100"
+											required="true" style="width: 100%"
+											emptyMessage="Nenhum registro encontrado">
+
+											<p:ajax event="itemSelect" resetValues="true"
+												listener="#{nfeCabecalhoController.selecionaOperacaoFiscal}"
+												update=":form1:tabNfe:campoNfeCabecalhoNaturezaOperacao:nfeCabecalhoNaturezaOperacao" />
+
+										</p:autoComplete>
+									</div>
+									<t2ti:campoSelect styleClass="t2ti-campo-30"
+										idComponente="nfeCabecalhoCodigoModelo" label="Codigo Modelo"
+										nomeAtributo="#{nfeCabecalhoController.objeto.codigoModelo}"
+										itens="#{nfeCabecalhoController.codigoModeloNfe}" />
+									<t2ti:campoTexto styleClass="t2ti-campo-30"
+										idComponente="nfeCabecalhoNaturezaOperacao"
+										label="Natureza Operacao"
+										nomeAtributo="#{nfeCabecalhoController.objeto.naturezaOperacao}"
+										tamanhoMaximo="60" id="campoNfeCabecalhoNaturezaOperacao" />
+
+
+									<t2ti:campoTexto styleClass="t2ti-campo-40"
+										idComponente="nfeCabecalhoChaveAcesso" label="Chave Acesso"
+										nomeAtributo="#{nfeCabecalhoController.objeto.chaveAcesso}"
+										tamanhoMaximo="44" somenteLeitura="true" />
+									<t2ti:campoTexto styleClass="t2ti-campo-10"
+										idComponente="nfeCabecalhoDigitoChaveAcesso" label="DV"
+										nomeAtributo="#{nfeCabecalhoController.objeto.digitoChaveAcesso}"
+										itens="#{nfeCabecalhoController.simNao}" somenteLeitura="true" />
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoCodigoNumerico"
+										label="Codigo Numerico"
+										nomeAtributo="#{nfeCabecalhoController.objeto.codigoNumerico}"
+										tamanhoMaximo="8" somenteLeitura="true" />
+									<t2ti:campoTexto styleClass="t2ti-campo-10"
+										idComponente="nfeCabecalhoSerie" label="Serie"
+										nomeAtributo="#{nfeCabecalhoController.objeto.serie}"
+										tamanhoMaximo="3" somenteLeitura="true" />
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoNumero" label="Numero"
+										nomeAtributo="#{nfeCabecalhoController.objeto.numero}"
+										tamanhoMaximo="9" somenteLeitura="true" />
+
+									<t2ti:campoData styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoDataHoraEmissao"
+										label="Data/Hora Emissao"
+										nomeAtributo="#{nfeCabecalhoController.objeto.dataHoraEmissao}"
+										somenteLeitura="true" formato="dd/MM/yyyy HH:mm" />
+									<t2ti:campoData styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoDataHoraEntradaSaida"
+										label="Data/Hora Entrada Saida"
+										nomeAtributo="#{nfeCabecalhoController.objeto.dataHoraEntradaSaida}"
+										somenteLeitura="true" formato="dd/MM/yyyy HH:mm" />
+									<t2ti:campoSelect styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoLocalDestino" label="Local Destino"
+										nomeAtributo="#{nfeCabecalhoController.objeto.localDestino}"
+										itens="#{nfeCabecalhoController.localDestinoNfe}" />
+									<t2ti:campoSelect styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoConsumidorOperacao"
+										label="Consumidor Operacao"
+										nomeAtributo="#{nfeCabecalhoController.objeto.consumidorOperacao}"
+										itens="#{nfeCabecalhoController.consumidorOperacaoNfe}" />
+									<t2ti:campoSelect styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoConsumidorPresenca"
+										label="Consumidor Presenca"
+										nomeAtributo="#{nfeCabecalhoController.objeto.consumidorPresenca}"
+										itens="#{nfeCabecalhoController.consumidorPresencaNfe}" />
+
+									<t2ti:campoSelect styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoTipoOperacao" label="Tipo Operacao"
+										nomeAtributo="#{nfeCabecalhoController.objeto.tipoOperacao}"
+										itens="#{nfeCabecalhoController.tipoOperacaoNfe}" />
+									<t2ti:campoSelect styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoTipoEmissao" label="Tipo Emissao"
+										nomeAtributo="#{nfeCabecalhoController.objeto.tipoEmissao}"
+										itens="#{nfeCabecalhoController.tipoEmissaoNfe}" />
+									<t2ti:campoSelect styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoFinalidadeEmissao"
+										label="Finalidade"
+										nomeAtributo="#{nfeCabecalhoController.objeto.finalidadeEmissao}"
+										itens="#{nfeCabecalhoController.finalidadeEmissaoNfe}" />
+									<t2ti:campoSelect styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoFormatoImpressaoDanfe"
+										label="Formato Danfe"
+										nomeAtributo="#{nfeCabecalhoController.objeto.formatoImpressaoDanfe}"
+										itens="#{nfeCabecalhoController.formatoImpressaoDanfeNfe}" />
+									<t2ti:campoSelect styleClass="t2ti-campo-20"
+										idComponente="nfeCabecalhoIndicadorFormaPagamento"
+										label="Forma Pagamento"
+										nomeAtributo="#{nfeCabecalhoController.objeto.indicadorFormaPagamento}"
+										itens="#{nfeCabecalhoController.indicadorFormaPagamentoNfe}" />
+
+									<p:outputPanel id="outputPanelTotais">
+										<t2ti:separador label="Totais" />
+
+										<t2ti:campoDecimal styleClass="t2ti-campo-30"
+											idComponente="nfeCabecalhoBaseCalculoIcms"
+											label="Base Calculo Icms"
+											nomeAtributo="#{nfeCabecalhoController.objeto.baseCalculoIcms}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorIcms" label="Valor Icms"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorIcms}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-30"
+											idComponente="nfeCabecalhoBaseCalculoIcmsSt"
+											label="Base Calculo Icms St"
+											nomeAtributo="#{nfeCabecalhoController.objeto.baseCalculoIcmsSt}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorIcmsSt" label="Valor Icms St"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorIcmsSt}" />
+
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorPis" label="Valor Pis"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorPis}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorCofins" label="Valor Cofins"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorCofins}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-30"
+											idComponente="nfeCabecalhoValorIpi" label="Valor Ipi"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorIpi}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-30"
+											idComponente="nfeCabecalhoValorImpostoImportacao"
+											label="Valor Imposto Importacao"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorImpostoImportacao}" />
+
+										<t2ti:campoDecimal styleClass="t2ti-campo-30"
+											idComponente="nfeCabecalhoValorDespesasAcessorias"
+											label="Valor Despesas Acessorias"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorDespesasAcessorias}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorFrete" label="Valor Frete"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorFrete}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorSeguro" label="Valor Seguro"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorSeguro}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-30"
+											idComponente="nfeCabecalhoValorDesconto"
+											label="Valor Desconto"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorDesconto}" />
+
+										<t2ti:campoDecimal styleClass="t2ti-campo-30"
+											idComponente="nfeCabecalhoValorTotalProdutos"
+											label="Valor Total Produtos"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorTotalProdutos}"
+											somenteLeitura="true" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-30"
+											idComponente="nfeCabecalhoValorTotal" label="Valor Total"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorTotal}"
+											somenteLeitura="true" />
+
+										<t2ti:separador label="Outros Totais" />
+
+
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoBaseCalculoIssqn"
+											label="Base Calculo Issqn"
+											nomeAtributo="#{nfeCabecalhoController.objeto.baseCalculoIssqn}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorIssqn" label="Valor Issqn"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorIssqn}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorPisIssqn"
+											label="Valor Pis Issqn"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorPisIssqn}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorCofinsIssqn"
+											label="Valor Cofins Issqn"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorCofinsIssqn}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorServicos"
+											label="Valor Servicos"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorServicos}" />
+
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorRetidoPis"
+											label="Valor Retido Pis"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorRetidoPis}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorRetidoCofins"
+											label="Valor Retido Cofins"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorRetidoCofins}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorRetidoCsll"
+											label="Valor Retido Csll"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorRetidoCsll}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoBaseCalculoIrrf"
+											label="Base Calculo Irrf"
+											nomeAtributo="#{nfeCabecalhoController.objeto.baseCalculoIrrf}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorRetidoIrrf"
+											label="Valor Retido Irrf"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorRetidoIrrf}" />
+
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoBaseCalculoPrevidencia"
+											label="Base Calculo Previdencia"
+											nomeAtributo="#{nfeCabecalhoController.objeto.baseCalculoPrevidencia}" />
+										<t2ti:campoDecimal styleClass="t2ti-campo-20"
+											idComponente="nfeCabecalhoValorRetidoPrevidencia"
+											label="Valor Retido Previdencia"
+											nomeAtributo="#{nfeCabecalhoController.objeto.valorRetidoPrevidencia}" />
+									</p:outputPanel>
+
+									<t2ti:separador label="Informações Adicionais" />
+
+									<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+										idComponente="nfeCabecalhoInformacoesAddFisco"
+										label="Informacoes Add Fisco"
+										nomeAtributo="#{nfeCabecalhoController.objeto.informacoesAddFisco}" />
+									<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+										idComponente="nfeCabecalhoInformacoesAddContribuinte"
+										label="Informacoes Add Contribuinte"
+										nomeAtributo="#{nfeCabecalhoController.objeto.informacoesAddContribuinte}" />
+								</p:outputPanel>
+
+							</p:outputPanel>
+						</p:tab>
+
+						<p:tab title="Destinatário"
+							disabled="#{empty nfeCabecalhoController.objeto}">
+							<div class="t2ti-campo-100">
+								<p:outputLabel value="Selecione o Cliente:"
+									for="nfeDestinatarioSelecao" />
+								<br />
+								<p:autoComplete id="nfeDestinatarioSelecao"
+									value="#{nfeCabecalhoController.pessoaCliente}"
+									completeMethod="#{nfeCabecalhoController.getListaPessoaCliente}"
+									var="pessoaCliente" itemLabel="#{pessoaCliente.nome}"
+									itemValue="#{pessoaCliente}"
+									converter="com.t2tierp.model.bean.converter.defaultConverter"
+									forceSelection="true" minQueryLength="3" maxResults="100"
+									required="false" style="width: 100%"
+									emptyMessage="Nenhum registro encontrado">
+
+									<p:ajax event="itemSelect"
+										listener="#{nfeCabecalhoController.selecionaDestinatario}"
+										update="nfeDestinatarioSelecao,:form1:tabNfe:outputPanelDestinatario" />
+								</p:autoComplete>
+							</div>
+
+							<p:outputPanel id="outputPanelDestinatario">
+								<t2ti:campoTexto styleClass="t2ti-campo-80"
+									idComponente="nfeDestinatarioNome" label="Nome"
+									nomeAtributo="#{nfeCabecalhoController.objeto.destinatario.nome}"
+									tamanhoMaximo="60" somenteLeitura="false" requerido="true" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfeDestinatarioCpfCnpj" label="Cpf Cnpj"
+									nomeAtributo="#{nfeCabecalhoController.objeto.destinatario.cpfCnpj}"
+									tamanhoMaximo="14" somenteLeitura="true" />
+
+								<t2ti:campoTexto styleClass="t2ti-campo-50"
+									idComponente="nfeDestinatarioLogradouro" label="Logradouro"
+									nomeAtributo="#{nfeCabecalhoController.objeto.destinatario.logradouro}"
+									tamanhoMaximo="60" somenteLeitura="true" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfeDestinatarioNumero" label="Numero"
+									nomeAtributo="#{nfeCabecalhoController.objeto.destinatario.numero}"
+									tamanhoMaximo="60" somenteLeitura="true" />
+								<t2ti:campoTexto styleClass="t2ti-campo-30"
+									idComponente="nfeDestinatarioComplemento" label="Complemento"
+									nomeAtributo="#{nfeCabecalhoController.objeto.destinatario.complemento}"
+									tamanhoMaximo="60" somenteLeitura="true" />
+
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfeDestinatarioBairro" label="Bairro"
+									nomeAtributo="#{nfeCabecalhoController.objeto.destinatario.bairro}"
+									tamanhoMaximo="60" somenteLeitura="true" />
+								<t2ti:campoTexto styleClass="t2ti-campo-50"
+									idComponente="nfeDestinatarioNomeMunicipio"
+									label="Nome Municipio"
+									nomeAtributo="#{nfeCabecalhoController.objeto.destinatario.nomeMunicipio}"
+									tamanhoMaximo="60" somenteLeitura="true" />
+								<t2ti:campoInteiro styleClass="t2ti-campo-20"
+									idComponente="nfeDestinatarioCodigoMunicipio"
+									label="Codigo Municipio"
+									nomeAtributo="#{nfeCabecalhoController.objeto.destinatario.codigoMunicipio}"
+									somenteLeitura="true" />
+								<t2ti:campoTexto styleClass="t2ti-campo-10"
+									idComponente="nfeDestinatarioUf" label="Uf"
+									nomeAtributo="#{nfeCabecalhoController.objeto.destinatario.uf}"
+									tamanhoMaximo="2" somenteLeitura="true" />
+
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfeDestinatarioCep" label="Cep"
+									nomeAtributo="#{nfeCabecalhoController.objeto.destinatario.cep}"
+									tamanhoMaximo="8" somenteLeitura="true" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfeDestinatarioTelefone" label="Telefone"
+									nomeAtributo="#{nfeCabecalhoController.objeto.destinatario.telefone}"
+									tamanhoMaximo="14" somenteLeitura="true" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfeDestinatarioInscricaoEstadual"
+									label="Inscricao Estadual"
+									nomeAtributo="#{nfeCabecalhoController.objeto.destinatario.inscricaoEstadual}"
+									tamanhoMaximo="14" somenteLeitura="true" />
+								<t2ti:campoInteiro styleClass="t2ti-campo-20"
+									idComponente="nfeDestinatarioSuframa" label="Suframa"
+									nomeAtributo="#{nfeCabecalhoController.objeto.destinatario.suframa}"
+									somenteLeitura="true" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="nfeDestinatarioEmail" label="Email"
+									nomeAtributo="#{nfeCabecalhoController.objeto.destinatario.email}"
+									tamanhoMaximo="60" somenteLeitura="true" />
+
+							</p:outputPanel>
+						</p:tab>
+
+						<p:tab title="Produtos/Serviços">
+							<p:dataTable id="dataTableNfeDetalhe" var="obj"
+								value="#{nfeCabecalhoController.objeto.listaNfeDetalhe}"
+								paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+								selection="#{nfeCabecalhoController.nfeDetalheSelecionado}"
+								selectionMode="single" rowKey="#{obj.numeroItem}"
+								resizableColumns="true" sortOrder="numeroitem">
+
+								<f:facet name="header">
+									<p:commandButton title="Novo" icon="ui-icon-plus"
+										actionListener="#{nfeCabecalhoController.incluiProduto()}"
+										update=":form1:growl,:formOutrasTelas:panelNfeDetalhe,:formOutrasTelas:dialogNfeDetalhe"
+										process="@this" />
+									<p:commandButton process="dataTableNfeDetalhe" title="Alterar"
+										icon="ui-icon-pencil"
+										oncomplete="PF('dialogNfeDetalhe').show()"
+										actionListener="#{nfeCabecalhoController.alteraProduto}"
+										update=":formOutrasTelas:panelNfeDetalhe" />
+									<p:commandButton process="dataTableNfeDetalhe"
+										title="Detalhes Impostos" icon="ui-icon-zoomin"
+										oncomplete="PF('dialogDetalheImposto').show()"
+										actionListener="#{nfeCabecalhoController.detalheImposto()}"
+										update=":formDetalheImposto:panelDetalheImposto" />
+									<p:commandButton process="dataTableNfeDetalhe" title="Excluir"
+										icon="ui-icon-trash"
+										actionListener="#{nfeCabecalhoController.excluirProduto}"
+										update="dataTableNfeDetalhe,:form1:tabNfe:outputPanelTotais">
+										<p:confirm header="Confirmação" message="Confirma Exclusão?"
+											icon="ui-icon-alert" />
+									</p:commandButton>
+									<p:commandButton title="Gerar Lançamento Receber"
+										icon="ui-icon-plus"
+										actionListener="#{nfeCabecalhoController.geraLancamentoReceber()}"
+										update=":form1:growl" process="@this" />
+
+								</f:facet>
+
+								<p:column headerText="Item">
+									<h:outputLabel value="#{obj.numeroItem}" />
+								</p:column>
+								<p:column headerText="Gtin" width="100">
+									<h:outputLabel value="#{obj.gtin}" />
+								</p:column>
+								<p:column headerText="Nome Produto/Serviço" width="200">
+									<h:outputLabel value="#{obj.nomeProduto}" />
+								</p:column>
+								<p:column headerText="Und">
+									<h:outputLabel value="#{obj.unidadeComercial}" />
+								</p:column>
+								<p:column headerText="Qtde">
+									<h:outputLabel value="#{obj.quantidadeComercial}">
+										<f:convertNumber pattern="#,###,##0.000" />
+									</h:outputLabel>
+								</p:column>
+								<p:column headerText="Vlr Unit">
+									<h:outputLabel value="#{obj.valorUnitarioComercial}">
+										<f:convertNumber pattern="#,###,##0.00" />
+									</h:outputLabel>
+								</p:column>
+								<p:column headerText="Vlr Total">
+									<h:outputLabel value="#{obj.valorTotal}">
+										<f:convertNumber pattern="#,###,##0.00" />
+									</h:outputLabel>
+								</p:column>
+							</p:dataTable>
+
+						</p:tab>
+						<p:tab title="Transporte">
+
+							<p:tabView id="tabViewReboqueVolumeLacre" style="border: none">
+								<p:tab title="Principais">
+									<t2ti:campoSelect styleClass="t2ti-campo-40"
+										idComponente="nfeTransporteModalidadeFrete"
+										label="Modalidade Frete"
+										nomeAtributo="#{nfeCabecalhoController.objeto.transporte.modalidadeFrete}"
+										itens="#{nfeCabecalhoController.modalidadeFreteNfe}" />
+									<t2ti:campoTexto styleClass="t2ti-campo-30"
+										idComponente="nfeTransporteVagao" label="Vagao"
+										nomeAtributo="#{nfeCabecalhoController.objeto.transporte.vagao}"
+										tamanhoMaximo="20" />
+									<t2ti:campoTexto styleClass="t2ti-campo-30"
+										idComponente="nfeTransporteBalsa" label="Balsa"
+										nomeAtributo="#{nfeCabecalhoController.objeto.transporte.balsa}"
+										tamanhoMaximo="20" />
+
+									<div class="t2ti-campo-80">
+										<p:outputLabel value="Transportadora"
+											for="nfeTransporteTransportadora" />
+										<br />
+										<p:autoComplete id="nfeTransporteTransportadora"
+											value="#{nfeCabecalhoController.objeto.transporte.transportadora}"
+											completeMethod="#{nfeCabecalhoController.getListaTransportadora}"
+											var="transportadora"
+											itemLabel="#{transportadora.pessoa.nome}"
+											itemValue="#{transportadora}"
+											converter="com.t2tierp.model.bean.converter.defaultConverter"
+											forceSelection="true" minQueryLength="3" maxResults="100"
+											required="false" style="width: 100%"
+											emptyMessage="Nenhum registro encontrado" />
+									</div>
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="nfeTransporteCpfCnpj" label="Cpf Cnpj"
+										nomeAtributo="#{nfeCabecalhoController.objeto.transporte.cpfCnpj}"
+										tamanhoMaximo="14" />
+
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="nfeTransporteInscricaoEstadual" label="IE"
+										nomeAtributo="#{nfeCabecalhoController.objeto.transporte.inscricaoEstadual}"
+										tamanhoMaximo="14" />
+									<t2ti:campoTexto styleClass="t2ti-campo-40"
+										idComponente="nfeTransporteEmpresaEndereco"
+										label="Empresa Endereco"
+										nomeAtributo="#{nfeCabecalhoController.objeto.transporte.empresaEndereco}"
+										tamanhoMaximo="60" />
+									<t2ti:campoTexto styleClass="t2ti-campo-30"
+										idComponente="nfeTransporteNomeMunicipio" label="Municipio"
+										nomeAtributo="#{nfeCabecalhoController.objeto.transporte.nomeMunicipio}"
+										tamanhoMaximo="60" />
+									<t2ti:campoTexto styleClass="t2ti-campo-10"
+										idComponente="nfeTransporteUf" label="Uf"
+										nomeAtributo="#{nfeCabecalhoController.objeto.transporte.uf}"
+										tamanhoMaximo="2" />
+
+									<t2ti:separador label="Veículo" />
+
+									<t2ti:campoTexto styleClass="t2ti-campo-30"
+										idComponente="nfeTransportePlacaVeiculo" label="Placa Veiculo"
+										nomeAtributo="#{nfeCabecalhoController.objeto.transporte.placaVeiculo}"
+										tamanhoMaximo="7" />
+									<t2ti:campoTexto styleClass="t2ti-campo-20"
+										idComponente="nfeTransporteUfVeiculo" label="Uf Veiculo"
+										nomeAtributo="#{nfeCabecalhoController.objeto.transporte.ufVeiculo}"
+										tamanhoMaximo="2" />
+									<t2ti:campoTexto styleClass="t2ti-campo-30"
+										idComponente="nfeTransporteRntcVeiculo" label="Rntc Veiculo"
+										nomeAtributo="#{nfeCabecalhoController.objeto.transporte.rntcVeiculo}"
+										tamanhoMaximo="20" />
+
+									<t2ti:separador label="Retenção ICMS" />
+
+									<t2ti:campoDecimal styleClass="t2ti-campo-20"
+										idComponente="nfeTransporteValorServico" label="Valor Servico"
+										nomeAtributo="#{nfeCabecalhoController.objeto.transporte.valorServico}" />
+									<t2ti:campoDecimal styleClass="t2ti-campo-20"
+										idComponente="nfeTransporteValorBcRetencaoIcms"
+										label="Valor Bc Retencao Icms"
+										nomeAtributo="#{nfeCabecalhoController.objeto.transporte.valorBcRetencaoIcms}" />
+									<t2ti:campoDecimal styleClass="t2ti-campo-30"
+										idComponente="nfeTransporteAliquotaRetencaoIcms"
+										label="Aliquota Retencao Icms"
+										nomeAtributo="#{nfeCabecalhoController.objeto.transporte.aliquotaRetencaoIcms}" />
+									<t2ti:campoDecimal styleClass="t2ti-campo-30"
+										idComponente="nfeTransporteValorIcmsRetido"
+										label="Valor Icms Retido"
+										nomeAtributo="#{nfeCabecalhoController.objeto.transporte.valorIcmsRetido}" />
+
+									<t2ti:campoInteiro styleClass="t2ti-campo-30"
+										idComponente="nfeTransporteCfop" label="Cfop"
+										nomeAtributo="#{nfeCabecalhoController.objeto.transporte.cfop}" />
+									<t2ti:campoInteiro styleClass="t2ti-campo-30"
+										idComponente="nfeTransporteMunicipio" label="Municipio"
+										nomeAtributo="#{nfeCabecalhoController.objeto.transporte.municipio}" />
+
+								</p:tab>
+								<p:tab title="Reboque">
+									<p:dataTable id="dataTableNfeTransporteReboque" var="obj"
+										value="#{nfeTransporteReboqueController.dataModel}"
+										paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+										selection="#{nfeCabecalhoController.nfeTransporteReboqueSelecionado}"
+										selectionMode="single" resizableColumns="true">
+
+										<p:column headerText="Placa">
+											<h:outputLabel value="#{obj.placa}" />
+										</p:column>
+										<p:column headerText="Uf">
+											<h:outputLabel value="#{obj.uf}" />
+										</p:column>
+										<p:column headerText="Rntc">
+											<h:outputLabel value="#{obj.rntc}" />
+										</p:column>
+										<p:column headerText="Nfe Transporte">
+											<h:outputLabel value="#{obj.nfeTransporte.pessoa.nome}" />
+										</p:column>
+									</p:dataTable>
+								</p:tab>
+								<p:tab title="Volumes/Lacres">
+
+								</p:tab>
+							</p:tabView>
+
+						</p:tab>
+						<p:tab title="Documentos Referenciados">
+
+						</p:tab>
+						<p:tab title="Entrega/Retirada">
+
+						</p:tab>
+						<p:tab title="Cobrança">
+
+						</p:tab>
+					</p:tabView>
+
+				</p:panel>
+			</p:outputPanel>
+		</p:outputPanel>
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+			<p:dialog id="dialogNfeDetalhe"
+				header="Inclusão/Alteração de Produto/Serviço"
+				widgetVar="dialogNfeDetalhe" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="false" width="600"
+				visible="#{nfeCabecalhoController.podeIncluirProduto}">
+
+				<p:outputPanel id="panelNfeDetalhe">
+					<div class="t2ti-campo-80">
+						<p:outputLabel value="Produto" for="nfeDetalheProduto" />
+						<br />
+						<p:autoComplete id="nfeDetalheProduto"
+							value="#{nfeCabecalhoController.nfeDetalhe.produto}"
+							completeMethod="#{nfeCabecalhoController.getListaProduto}"
+							var="produto" itemLabel="#{produto.descricaoPdv}"
+							itemValue="#{produto}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="100"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfeDetalheQuantidadeComercial" label="Quantidade"
+						nomeAtributo="#{nfeCabecalhoController.nfeDetalhe.quantidadeComercial}"
+						requerido="true" />
+
+					<div class="t2ti-campo-100"></div>
+
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfeDetalheValorFrete" label="Valor Frete"
+						nomeAtributo="#{nfeCabecalhoController.nfeDetalhe.valorFrete}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfeDetalheValorSeguro" label="Valor Seguro"
+						nomeAtributo="#{nfeCabecalhoController.nfeDetalhe.valorSeguro}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="nfeDetalheValorDesconto" label="Valor Desconto"
+						nomeAtributo="#{nfeCabecalhoController.nfeDetalhe.valorDesconto}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-40"
+						idComponente="nfeDetalheValorOutrasDespesas"
+						label="Valor Outras Despesas"
+						nomeAtributo="#{nfeCabecalhoController.nfeDetalhe.valorOutrasDespesas}" />
+
+
+				</p:outputPanel>
+
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{nfeCabecalhoController.salvaProduto}"
+						update=":formOutrasTelas:panelNfeDetalhe,:form1:growl,:form1:tabNfe:dataTableNfeDetalhe,:form1:tabNfe:outputPanelTotais"
+						oncomplete="if (!args.validationFailed) {PF('dialogNfeDetalhe').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogNfeDetalhe').hide();" />
+
+				</f:facet>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas2">
+		<h:form id="formUploadCertificado" enctype="multipart/form-data">
+			<p:dialog id="dialogUploadCertificado"
+				header="Selecionar Certificado" widgetVar="dialogUploadCertificado"
+				showEffect="slide" hideEffect="slide" resizable="true" modal="true"
+				closable="false" width="800">
+				<p:outputPanel id="panelUploadCertificado">
+					<div class="t2ti-campo-100">
+						<p:fileUpload
+							fileUploadListener="#{nfeCabecalhoController.uploadCertificado}"
+							mode="advanced" fileLimit="1" allowTypes="/(\.|\/)(pfx|p12)$/"
+							update=":form1:growl"
+							oncomplete="PF('dialogUploadCertificado').hide();PF('dialogSenhaCertificado').show();" />
+					</div>
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogUploadCertificado').hide();" process="@this" />
+				</f:facet>
+			</p:dialog>
+		</h:form>
+		<h:form id="formSenhaCertificado">
+			<p:dialog id="dialogSenhaCertificado" header="Senha Certificado"
+				widgetVar="dialogSenhaCertificado" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+				<p:outputPanel id="panelSenhaCertificado">
+					<div class="t2ti-campo-100">
+						<p:outputLabel value="Senha:" />
+						<br />
+						<h:inputSecret id="senhaCertificado"
+							value="#{nfeCabecalhoController.senhaCertificado}"
+							required="true" style="width:100%"
+							requiredMessage="Informe a Senha." />
+					</div>
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Enviar"
+						update="panelSenhaCertificado,:form1:growl"
+						actionListener="#{nfeCabecalhoController.carregaDadosCertificado}"
+						oncomplete="if (!args.validationFailed) {PF('dialogSenhaCertificado').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogSenhaCertificado').hide();" process="@this" />
+				</f:facet>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas3">
+		<h:form id="formJustificativaCancelamento">
+			<p:dialog id="dialogJustificativaCancelamento"
+				header="Justificativa Cancelamento"
+				widgetVar="dialogJustificativaCancelamento" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+				<p:outputPanel id="panelJustificativaCancelamento">
+					<t2ti:campoTexto idComponente="labelJustificativaCancelamento"
+						label="Justificativa:" styleClass="t2ti-campo-100"
+						nomeAtributo="#{nfeCabecalhoController.justificativaCancelamento}"
+						tamanhoMaximo="255" requerido="true" />
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Enviar"
+						update="panelJustificativaCancelamento,:form1:growl"
+						actionListener="#{nfeCabecalhoController.cancelaNfe()}"
+						oncomplete="if (!args.validationFailed) {PF('dialogJustificativaCancelamento').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogJustificativaCancelamento').hide();"
+						process="@this" />
+				</f:facet>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas4">
+		<h:form id="formDetalheImposto">
+			<p:dialog id="dialogDetalheImposto" header="Detalhe Imposto"
+				widgetVar="dialogDetalheImposto" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="900">
+				<p:outputPanel id="panelDetalheImposto">
+
+					<p:tabView id="tabViewDetalheImposto" style="border: none"
+						scrollable="true">
+						<p:tab title="ICMS">
+							<t2ti:campoSelect styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsOrigemMercadoria"
+								label="Origem Mercadoria"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.origemMercadoria}"
+								itens="#{nfeCabecalhoController.origemMercadoriaNfe}" />
+							<t2ti:campoTexto styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsCstIcms" label="Cst Icms"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.cstIcms}"
+								tamanhoMaximo="2" />
+							<t2ti:campoTexto styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsCsosn" label="Csosn"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.csosn}"
+								tamanhoMaximo="3" />
+							<t2ti:campoInteiro styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsModalidadeBcIcms"
+								label="Modalidade Bc Icms"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.modalidadeBcIcms}" />
+
+							<div class="t2ti-campo-100"></div>
+
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsTaxaReducaoBcIcms"
+								label="Taxa Reducao Bc Icms"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.taxaReducaoBcIcms}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsAliquotaIcms"
+								label="Aliquota Icms"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.aliquotaIcms}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsBaseCalculoIcms"
+								label="Base Calculo Icms"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.baseCalculoIcms}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsValorIcms" label="Valor Icms"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.valorIcms}" />
+
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsValorIcmsOperacao"
+								label="Valor Operacao"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.valorIcmsOperacao}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsPercentualDiferimento"
+								label="Percentual Diferimento"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.percentualDiferimento}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsValorIcmsDiferido"
+								label="Valor Diferido"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.valorIcmsDiferido}" />
+							<t2ti:campoInteiro styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsMotivoDesoneracaoIcms"
+								label="Motivo Desoneracao"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.motivoDesoneracaoIcms}" />
+
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsValorIcmsDesonerado"
+								label="Valor Desonerado"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.valorIcmsDesonerado}" />
+							<t2ti:campoInteiro styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsModalidadeBcIcmsSt"
+								label="Modalidade Bc St"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.modalidadeBcIcmsSt}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsPercentualMvaIcmsSt"
+								label="Percentual Mva St"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.percentualMvaIcmsSt}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsPercentualReducaoBcIcmsSt"
+								label="Percentual Reducao Bc St"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.percentualReducaoBcIcmsSt}" />
+
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsValorBaseCalculoIcmsSt"
+								label="Valor Base Calculo Icms St"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.valorBaseCalculoIcmsSt}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsAliquotaIcmsSt"
+								label="Aliquota Icms St"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.aliquotaIcmsSt}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsValorIcmsSt"
+								label="Valor Icms St"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.valorIcmsSt}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsValorBcIcmsStRetido"
+								label="Valor Bc Icms St Retido"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.valorBcIcmsStRetido}" />
+
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsValorIcmsStRetido"
+								label="Valor Icms St Retido"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.valorIcmsStRetido}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsValorBcIcmsStDestino"
+								label="Valor Bc Icms St Destino"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.valorBcIcmsStDestino}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-20"
+								idComponente="nfeDetalheImpostoIcmsValorIcmsStDestino"
+								label="Valor Icms St Destino"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.valorIcmsStDestino}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsAliquotaCreditoIcmsSn"
+								label="Aliquota Credito Icms Sn"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.aliquotaCreditoIcmsSn}" />
+
+							<t2ti:campoDecimal styleClass="t2ti-campo-30"
+								idComponente="nfeDetalheImpostoIcmsValorCreditoIcmsSn"
+								label="Valor Credito Icms Sn"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.valorCreditoIcmsSn}" />
+							<t2ti:campoDecimal styleClass="t2ti-campo-40"
+								idComponente="nfeDetalheImpostoIcmsPercentualBcOperacaoPropria"
+								label="Percentual Bc Operacao Propria"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.percentualBcOperacaoPropria}" />
+							<t2ti:campoTexto styleClass="t2ti-campo-10"
+								idComponente="nfeDetalheImpostoIcmsUfSt" label="Uf St"
+								nomeAtributo="#{nfeCabecalhoController.nfeDetalheImpostoIcms.ufSt}"
+								tamanhoMaximo="2" />
+
+						</p:tab>
+
+						<p:tab title="PIS">
+
+						</p:tab>
+
+						<p:tab title="COFINS">
+
+						</p:tab>
+
+						<p:tab title="IPI">
+
+						</p:tab>
+
+						<p:tab title="Imposto Importação">
+
+						</p:tab>
+
+						<p:tab title="ISSQN">
+
+						</p:tab>
+
+						<p:tab title="Combustível">
+
+						</p:tab>
+
+						<p:tab title="Veículo">
+
+						</p:tab>
+
+						<p:tab title="Medicamento">
+
+						</p:tab>
+
+						<p:tab title="Armamento">
+
+						</p:tab>
+
+						<p:tab title="Declaração de Importação">
+
+						</p:tab>
+
+					</p:tabView>
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Fechar"
+						oncomplete="PF('dialogDetalheImposto').hide();" process="@this" />
+				</f:facet>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas5">
+		<h:form id="formCartaCorrecao">
+			<p:dialog id="dialogCartaCorrecao" header="Carta de Correção"
+				widgetVar="dialogCartaCorrecao" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+				<p:outputPanel id="panelCartaCorrecao">
+					<t2ti:campoAreaTexto idComponente="labelCartaCorrecao"
+						label="Texto:" styleClass="t2ti-campo-100"
+						nomeAtributo="#{nfeCabecalhoController.cartaCorrecao}"
+						requerido="true" />
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Enviar"
+						update="panelCartaCorrecao,:form1:growl"
+						actionListener="#{nfeCabecalhoController.cartaCorrecaoNfe()}"
+						oncomplete="if (!args.validationFailed) {PF('dialogCartaCorrecao').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogCartaCorrecao').hide();" process="@this" />
+				</f:facet>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas6">
+		<h:form id="formJustificativaDanfe">
+			<p:dialog id="dialogJustificativaDanfe"
+				header="Justificativa Reimpressão Danfe"
+				widgetVar="dialogJustificativaDanfe" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800"
+				visible="#{nfeCabecalhoController.requerJustificativaDanfe}">
+				<p:outputPanel id="panelJustificativaDanfe">
+					<t2ti:campoAreaTexto idComponente="labelCartaCorrecao"
+						label="Texto:" styleClass="t2ti-campo-100"
+						nomeAtributo="#{nfeCabecalhoController.justificativaDanfe}"
+						requerido="true" />
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Imprimir"
+						update="panelJustificativaDanfe,:form1:growl"
+						actionListener="#{nfeCabecalhoController.danfe()}" ajax="false"
+						oncomplete="if (!args.validationFailed) {PF('dialogJustificativaDanfe').hide();}" />
+					<p:commandButton value="Fechar"
+						oncomplete="PF('dialogJustificativaDanfe').hide();"
+						process="@this" />
+				</f:facet>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

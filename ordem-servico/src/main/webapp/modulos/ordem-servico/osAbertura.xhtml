@@ -1,0 +1,554 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Os Abertura"
+			rendered="#{!osAberturaController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{osAberturaController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Os Abertura"
+					rendered="#{osAberturaController.podeConsultar()}">
+
+					<p:dataTable id="dataTableOsAbertura" var="obj"
+						value="#{osAberturaController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{osAberturaController.osSelecionadas}"
+						selectionMode="multiple" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{osAberturaController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!osAberturaController.podeInserir()}" />
+							<p:commandButton process="dataTableOsAbertura" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{osAberturaController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableOsAbertura"
+								title="Mesclar OS" icon="ui-icon-copy"
+								actionListener="#{osAberturaController.mesclarOS}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe">
+								<p:confirm header="Confirmação" message="Confirma Mesclagem?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+							<p:commandButton process="dataTableOsAbertura" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{osAberturaController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!osAberturaController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Status">
+							<h:outputLabel value="#{obj.osStatus.nome}" />
+						</p:column>
+						<p:column headerText="Colaborador">
+							<h:outputLabel value="#{obj.colaborador.pessoa.nome}" />
+						</p:column>
+						<p:column headerText="Cliente">
+							<h:outputLabel value="#{obj.cliente.pessoa.nome}" />
+						</p:column>
+						<p:column headerText="Numero">
+							<h:outputLabel value="#{obj.numero}" />
+						</p:column>
+						<p:column headerText="Data Inicio">
+							<h:outputLabel value="#{obj.dataInicio}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Data Previsao">
+							<h:outputLabel value="#{obj.dataPrevisao}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Data Fim">
+							<h:outputLabel value="#{obj.dataFim}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!osAberturaController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Os Abertura">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty osAberturaController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{osAberturaController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty osAberturaController.objeto}" />
+
+					<p:outputPanel rendered="#{not empty osAberturaController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Os Status" for="osAberturaOsStatus" />
+									<br />
+									<p:autoComplete id="osAberturaOsStatus"
+										value="#{osAberturaController.objeto.osStatus}"
+										completeMethod="#{osAberturaController.getListaOsStatus}"
+										var="osStatus" itemLabel="#{osStatus.nome}"
+										itemValue="#{osStatus}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+								<div class="t2ti-campo-50">
+									<p:outputLabel value="Colaborador" for="osAberturaColaborador" />
+									<br />
+									<p:autoComplete id="osAberturaColaborador"
+										value="#{osAberturaController.objeto.colaborador}"
+										completeMethod="#{osAberturaController.getListaColaborador}"
+										var="colaborador" itemLabel="#{colaborador.pessoa.nome}"
+										itemValue="#{colaborador}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+								<div class="t2ti-campo-100">
+									<p:outputLabel value="Cliente" for="osAberturaCliente" />
+									<br />
+									<p:autoComplete id="osAberturaCliente"
+										value="#{osAberturaController.objeto.cliente}"
+										completeMethod="#{osAberturaController.getListaCliente}"
+										var="cliente" itemLabel="#{cliente.pessoa.nome}"
+										itemValue="#{cliente}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado" />
+								</div>
+
+								<t2ti:campoTexto styleClass="t2ti-campo-40"
+									idComponente="osAberturaNumero" label="Numero"
+									nomeAtributo="#{osAberturaController.objeto.numero}"
+									tamanhoMaximo="20" />
+								<t2ti:campoTexto styleClass="t2ti-campo-40"
+									idComponente="osAberturaNomeContato" label="Nome Contato"
+									nomeAtributo="#{osAberturaController.objeto.nomeContato}"
+									tamanhoMaximo="50" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="osAberturaFoneContato" label="Fone Contato"
+									nomeAtributo="#{osAberturaController.objeto.foneContato}"
+									tamanhoMaximo="15" />
+
+
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="osAberturaDataInicio" label="Data Inicio"
+									nomeAtributo="#{osAberturaController.objeto.dataInicio}" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="osAberturaHoraInicio" label="Hora Inicio"
+									nomeAtributo="#{osAberturaController.objeto.horaInicio}"
+									tamanhoMaximo="8" />
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="osAberturaDataPrevisao" label="Data Previsao"
+									nomeAtributo="#{osAberturaController.objeto.dataPrevisao}" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="osAberturaHoraPrevisao" label="Hora Previsao"
+									nomeAtributo="#{osAberturaController.objeto.horaPrevisao}"
+									tamanhoMaximo="8" />
+
+								<div class="t2ti-campo-100" />
+
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="osAberturaDataFim" label="Data Fim"
+									nomeAtributo="#{osAberturaController.objeto.dataFim}" />
+								<t2ti:campoTexto styleClass="t2ti-campo-20"
+									idComponente="osAberturaHoraFim" label="Hora Fim"
+									nomeAtributo="#{osAberturaController.objeto.horaFim}"
+									tamanhoMaximo="8" />
+
+								<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+									idComponente="osAberturaObservacaoCliente"
+									label="Observacao Cliente"
+									nomeAtributo="#{osAberturaController.objeto.observacaoCliente}" />
+								<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+									idComponente="osAberturaObservacaoAbertura"
+									label="Observacao Abertura"
+									nomeAtributo="#{osAberturaController.objeto.observacaoAbertura}" />
+								<p:outputPanel
+									rendered="#{not empty osAberturaController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty osAberturaController.objeto.id}"
+										actionListener="#{osAberturaController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!osAberturaController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty osAberturaController.objeto.id}"
+										actionListener="#{osAberturaController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!osAberturaController.podeAlterar()}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{osAberturaController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+									<p:commandButton value="Gerar Orçamento"
+										actionListener="#{osAberturaController.geraOrcamento()}"
+										ajax="false" />
+
+								</p:outputPanel>
+							</p:tab>
+
+							<p:tab title="Evolução"
+								disabled="#{empty osAberturaController.objeto.id}">
+								<p:dataTable id="dataTableOsEvolucao" var="obj"
+									value="#{osAberturaController.objeto.listaOsEvolucao}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{osAberturaController.osEvolucaoSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{osAberturaController.incluirOsEvolucao}"
+											oncomplete="PF('dialogOsEvolucao').show()"
+											update=":formOutrasTelas3:panelOsEvolucao,dataTableOsEvolucao" />
+										<p:commandButton process="dataTableOsEvolucao"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{osAberturaController.alterarOsEvolucao}"
+											oncomplete="PF('dialogOsEvolucao').show()"
+											update=":formOutrasTelas3:panelOsEvolucao,dataTableOsEvolucao" />
+										<p:commandButton process="dataTableOsEvolucao" title="Excluir"
+											icon="ui-icon-trash" update="dataTableOsEvolucao"
+											actionListener="#{osAberturaController.excluirOsEvolucao}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Data Registro">
+										<h:outputLabel value="#{obj.dataRegistro}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Hora Registro">
+										<h:outputLabel value="#{obj.horaRegistro}" />
+									</p:column>
+									<p:column headerText="Observacao">
+										<h:outputLabel value="#{obj.observacao}" />
+									</p:column>
+									<p:column headerText="Enviar Email">
+										<h:outputLabel
+											value="#{osAberturaController.keyFromValue(osAberturaController.simNao, obj.enviarEmail)}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+
+							<p:tab title="Produtos/Serviços"
+								disabled="#{empty osAberturaController.objeto.id}">
+								<p:dataTable id="dataTableOsProdutoServico" var="obj"
+									value="#{osAberturaController.objeto.listaOsProdutoServico}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{osAberturaController.osProdutoServicoSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{osAberturaController.incluirOsProdutoServico}"
+											oncomplete="PF('dialogOsProdutoServico').show()"
+											update=":formOutrasTelas2:panelOsProdutoServico,dataTableOsProdutoServico" />
+										<p:commandButton process="dataTableOsProdutoServico"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{osAberturaController.alterarOsProdutoServico}"
+											oncomplete="PF('dialogOsProdutoServico').show()"
+											update=":formOutrasTelas2:panelOsProdutoServico,dataTableOsProdutoServico" />
+										<p:commandButton process="dataTableOsProdutoServico"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableOsProdutoServico"
+											actionListener="#{osAberturaController.excluirOsProdutoServico}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Produto/Serviço">
+										<h:outputLabel value="#{obj.produto.nome}" />
+									</p:column>
+									<p:column headerText="Tipo">
+										<h:outputLabel
+											value="#{osAberturaController.keyFromValue(osAberturaController.osTipoProdutoServico, obj.tipo)}" />
+									</p:column>
+									<p:column headerText="Complemento">
+										<h:outputLabel value="#{obj.complemento}" />
+									</p:column>
+									<p:column headerText="Quantidade">
+										<h:outputLabel value="#{obj.quantidade}" />
+									</p:column>
+									<p:column headerText="Valor Unitario">
+										<h:outputLabel value="#{obj.valorUnitario}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Valor Subtotal">
+										<h:outputLabel value="#{obj.valorSubtotal}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Taxa Desconto">
+										<h:outputLabel value="#{obj.taxaDesconto}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Valor Desconto">
+										<h:outputLabel value="#{obj.valorDesconto}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+									<p:column headerText="Valor Total">
+										<h:outputLabel value="#{obj.valorTotal}">
+											<f:convertNumber pattern="#,##0.00" />
+										</h:outputLabel>
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+
+							<p:tab title="Os Abertura Equipamento"
+								disabled="#{empty osAberturaController.objeto.id}">
+								<p:dataTable id="dataTableOsAberturaEquipamento" var="obj"
+									value="#{osAberturaController.objeto.listaOsAberturaEquipamento}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{osAberturaController.osAberturaEquipamentoSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{osAberturaController.incluirOsAberturaEquipamento}"
+											oncomplete="PF('dialogOsAberturaEquipamento').show()"
+											update=":formOutrasTelas:panelOsAberturaEquipamento,dataTableOsAberturaEquipamento" />
+										<p:commandButton process="dataTableOsAberturaEquipamento"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{osAberturaController.alterarOsAberturaEquipamento}"
+											oncomplete="PF('dialogOsAberturaEquipamento').show()"
+											update=":formOutrasTelas:panelOsAberturaEquipamento,dataTableOsAberturaEquipamento" />
+										<p:commandButton process="dataTableOsAberturaEquipamento"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableOsAberturaEquipamento"
+											actionListener="#{osAberturaController.excluirOsAberturaEquipamento}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Os Equipamento">
+										<h:outputLabel value="#{obj.osEquipamento.nome}" />
+									</p:column>
+									<p:column headerText="Numero Serie">
+										<h:outputLabel value="#{obj.numeroSerie}" />
+									</p:column>
+									<p:column headerText="Tipo Cobertura">
+										<h:outputLabel
+											value="#{osAberturaController.keyFromValue(osAberturaController.osTipoCobertura, obj.tipoCobertura)}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+						</p:tabView>
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogOsAberturaEquipamento"
+				header="Inclusão/Alteração Os Abertura Equipamento"
+				widgetVar="dialogOsAberturaEquipamento" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+
+				<p:outputPanel id="panelOsAberturaEquipamento">
+					<div class="t2ti-campo-60">
+						<p:outputLabel value="Os Equipamento"
+							for="osAberturaEquipamentoOsEquipamento" />
+						<br />
+						<p:autoComplete id="osAberturaEquipamentoOsEquipamento"
+							value="#{osAberturaController.osAberturaEquipamento.osEquipamento}"
+							completeMethod="#{osAberturaController.getListaOsEquipamento}"
+							var="osEquipamento" itemLabel="#{osEquipamento.nome}"
+							itemValue="#{osEquipamento}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="10"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+					<t2ti:campoTexto styleClass="t2ti-campo-20"
+						idComponente="osAberturaEquipamentoNumeroSerie"
+						label="Numero Serie"
+						nomeAtributo="#{osAberturaController.osAberturaEquipamento.numeroSerie}"
+						tamanhoMaximo="50" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="osAberturaEquipamentoTipoCobertura"
+						label="Tipo Cobertura"
+						nomeAtributo="#{osAberturaController.osAberturaEquipamento.tipoCobertura}"
+						itens="#{osAberturaController.osTipoCobertura}" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{osAberturaController.salvarOsAberturaEquipamento}"
+						update=":formOutrasTelas:panelOsAberturaEquipamento,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogOsAberturaEquipamento').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogOsAberturaEquipamento').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas2">
+		<h:form id="formOutrasTelas2">
+
+			<p:dialog id="dialogOsProdutoServico"
+				header="Inclusão/Alteração Os Produto Servico"
+				widgetVar="dialogOsProdutoServico" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+
+				<p:outputPanel id="panelOsProdutoServico">
+					<div class="t2ti-campo-80">
+						<p:outputLabel value="Produto" for="osProdutoServicoProduto" />
+						<br />
+						<p:autoComplete id="osProdutoServicoProduto"
+							value="#{osAberturaController.osProdutoServico.produto}"
+							completeMethod="#{osAberturaController.getListaProduto}"
+							var="produto" itemLabel="#{produto.nome}" itemValue="#{produto}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="100"
+							required="false" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="osProdutoServicoTipo" label="Tipo"
+						nomeAtributo="#{osAberturaController.osProdutoServico.tipo}"
+						itens="#{osAberturaController.osTipoProdutoServico}" />
+
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="osProdutoServicoQuantidade" label="Quantidade"
+						nomeAtributo="#{osAberturaController.osProdutoServico.quantidade}" />
+					<t2ti:campoDecimal styleClass="t2ti-campo-20"
+						idComponente="osProdutoServicoTaxaDesconto" label="Taxa Desconto"
+						nomeAtributo="#{osAberturaController.osProdutoServico.taxaDesconto}" />
+
+					<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+						idComponente="osProdutoServicoComplemento" label="Complemento"
+						nomeAtributo="#{osAberturaController.osProdutoServico.complemento}" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{osAberturaController.salvarOsProdutoServico}"
+						update=":formOutrasTelas2:panelOsProdutoServico,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogOsProdutoServico').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogOsProdutoServico').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas3">
+		<h:form id="formOutrasTelas3">
+
+			<p:dialog id="dialogOsEvolucao"
+				header="Inclusão/Alteração Os Evolucao" widgetVar="dialogOsEvolucao"
+				showEffect="slide" hideEffect="slide" resizable="true" modal="true"
+				closable="false" width="800">
+
+				<p:outputPanel id="panelOsEvolucao">
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="osEvolucaoDataRegistro" label="Data Registro"
+						nomeAtributo="#{osAberturaController.osEvolucao.dataRegistro}" />
+					<t2ti:campoMascara styleClass="t2ti-campo-20"
+						idComponente="osEvolucaoHoraRegistro" label="Hora Registro"
+						nomeAtributo="#{osAberturaController.osEvolucao.horaRegistro}"
+						mascara="99:99:99" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="osEvolucaoEnviarEmail" label="Enviar Email"
+						nomeAtributo="#{osAberturaController.osEvolucao.enviarEmail}"
+						itens="#{osAberturaController.simNao}" />
+					<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+						idComponente="osEvolucaoObservacao" label="Observacao"
+						nomeAtributo="#{osAberturaController.osEvolucao.observacao}" />
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{osAberturaController.salvarOsEvolucao}"
+						update=":formOutrasTelas3:panelOsEvolucao,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogOsEvolucao').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogOsEvolucao').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

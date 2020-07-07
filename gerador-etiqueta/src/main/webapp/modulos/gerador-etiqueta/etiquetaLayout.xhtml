@@ -1,0 +1,221 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Etiqueta Layout"
+			rendered="#{!etiquetaLayoutController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{etiquetaLayoutController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Etiqueta Layout"
+					rendered="#{etiquetaLayoutController.podeConsultar()}">
+
+					<p:dataTable id="dataTableEtiquetaLayout" var="obj"
+						value="#{etiquetaLayoutController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{etiquetaLayoutController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+                            <p:commandButton title="Novo" icon="ui-icon-plus"
+                                actionListener="#{etiquetaLayoutController.incluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!etiquetaLayoutController.podeInserir()}" />
+							<p:commandButton process="dataTableEtiquetaLayout"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{etiquetaLayoutController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+                            <p:commandButton process="dataTableEtiquetaLayout" title="Excluir"
+                                icon="ui-icon-trash"
+                                actionListener="#{etiquetaLayoutController.excluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!etiquetaLayoutController.podeExcluir()}">
+                                <p:confirm header="Confirmação" message="Confirma Exclusão?"
+                                    icon="ui-icon-alert" />
+                            </p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Formato Papel">
+							<h:outputLabel value="#{obj.etiquetaFormatoPapel.nome}" />
+						</p:column>
+						<p:column headerText="Codigo Fabricante">
+							<h:outputLabel value="#{obj.codigoFabricante}" />
+						</p:column>
+						<p:column headerText="Quantidade">
+							<h:outputLabel value="#{obj.quantidade}" />
+						</p:column>
+						<p:column headerText="Quantidade Horizontal">
+							<h:outputLabel value="#{obj.quantidadeHorizontal}" />
+						</p:column>
+						<p:column headerText="Quantidade Vertical">
+							<h:outputLabel value="#{obj.quantidadeVertical}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!etiquetaLayoutController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Etiqueta Layout">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty etiquetaLayoutController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{etiquetaLayoutController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty etiquetaLayoutController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty etiquetaLayoutController.objeto}">
+
+						<div class="t2ti-campo-60">
+							<p:outputLabel value="Formato Papel"
+								for="etiquetaLayoutFormatoPapel" />
+							<br />
+							<p:autoComplete id="etiquetaLayoutFormatoPapel"
+								value="#{etiquetaLayoutController.objeto.etiquetaFormatoPapel}"
+								completeMethod="#{etiquetaLayoutController.getListaEtiquetaFormatoPapel}"
+								var="formatoPapel" itemLabel="#{formatoPapel.nome}"
+								itemValue="#{formatoPapel}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="10"
+								required="true" style="width: 100%"
+								emptyMessage="Nenhum registro encontrado">
+
+								<p:ajax event="itemSelect"
+									update="campoInteiroPapelLargura:etiquetaFormatoPapelLargura,campoInteiroPapelAltura:etiquetaFormatoPapelAltura" />
+
+							</p:autoComplete>
+						</div>
+						<t2ti:campoInteiro id="campoInteiroPapelAltura"
+							styleClass="t2ti-campo-20" somenteLeitura="true"
+							idComponente="etiquetaFormatoPapelAltura" label="Altura"
+							nomeAtributo="#{etiquetaLayoutController.objeto.etiquetaFormatoPapel.altura}" />
+						<t2ti:campoInteiro id="campoInteiroPapelLargura"
+							styleClass="t2ti-campo-20" somenteLeitura="true"
+							idComponente="etiquetaFormatoPapelLargura" label="Largura"
+							nomeAtributo="#{etiquetaLayoutController.objeto.etiquetaFormatoPapel.largura}" />
+
+						<div class="t2ti-campo-100" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="etiquetaLayoutCodigoFabricante"
+							label="Codigo Fabricante"
+							nomeAtributo="#{etiquetaLayoutController.objeto.codigoFabricante}"
+							tamanhoMaximo="50" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-20"
+							idComponente="etiquetaLayoutQuantidade" label="Quantidade"
+							nomeAtributo="#{etiquetaLayoutController.objeto.quantidade}" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-20"
+							idComponente="etiquetaLayoutQuantidadeHorizontal"
+							label="Quantidade Horizontal"
+							nomeAtributo="#{etiquetaLayoutController.objeto.quantidadeHorizontal}" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-20"
+							idComponente="etiquetaLayoutQuantidadeVertical"
+							label="Quantidade Vertical"
+							nomeAtributo="#{etiquetaLayoutController.objeto.quantidadeVertical}" />
+
+						<div class="t2ti-campo-100" />
+
+						<t2ti:campoInteiro styleClass="t2ti-campo-20"
+							idComponente="etiquetaLayoutMargemSuperior"
+							label="Margem Superior"
+							nomeAtributo="#{etiquetaLayoutController.objeto.margemSuperior}" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-20"
+							idComponente="etiquetaLayoutMargemInferior"
+							label="Margem Inferior"
+							nomeAtributo="#{etiquetaLayoutController.objeto.margemInferior}" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-20"
+							idComponente="etiquetaLayoutMargemEsquerda"
+							label="Margem Esquerda"
+							nomeAtributo="#{etiquetaLayoutController.objeto.margemEsquerda}" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-20"
+							idComponente="etiquetaLayoutMargemDireita" label="Margem Direita"
+							nomeAtributo="#{etiquetaLayoutController.objeto.margemDireita}" />
+
+						<div class="t2ti-campo-100" />
+
+						<t2ti:campoInteiro styleClass="t2ti-campo-30"
+							idComponente="etiquetaLayoutEspacamentoHorizontal"
+							label="Espacamento Horizontal"
+							nomeAtributo="#{etiquetaLayoutController.objeto.espacamentoHorizontal}" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-30"
+							idComponente="etiquetaLayoutEspacamentoVertical"
+							label="Espacamento Vertical"
+							nomeAtributo="#{etiquetaLayoutController.objeto.espacamentoVertical}" />
+					</p:outputPanel>
+					<p:outputPanel
+						rendered="#{not empty etiquetaLayoutController.objeto}"
+						styleClass="t2ti-campo-100">
+                        <p:commandButton value="Incluir"
+                            rendered="#{empty etiquetaLayoutController.objeto.id}"
+                            actionListener="#{etiquetaLayoutController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!etiquetaLayoutController.podeInserir()}" />
+                        <p:commandButton value="Alterar"
+                            rendered="#{not empty etiquetaLayoutController.objeto.id}"
+                            actionListener="#{etiquetaLayoutController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!etiquetaLayoutController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{etiquetaLayoutController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+</ui:composition>

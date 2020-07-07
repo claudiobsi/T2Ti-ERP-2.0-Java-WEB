@@ -1,0 +1,236 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Etiqueta Template"
+			rendered="#{!etiquetaTemplateController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{etiquetaTemplateController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Etiqueta Template"
+					rendered="#{etiquetaTemplateController.podeConsultar()}">
+
+					<p:dataTable id="dataTableEtiquetaTemplate" var="obj"
+						value="#{etiquetaTemplateController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{etiquetaTemplateController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{etiquetaTemplateController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!etiquetaTemplateController.podeInserir()}" />
+							<p:commandButton process="dataTableEtiquetaTemplate"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{etiquetaTemplateController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableEtiquetaTemplate"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{etiquetaTemplateController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!etiquetaTemplateController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Layout">
+							<h:outputLabel value="#{obj.etiquetaLayout.codigoFabricante}" />
+						</p:column>
+						<p:column headerText="Formato">
+							<h:outputLabel
+								value="#{etiquetaTemplateController.keyFromValue(etiquetaTemplateController.formatoCodigoBarra, obj.formato)}" />
+						</p:column>
+						<p:column headerText="Quantidade Repeticoes">
+							<h:outputLabel value="#{obj.quantidadeRepeticoes}" />
+						</p:column>
+						<p:column headerText="Filtro">
+							<h:outputLabel value="#{obj.filtro}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!etiquetaTemplateController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Etiqueta Template">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty etiquetaTemplateController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{etiquetaTemplateController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty etiquetaTemplateController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty etiquetaTemplateController.objeto}">
+
+						<div class="t2ti-campo-20">
+							<p:outputLabel value="Etiqueta Layout"
+								for="etiquetaTemplateEtiquetaLayout" />
+							<br />
+							<p:autoComplete id="etiquetaTemplateEtiquetaLayout"
+								value="#{etiquetaTemplateController.objeto.etiquetaLayout}"
+								completeMethod="#{etiquetaTemplateController.getListaEtiquetaLayout}"
+								var="etiquetaLayout"
+								itemLabel="#{etiquetaLayout.codigoFabricante}"
+								itemValue="#{etiquetaLayout}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="10"
+								required="true" style="width: 100%"
+								emptyMessage="Nenhum registro encontrado" />
+						</div>
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="etiquetaTemplateFormato" label="Formato"
+							itens="#{etiquetaTemplateController.formatoCodigoBarra}"
+							nomeAtributo="#{etiquetaTemplateController.objeto.formato}" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-20"
+							idComponente="etiquetaTemplateQuantidadeRepeticoes"
+							label="Repeticoes"
+							nomeAtributo="#{etiquetaTemplateController.objeto.quantidadeRepeticoes}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-40"
+							idComponente="etiquetaTemplateFiltro" label="Filtro"
+							nomeAtributo="#{etiquetaTemplateController.objeto.filtro}"
+							tamanhoMaximo="100" />
+
+						<div class="t2ti-campo-100" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-50"
+							idComponente="etiquetaTemplateTabela" label="Tabela"
+							nomeAtributo="#{etiquetaTemplateController.objeto.tabela}"
+							somenteLeitura="true" />
+						<t2ti:campoTexto styleClass="t2ti-campo-50"
+							idComponente="etiquetaTemplateCampo" label="Campo"
+							nomeAtributo="#{etiquetaTemplateController.objeto.campo}"
+							somenteLeitura="true" />
+
+					</p:outputPanel>
+					<p:outputPanel
+						rendered="#{not empty etiquetaTemplateController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty etiquetaTemplateController.objeto.id}"
+							actionListener="#{etiquetaTemplateController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!etiquetaTemplateController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty etiquetaTemplateController.objeto.id}"
+							actionListener="#{etiquetaTemplateController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!etiquetaTemplateController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{etiquetaTemplateController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+						<p:commandButton value="Selecionar Tabela/Campo"
+							actionListener="#{etiquetaTemplateController.selecionaTabelaCampo}"
+							oncomplete="PF('dialogSelecionaTabelaCampo').show()"
+							update=":formOutrasTelas:panelSelecionaTabelaCampo" />
+						<p:commandButton value="Gerar Etiquetas"
+							actionListener="#{etiquetaTemplateController.geraEtiqueta}"
+							update=":form1:outputPanelDetalhe" ajax="false" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogSelecionaTabelaCampo"
+				header="Seleciona Tabela/Campo"
+				widgetVar="dialogSelecionaTabelaCampo" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+
+				<p:outputPanel id="panelSelecionaTabelaCampo">
+
+					<div class="t2ti-campo-50">
+						<p:outputLabel value="Tabela" for="etiquetaTemplateSelectTabela" />
+						<br />
+						<p:selectOneMenu id="etiquetaTemplateSelectTabela"
+							value="#{etiquetaTemplateController.tabelaSelecionada}"
+							style="width: 100%">
+							<f:selectItems value="#{etiquetaTemplateController.tabelas}" />
+
+							<p:ajax listener="#{etiquetaTemplateController.buscaCampos}"
+								update="selectCampo:etiquetaTemplateSelectCampo" />
+
+						</p:selectOneMenu>
+					</div>
+
+					<t2ti:campoSelect id="selectCampo" styleClass="t2ti-campo-50"
+						idComponente="etiquetaTemplateSelectCampo" label="Campo"
+						itens="#{etiquetaTemplateController.campos}"
+						nomeAtributo="#{etiquetaTemplateController.campoSelecionado}" />
+
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{etiquetaTemplateController.salvarTabelaCampo()}"
+						update=":formOutrasTelas:panelSelecionaTabelaCampo,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogSelecionaTabelaCampo').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogSelecionaTabelaCampo').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

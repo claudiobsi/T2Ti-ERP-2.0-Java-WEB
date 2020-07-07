@@ -1,0 +1,204 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Ponto Parametro"
+			rendered="#{!pontoParametroController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{pontoParametroController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Ponto Parametro"
+					rendered="#{pontoParametroController.podeConsultar()}">
+
+					<p:dataTable id="dataTablePontoParametro" var="obj"
+						value="#{pontoParametroController.dataModel}" paginator="true"
+						rows="12" rowsPerPageTemplate="6,12,18,24"
+						selection="#{pontoParametroController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{pontoParametroController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!pontoParametroController.podeInserir()}" />
+							<p:commandButton process="dataTablePontoParametro"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{pontoParametroController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTablePontoParametro"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{pontoParametroController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!pontoParametroController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Mes Ano">
+							<h:outputLabel value="#{obj.mesAno}" />
+						</p:column>
+						<p:column headerText="Dia Inicial Apuracao">
+							<h:outputLabel value="#{obj.diaInicialApuracao}" />
+						</p:column>
+						<p:column headerText="Periodo Minimo Interjornada">
+							<h:outputLabel value="#{obj.periodoMinimoInterjornada}" />
+						</p:column>
+						<p:column headerText="HE Diurna(%)">
+							<h:outputLabel value="#{obj.percentualHeDiurna}" />
+						</p:column>
+						<p:column headerText="HE Noturna(%)">
+							<h:outputLabel value="#{obj.percentualHeNoturna}" />
+						</p:column>
+						<p:column headerText="Duracao Hora Noturna">
+							<h:outputLabel value="#{obj.duracaoHoraNoturna}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!pontoParametroController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Ponto Parametro">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty pontoParametroController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{pontoParametroController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty pontoParametroController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty pontoParametroController.objeto}">
+
+						<t2ti:campoMascara styleClass="t2ti-campo-20"
+							idComponente="pontoParametroMesAno" label="Mes Ano"
+							nomeAtributo="#{pontoParametroController.objeto.mesAno}"
+							mascara="99/9999" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-20"
+							idComponente="pontoParametroDiaInicialApuracao"
+							label="Dia Inicial Apuracao"
+							nomeAtributo="#{pontoParametroController.objeto.diaInicialApuracao}" />
+						<t2ti:campoMascara styleClass="t2ti-campo-20"
+							idComponente="pontoParametroHoraNoturnaInicio"
+							label="Hora Noturna Inicio"
+							nomeAtributo="#{pontoParametroController.objeto.horaNoturnaInicio}"
+							mascara="99:99:99" />
+						<t2ti:campoMascara styleClass="t2ti-campo-20"
+							idComponente="pontoParametroHoraNoturnaFim"
+							label="Hora Noturna Fim"
+							nomeAtributo="#{pontoParametroController.objeto.horaNoturnaFim}"
+							mascara="99:99:99" />
+						<t2ti:campoMascara styleClass="t2ti-campo-20"
+							idComponente="pontoParametroPeriodoMinimoInterjornada"
+							label="Periodo Min Interjornada"
+							nomeAtributo="#{pontoParametroController.objeto.periodoMinimoInterjornada}"
+							mascara="99:99:99" />
+
+						<t2ti:campoDecimal styleClass="t2ti-campo-20"
+							idComponente="pontoParametroPercentualHeDiurna"
+							label="Percentual He Diurna"
+							nomeAtributo="#{pontoParametroController.objeto.percentualHeDiurna}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-20"
+							idComponente="pontoParametroPercentualHeNoturna"
+							label="Percentual He Noturna"
+							nomeAtributo="#{pontoParametroController.objeto.percentualHeNoturna}" />
+						<t2ti:campoMascara styleClass="t2ti-campo-20"
+							idComponente="pontoParametroDuracaoHoraNoturna"
+							label="Duracao Hora Noturna"
+							nomeAtributo="#{pontoParametroController.objeto.duracaoHoraNoturna}"
+							mascara="99:99:99" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="pontoParametroTratamentoHoraMais"
+							label="Tratamento Hora Mais"
+							nomeAtributo="#{pontoParametroController.objeto.tratamentoHoraMais}"
+							itens="#{pontoParametroController.pontoTratamentoHoraMais}" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="pontoParametroTratamentoHoraMenos"
+							label="Tratamento Hora Menos"
+							nomeAtributo="#{pontoParametroController.objeto.tratamentoHoraMenos}"
+							itens="#{pontoParametroController.pontoTratamentoHoramenos}" />
+
+						<t2ti:campoSelect styleClass="t2ti-campo-100"
+							idComponente="pontoParametroGeraAno"
+							label="Gerar os mesmos parâmetros para todos os meses do ano informado"
+							nomeAtributo="#{pontoParametroController.gerarParametrosAno}"
+							itens="#{pontoParametroController.simNao}" />
+
+					</p:outputPanel>
+					<p:outputPanel
+						rendered="#{not empty pontoParametroController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty pontoParametroController.objeto.id}"
+							actionListener="#{pontoParametroController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!pontoParametroController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty pontoParametroController.objeto.id}"
+							actionListener="#{pontoParametroController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!pontoParametroController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{pontoParametroController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,209 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Convenio"
+			rendered="#{!convenioController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{convenioController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none" header="Convenio"
+					rendered="#{convenioController.podeConsultar()}">
+
+					<p:dataTable id="dataTableConvenio" var="obj"
+						value="#{convenioController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{convenioController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{convenioController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!convenioController.podeInserir()}" />
+							<p:commandButton process="dataTableConvenio" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{convenioController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableConvenio" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{convenioController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!convenioController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Nome">
+							<h:outputLabel value="#{obj.nome}" />
+						</p:column>
+						<p:column headerText="Cnpj">
+							<h:outputLabel value="#{obj.cnpj}" />
+						</p:column>
+						<p:column headerText="Site">
+							<h:outputLabel value="#{obj.site}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!convenioController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Convenio">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty convenioController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{convenioController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty convenioController.objeto}" />
+
+					<p:outputPanel rendered="#{not empty convenioController.objeto}">
+
+						<t2ti:campoTexto styleClass="t2ti-campo-100"
+							idComponente="convenioNome" label="Nome"
+							nomeAtributo="#{convenioController.objeto.nome}"
+							tamanhoMaximo="150" requerido="true" />
+
+						<div class="t2ti-campo-100">
+							<p:outputLabel value="Contabil Conta" for="convenioContabilConta" />
+							<br />
+							<p:autoComplete id="convenioContabilConta"
+								value="#{convenioController.objeto.contabilConta}"
+								completeMethod="#{convenioController.getListaContabilConta}"
+								var="contabilConta" itemLabel="#{contabilConta.descricao}"
+								itemValue="#{contabilConta}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="false" style="width: 100%"
+								emptyMessage="Nenhum registro encontrado" />
+						</div>
+
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="convenioLogradouro" label="Logradouro"
+							nomeAtributo="#{convenioController.objeto.logradouro}"
+							tamanhoMaximo="100" />
+						<t2ti:campoTexto styleClass="t2ti-campo-10"
+							idComponente="convenioNumero" label="Numero"
+							nomeAtributo="#{convenioController.objeto.numero}"
+							tamanhoMaximo="10" />
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="convenioBairro" label="Bairro"
+							nomeAtributo="#{convenioController.objeto.bairro}"
+							tamanhoMaximo="60" />
+						<t2ti:campoTexto styleClass="t2ti-campo-10"
+							idComponente="convenioUf" label="Uf"
+							nomeAtributo="#{convenioController.objeto.uf}" tamanhoMaximo="2" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-20"
+							idComponente="convenioMunicipioIbge" label="Municipio Ibge"
+							nomeAtributo="#{convenioController.objeto.municipioIbge}" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="convenioCep" label="Cep"
+							nomeAtributo="#{convenioController.objeto.cep}" tamanhoMaximo="8" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="convenioTelefone" label="Telefone"
+							nomeAtributo="#{convenioController.objeto.telefone}"
+							tamanhoMaximo="14" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-20"
+							idComponente="convenioDesconto" label="Desconto"
+							nomeAtributo="#{convenioController.objeto.desconto}" />
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="convenioDataCadastro" label="Data Cadastro"
+							nomeAtributo="#{convenioController.objeto.dataCadastro}" />
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="convenioDataVencimento" label="Data Vencimento"
+							nomeAtributo="#{convenioController.objeto.dataVencimento}" />
+
+
+						<t2ti:campoCnpj styleClass="t2ti-campo-20"
+							idComponente="convenioCnpj" label="Cnpj"
+							nomeAtributo="#{convenioController.objeto.cnpj}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-40"
+							idComponente="convenioEmail" label="Email"
+							nomeAtributo="#{convenioController.objeto.email}"
+							tamanhoMaximo="250" />
+						<t2ti:campoTexto styleClass="t2ti-campo-40"
+							idComponente="convenioSite" label="Site"
+							nomeAtributo="#{convenioController.objeto.site}"
+							tamanhoMaximo="250" />
+
+						<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+							idComponente="convenioDescricao" label="Descricao"
+							nomeAtributo="#{convenioController.objeto.descricao}" />
+					</p:outputPanel>
+					<p:outputPanel rendered="#{not empty convenioController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty convenioController.objeto.id}"
+							actionListener="#{convenioController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!convenioController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty convenioController.objeto.id}"
+							actionListener="#{convenioController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!convenioController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{convenioController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+</ui:composition>

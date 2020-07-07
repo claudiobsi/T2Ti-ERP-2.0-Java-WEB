@@ -1,0 +1,166 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+    <ui:define name="gridDados">
+        <p:panel style="border: none" header="Registro Cartorio"
+            rendered="#{!registroCartorioController.podeConsultar()}">
+            <p:outputLabel value="Você não possui acesso a esta função" />
+        </p:panel>
+
+        <p:outputPanel id="outputPanelGrid">
+
+            <p:outputPanel rendered="#{registroCartorioController.telaGrid}">
+
+                <p:panel id="panelCentroGrid" style="border: none" header="Registro Cartorio"
+                     rendered="#{registroCartorioController.podeConsultar()}">
+
+                    <p:dataTable id="dataTableRegistroCartorio" var="obj"
+                        value="#{registroCartorioController.dataModel}" paginator="true"
+                        rows="10" rowsPerPageTemplate="5,10,15,20"
+                        selection="#{registroCartorioController.objetoSelecionado}"
+                        selectionMode="single" resizableColumns="true" lazy="true">
+
+                        <f:facet name="header">
+                            <p:commandButton title="Novo" icon="ui-icon-plus"
+                                actionListener="#{registroCartorioController.incluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!registroCartorioController.podeInserir()}" />
+                            <p:commandButton process="dataTableRegistroCartorio" title="Detalhes"
+                                icon="ui-icon-zoomin"
+                                actionListener="#{registroCartorioController.alterar()}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+                            <p:commandButton process="dataTableRegistroCartorio" title="Excluir"
+                                icon="ui-icon-trash"
+                                actionListener="#{registroCartorioController.excluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!registroCartorioController.podeExcluir()}">
+                                <p:confirm header="Confirmação" message="Confirma Exclusão?"
+                                    icon="ui-icon-alert" />
+                            </p:commandButton>
+                        </f:facet>
+
+                        <p:column headerText="Nome Cartorio">
+                            <h:outputLabel value="#{obj.nomeCartorio}" />
+                        </p:column>
+                        <p:column headerText="Data Registro">
+                            <h:outputLabel value="#{obj.dataRegistro}" />
+                        </p:column>
+                        <p:column headerText="Numero">
+                            <h:outputLabel value="#{obj.numero}" />
+                        </p:column>
+                        <p:column headerText="Folha">
+                            <h:outputLabel value="#{obj.folha}" />
+                        </p:column>
+                        <p:column headerText="Livro">
+                            <h:outputLabel value="#{obj.livro}" />
+                        </p:column>
+                        <p:column headerText="Nire">
+                            <h:outputLabel value="#{obj.nire}" />
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+
+    <ui:define name="telaInclusaoAlteracao">
+
+        <p:outputPanel id="outputPanelDetalhe">
+
+            <p:outputPanel rendered="#{!registroCartorioController.telaGrid}">
+                <p:panel id="panelCentroDetalhe" style="border: none" header="Registro Cartorio">
+
+                    <p:outputLabel value="Nenhum registro selecionado."
+                        rendered="#{empty registroCartorioController.objeto}" />
+                    <p:commandButton value="Voltar"
+                        actionListener="#{registroCartorioController.voltar()}"
+                        update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                        rendered="#{empty registroCartorioController.objeto}" />
+
+                    <p:outputPanel rendered="#{not empty registroCartorioController.objeto}">
+
+                        <t2ti:campoTexto styleClass="t2ti-campo-80"
+                            idComponente="registroCartorioNomeCartorio" label="Nome Cartorio"
+                            nomeAtributo="#{registroCartorioController.objeto.nomeCartorio}"
+                            tamanhoMaximo="100" />
+                        <t2ti:campoData styleClass="t2ti-campo-20"
+                            idComponente="registroCartorioDataRegistro" label="Data Registro"
+                            nomeAtributo="#{registroCartorioController.objeto.dataRegistro}" />
+                        
+                        <t2ti:campoInteiro styleClass="t2ti-campo-30"
+                            idComponente="registroCartorioNumero" label="Numero"
+                            nomeAtributo="#{registroCartorioController.objeto.numero}" />
+                        <t2ti:campoInteiro styleClass="t2ti-campo-30"
+                            idComponente="registroCartorioFolha" label="Folha"
+                            nomeAtributo="#{registroCartorioController.objeto.folha}" />
+                        <t2ti:campoInteiro styleClass="t2ti-campo-20"
+                            idComponente="registroCartorioLivro" label="Livro"
+                            nomeAtributo="#{registroCartorioController.objeto.livro}" />
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="registroCartorioNire" label="Nire"
+                            nomeAtributo="#{registroCartorioController.objeto.nire}"
+                            tamanhoMaximo="11" />
+                    </p:outputPanel>
+                    <p:outputPanel rendered="#{not empty registroCartorioController.objeto}" styleClass="t2ti-campo-100" >
+
+                        <p:commandButton value="Incluir"
+                            rendered="#{empty registroCartorioController.objeto.id}"
+                            actionListener="#{registroCartorioController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!registroCartorioController.podeInserir()}" />
+                        <p:commandButton value="Alterar"
+                            rendered="#{not empty registroCartorioController.objeto.id}"
+                            actionListener="#{registroCartorioController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!registroCartorioController.podeAlterar()}" />
+                        <p:commandButton value="Fechar"
+                            actionListener="#{registroCartorioController.voltar()}"
+                            update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            process="@this" />
+
+                    </p:outputPanel>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+</ui:composition>

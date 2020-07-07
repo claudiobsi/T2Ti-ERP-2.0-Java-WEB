@@ -1,0 +1,197 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+    <ui:define name="gridDados">
+        <p:panel style="border: none" header="Patrim Apolice Seguro"
+            rendered="#{!patrimApoliceSeguroController.podeConsultar()}">
+            <p:outputLabel value="Você não possui acesso a esta função" />
+        </p:panel>
+
+        <p:outputPanel id="outputPanelGrid">
+
+            <p:outputPanel rendered="#{patrimApoliceSeguroController.telaGrid}">
+
+                <p:panel id="panelCentroGrid" style="border: none" header="Patrim Apolice Seguro"
+                     rendered="#{patrimApoliceSeguroController.podeConsultar()}">
+
+                    <p:dataTable id="dataTablePatrimApoliceSeguro" var="obj"
+                        value="#{patrimApoliceSeguroController.dataModel}" paginator="true"
+                        rows="10" rowsPerPageTemplate="5,10,15,20"
+                        selection="#{patrimApoliceSeguroController.objetoSelecionado}"
+                        selectionMode="single" resizableColumns="true" lazy="true">
+
+                        <f:facet name="header">
+                            <p:commandButton title="Novo" icon="ui-icon-plus"
+                                actionListener="#{patrimApoliceSeguroController.incluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!patrimApoliceSeguroController.podeInserir()}" />
+                            <p:commandButton process="dataTablePatrimApoliceSeguro" title="Detalhes"
+                                icon="ui-icon-zoomin"
+                                actionListener="#{patrimApoliceSeguroController.alterar()}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+                            <p:commandButton process="dataTablePatrimApoliceSeguro" title="Excluir"
+                                icon="ui-icon-trash"
+                                actionListener="#{patrimApoliceSeguroController.excluir}"
+                                update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                                disabled="#{!patrimApoliceSeguroController.podeExcluir()}">
+                                <p:confirm header="Confirmação" message="Confirma Exclusão?"
+                                    icon="ui-icon-alert" />
+                            </p:commandButton>
+                        </f:facet>
+
+                        <p:column headerText="Numero">
+                            <h:outputLabel value="#{obj.numero}" />
+                        </p:column>
+                        <p:column headerText="Data Contratacao">
+                            <h:outputLabel value="#{obj.dataContratacao}" />
+                        </p:column>
+                        <p:column headerText="Data Vencimento">
+                            <h:outputLabel value="#{obj.dataVencimento}" />
+                        </p:column>
+                        <p:column headerText="Valor Premio">
+                            <h:outputLabel value="#{obj.valorPremio}" >
+                            	<f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Valor Segurado">
+                            <h:outputLabel value="#{obj.valorSegurado}" >
+                            	<f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Patrim Bem">
+                            <h:outputLabel value="#{obj.patrimBem.nome}" />
+                        </p:column>
+                        <p:column headerText="Seguradora">
+                            <h:outputLabel value="#{obj.seguradora.nome}" />
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+
+    <ui:define name="telaInclusaoAlteracao">
+
+        <p:outputPanel id="outputPanelDetalhe">
+
+            <p:outputPanel rendered="#{!patrimApoliceSeguroController.telaGrid}">
+                <p:panel id="panelCentroDetalhe" style="border: none" header="Patrim Apolice Seguro">
+
+                    <p:outputLabel value="Nenhum registro selecionado."
+                        rendered="#{empty patrimApoliceSeguroController.objeto}" />
+                    <p:commandButton value="Voltar"
+                        actionListener="#{patrimApoliceSeguroController.voltar()}"
+                        update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                        rendered="#{empty patrimApoliceSeguroController.objeto}" />
+
+                    <p:outputPanel rendered="#{not empty patrimApoliceSeguroController.objeto}">
+
+                        <div class="t2ti-campo-50">
+                            <p:outputLabel value="Patrim Bem" for="patrimApoliceSeguroPatrimBem" />
+                            <br />
+                            <p:autoComplete id="patrimApoliceSeguroPatrimBem"
+                                value="#{patrimApoliceSeguroController.objeto.patrimBem}"
+                                completeMethod="#{patrimApoliceSeguroController.getListaPatrimBem}" var="patrimBem"
+                                itemLabel="#{patrimBem.nome}" itemValue="#{patrimBem}"
+                                converter="com.t2tierp.model.bean.converter.defaultConverter" forceSelection="true"
+                                minQueryLength="3" maxResults="10"
+                                required="false" style="width: 100%"
+                                emptyMessage="Nenhum registro encontrado" />
+                        </div>
+                        <div class="t2ti-campo-50">
+                            <p:outputLabel value="Seguradora" for="patrimApoliceSeguroSeguradora" />
+                            <br />
+                            <p:autoComplete id="patrimApoliceSeguroSeguradora"
+                                value="#{patrimApoliceSeguroController.objeto.seguradora}"
+                                completeMethod="#{patrimApoliceSeguroController.getListaSeguradora}" var="seguradora"
+                                itemLabel="#{seguradora.nome}" itemValue="#{seguradora}"
+                                converter="com.t2tierp.model.bean.converter.defaultConverter" forceSelection="true"
+                                minQueryLength="3" maxResults="10"
+                                required="false" style="width: 100%"
+                                emptyMessage="Nenhum registro encontrado" />
+                        </div>
+
+                        <t2ti:campoTexto styleClass="t2ti-campo-20"
+                            idComponente="patrimApoliceSeguroNumero" label="Numero"
+                            nomeAtributo="#{patrimApoliceSeguroController.objeto.numero}"
+                            tamanhoMaximo="20" />
+                        <t2ti:campoData styleClass="t2ti-campo-20"
+                            idComponente="patrimApoliceSeguroDataContratacao" label="Data Contratacao"
+                            nomeAtributo="#{patrimApoliceSeguroController.objeto.dataContratacao}" />
+                        <t2ti:campoData styleClass="t2ti-campo-20"
+                            idComponente="patrimApoliceSeguroDataVencimento" label="Data Vencimento"
+                            nomeAtributo="#{patrimApoliceSeguroController.objeto.dataVencimento}" />
+                        <t2ti:campoDecimal styleClass="t2ti-campo-20"
+                            idComponente="patrimApoliceSeguroValorPremio" label="Valor Premio"
+                            nomeAtributo="#{patrimApoliceSeguroController.objeto.valorPremio}" />
+                        <t2ti:campoDecimal styleClass="t2ti-campo-20"
+                            idComponente="patrimApoliceSeguroValorSegurado" label="Valor Segurado"
+                            nomeAtributo="#{patrimApoliceSeguroController.objeto.valorSegurado}" />
+                        
+                        <t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+                            idComponente="patrimApoliceSeguroObservacao" label="Observacao"
+                            nomeAtributo="#{patrimApoliceSeguroController.objeto.observacao}" />
+                    </p:outputPanel>
+                    <p:outputPanel rendered="#{not empty patrimApoliceSeguroController.objeto}" styleClass="t2ti-campo-100" >
+
+                        <p:commandButton value="Incluir"
+                            rendered="#{empty patrimApoliceSeguroController.objeto.id}"
+                            actionListener="#{patrimApoliceSeguroController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!patrimApoliceSeguroController.podeInserir()}" />
+                        <p:commandButton value="Alterar"
+                            rendered="#{not empty patrimApoliceSeguroController.objeto.id}"
+                            actionListener="#{patrimApoliceSeguroController.salvar}"
+                            update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            disabled="#{!patrimApoliceSeguroController.podeAlterar()}" />
+                        <p:commandButton value="Fechar"
+                            actionListener="#{patrimApoliceSeguroController.voltar()}"
+                            update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+                            process="@this" />
+
+                    </p:outputPanel>
+                </p:panel>
+            </p:outputPanel>
+
+        </p:outputPanel>
+
+    </ui:define>
+</ui:composition>

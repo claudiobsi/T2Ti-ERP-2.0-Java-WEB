@@ -1,0 +1,224 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Custodia Cheque"
+			rendered="#{!finChequeRecebidoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{finChequeRecebidoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Custodia Cheque"
+					rendered="#{finChequeRecebidoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableFinChequeRecebido" var="obj"
+						value="#{finChequeRecebidoController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{finChequeRecebidoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton process="dataTableFinChequeRecebido"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{finChequeRecebidoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+						</f:facet>
+
+						<p:column headerText="Conta Caixa">
+							<h:outputLabel value="#{obj.contaCaixa.nome}" />
+						</p:column>
+						<p:column headerText="Cpf Cnpj">
+							<h:outputLabel value="#{obj.cpfCnpj}" />
+						</p:column>
+						<p:column headerText="Nome">
+							<h:outputLabel value="#{obj.nome}" />
+						</p:column>
+						<p:column headerText="Numero">
+							<h:outputLabel value="#{obj.numero}" />
+						</p:column>
+						<p:column headerText="Data Emissao">
+							<h:outputLabel value="#{obj.dataEmissao}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Valor">
+							<h:outputLabel value="#{obj.valor}">
+								<f:convertNumber pattern="#,##0.00" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Valor Recebido">
+							<h:outputLabel value="#{obj.valorRecebido}">
+								<f:convertNumber pattern="#,##0.00" />
+							</h:outputLabel>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!finChequeRecebidoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Custodia Cheque">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty finChequeRecebidoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{finChequeRecebidoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty finChequeRecebidoController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty finChequeRecebidoController.objeto}">
+
+						<t2ti:campoTexto styleClass="t2ti-campo-100"
+							idComponente="finChequeRecebidoContaCaixa" label="Conta Caixa"
+							nomeAtributo="#{finChequeRecebidoController.objeto.contaCaixa.nome}"
+							tamanhoMaximo="14" somenteLeitura="true" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="finChequeRecebidoCpfCnpj" label="Cpf Cnpj"
+							nomeAtributo="#{finChequeRecebidoController.objeto.cpfCnpj}"
+							tamanhoMaximo="14" somenteLeitura="true" />
+						<t2ti:campoTexto styleClass="t2ti-campo-80"
+							idComponente="finChequeRecebidoNome" label="Nome"
+							nomeAtributo="#{finChequeRecebidoController.objeto.nome}"
+							tamanhoMaximo="100" somenteLeitura="true" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="finChequeRecebidoCodigoBanco" label="Codigo Banco"
+							nomeAtributo="#{finChequeRecebidoController.objeto.codigoBanco}"
+							tamanhoMaximo="10" somenteLeitura="true" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="finChequeRecebidoCodigoAgencia"
+							label="Codigo Agencia"
+							nomeAtributo="#{finChequeRecebidoController.objeto.codigoAgencia}"
+							tamanhoMaximo="10" somenteLeitura="true" />
+						<t2ti:campoTexto styleClass="t2ti-campo-20"
+							idComponente="finChequeRecebidoConta" label="Conta"
+							nomeAtributo="#{finChequeRecebidoController.objeto.conta}"
+							tamanhoMaximo="20" somenteLeitura="true" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-20"
+							idComponente="finChequeRecebidoNumero" label="Numero"
+							nomeAtributo="#{finChequeRecebidoController.objeto.numero}"
+							somenteLeitura="true" />
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="finChequeRecebidoDataEmissao" label="Data Emissao"
+							nomeAtributo="#{finChequeRecebidoController.objeto.dataEmissao}"
+							somenteLeitura="true" />
+
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="finChequeRecebidoBomPara" label="Bom Para"
+							nomeAtributo="#{finChequeRecebidoController.objeto.bomPara}" />
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="finChequeRecebidoDataCompensacao"
+							label="Data Compensacao"
+							nomeAtributo="#{finChequeRecebidoController.objeto.dataCompensacao}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-20"
+							idComponente="finChequeRecebidoValor" label="Valor"
+							nomeAtributo="#{finChequeRecebidoController.objeto.valor}" />
+
+						<t2ti:separador label="Custódia" />
+
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="finChequeRecebidoCustodiaData" label="Data"
+							nomeAtributo="#{finChequeRecebidoController.objeto.custodiaData}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-20"
+							idComponente="finChequeRecebidoCustodiaTarifa" label="Tarifa"
+							nomeAtributo="#{finChequeRecebidoController.objeto.custodiaTarifa}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-20"
+							idComponente="finChequeRecebidoCustodiaComissao" label="Comissao"
+							nomeAtributo="#{finChequeRecebidoController.objeto.custodiaComissao}" />
+
+						<t2ti:separador label="Desconto" />
+
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="finChequeRecebidoDescontoData" label="Data"
+							nomeAtributo="#{finChequeRecebidoController.objeto.descontoData}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-20"
+							idComponente="finChequeRecebidoDescontoTarifa" label="Tarifa"
+							nomeAtributo="#{finChequeRecebidoController.objeto.descontoTarifa}" />
+						<t2ti:campoDecimal styleClass="t2ti-campo-20"
+							idComponente="finChequeRecebidoDescontoComissao" label="Comissao"
+							nomeAtributo="#{finChequeRecebidoController.objeto.descontoComissao}" />
+
+						<t2ti:separador label="Total Recebido" />
+
+						<t2ti:campoDecimal styleClass="t2ti-campo-40"
+							idComponente="finChequeRecebidoValorRecebido"
+							label="Valor Recebido"
+							nomeAtributo="#{finChequeRecebidoController.objeto.valorRecebido}" />
+					</p:outputPanel>
+					<p:outputPanel
+						rendered="#{not empty finChequeRecebidoController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty finChequeRecebidoController.objeto.id}"
+							actionListener="#{finChequeRecebidoController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!finChequeRecebidoController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty finChequeRecebidoController.objeto.id}"
+							actionListener="#{finChequeRecebidoController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!finChequeRecebidoController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{finChequeRecebidoController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+</ui:composition>

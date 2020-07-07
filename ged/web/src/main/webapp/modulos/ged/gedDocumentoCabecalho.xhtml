@@ -1,0 +1,349 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewParam name="integracao" value="#{gedDocumentoCabecalhoController.parametroIntegracao}" />
+		</f:metadata>	
+	</ui:define>
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Ged Documento Cabecalho"
+			rendered="#{!gedDocumentoCabecalhoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{gedDocumentoCabecalhoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Ged Documento Cabecalho"
+					rendered="#{gedDocumentoCabecalhoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableGedDocumentoCabecalho" var="obj"
+						value="#{gedDocumentoCabecalhoController.dataModel}"
+						paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{gedDocumentoCabecalhoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{gedDocumentoCabecalhoController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!gedDocumentoCabecalhoController.podeInserir()}" />
+							<p:commandButton process="dataTableGedDocumentoCabecalho"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{gedDocumentoCabecalhoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableGedDocumentoCabecalho"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{gedDocumentoCabecalhoController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!gedDocumentoCabecalhoController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Nome">
+							<h:outputLabel value="#{obj.nome}" />
+						</p:column>
+						<p:column headerText="Descricao">
+							<h:outputLabel value="#{obj.descricao}" />
+						</p:column>
+						<p:column headerText="Data Inclusao">
+							<h:outputLabel value="#{obj.dataInclusao}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel
+				rendered="#{!gedDocumentoCabecalhoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Ged Documento Cabecalho">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty gedDocumentoCabecalhoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{gedDocumentoCabecalhoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty gedDocumentoCabecalhoController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty gedDocumentoCabecalhoController.objeto}">
+
+						<t2ti:campoTexto styleClass="t2ti-campo-80"
+							idComponente="gedDocumentoCabecalhoNome" label="Nome"
+							nomeAtributo="#{gedDocumentoCabecalhoController.objeto.nome}"
+							tamanhoMaximo="100" />
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="gedDocumentoCabecalhoDataInclusao"
+							label="Data Inclusao"
+							nomeAtributo="#{gedDocumentoCabecalhoController.objeto.dataInclusao}" />
+
+						<t2ti:campoTexto styleClass="t2ti-campo-100"
+							idComponente="gedDocumentoCabecalhoDescricao" label="Descricao"
+							nomeAtributo="#{gedDocumentoCabecalhoController.objeto.descricao}"
+							tamanhoMaximo="100" />
+
+						<p:dataTable id="dataTableGedDocumentoDetalhe" var="obj"
+							value="#{gedDocumentoCabecalhoController.objeto.listaGedDocumentoDetalhe}"
+							paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+							selection="#{gedDocumentoCabecalhoController.gedDocumentoDetalheSelecionado}"
+							selectionMode="single" resizableColumns="true"
+							rowKey="#{obj.hashCode()}" styleClass="t2ti-campo-100">
+
+							<f:facet name="header">
+								<p:commandButton title="Novo" icon="ui-icon-plus"
+									actionListener="#{gedDocumentoCabecalhoController.incluirGedDocumentoDetalhe}"
+									oncomplete="PF('dialogGedDocumentoDetalhe').show()"
+									update=":formOutrasTelas:panelGedDocumentoDetalhe,dataTableGedDocumentoDetalhe" />
+								<p:commandButton process="dataTableGedDocumentoDetalhe"
+									title="Detalhes" icon="ui-icon-zoomin"
+									actionListener="#{gedDocumentoCabecalhoController.alterarGedDocumentoDetalhe}"
+									oncomplete="PF('dialogGedDocumentoDetalhe').show()"
+									update=":formOutrasTelas:panelGedDocumentoDetalhe,dataTableGedDocumentoDetalhe" />
+								<p:commandButton process="dataTableGedDocumentoDetalhe"
+									title="Excluir" icon="ui-icon-trash"
+									update="dataTableGedDocumentoDetalhe"
+									actionListener="#{gedDocumentoCabecalhoController.excluirGedDocumentoDetalhe}">
+									<p:confirm header="Confirmação" message="Confirma Exclusão?"
+										icon="ui-icon-alert" />
+								</p:commandButton>
+								<p:commandButton title="Download" icon="ui-icon-arrowthick-1-s"
+									actionListener="#{gedDocumentoCabecalhoController.downloadDocumento}"
+									ajax="false" />
+								
+							</f:facet>
+
+							<p:column headerText="Tipo Documento">
+								<h:outputLabel value="#{obj.gedTipoDocumento.nome}" />
+							</p:column>
+							<p:column headerText="Nome">
+								<h:outputLabel value="#{obj.nome}" />
+							</p:column>
+							<p:column headerText="Descricao">
+								<h:outputLabel value="#{obj.descricao}" />
+							</p:column>
+							<p:column headerText="Palavra Chave">
+								<h:outputLabel value="#{obj.palavraChave}" />
+							</p:column>
+							<p:column headerText="Pode Excluir">
+								<h:outputLabel
+									value="#{gedDocumentoCabecalhoController.keyFromValue(gedDocumentoCabecalhoController.simNao, obj.podeExcluir)}" />
+							</p:column>
+							<p:column headerText="Pode Alterar">
+								<h:outputLabel
+									value="#{gedDocumentoCabecalhoController.keyFromValue(gedDocumentoCabecalhoController.simNao, obj.podeAlterar)}" />
+							</p:column>
+							<p:column headerText="Assinado">
+								<h:outputLabel
+									value="#{gedDocumentoCabecalhoController.keyFromValue(gedDocumentoCabecalhoController.simNao, obj.assinado)}" />
+							</p:column>
+							<p:column headerText="Fim Vigencia">
+								<h:outputLabel value="#{obj.dataFimVigencia}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputLabel>
+							</p:column>
+							<p:column headerText="Data Exclusao">
+								<h:outputLabel value="#{obj.dataExclusao}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputLabel>
+							</p:column>
+						</p:dataTable>
+					</p:outputPanel>
+
+					<div class="t2ti-campo-100" />
+
+					<p:outputPanel
+						rendered="#{not empty gedDocumentoCabecalhoController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty gedDocumentoCabecalhoController.objeto.id}"
+							actionListener="#{gedDocumentoCabecalhoController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!gedDocumentoCabecalhoController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty gedDocumentoCabecalhoController.objeto.id}"
+							actionListener="#{gedDocumentoCabecalhoController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!gedDocumentoCabecalhoController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{gedDocumentoCabecalhoController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+			<p:dialog id="dialogGedDocumentoDetalhe"
+				header="Inclusão/Alteração Ged Documento Detalhe"
+				widgetVar="dialogGedDocumentoDetalhe" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+
+				<p:outputPanel id="panelGedDocumentoDetalhe">
+					<div class="t2ti-campo-100">
+						<p:outputLabel value="Tipo Documento"
+							for="gedDocumentoDetalheGedTipoDocumento" />
+						<br />
+						<p:autoComplete id="gedDocumentoDetalheGedTipoDocumento"
+							value="#{gedDocumentoCabecalhoController.gedDocumentoDetalhe.gedTipoDocumento}"
+							completeMethod="#{gedDocumentoCabecalhoController.getListaGedTipoDocumento}"
+							var="gedTipoDocumento" itemLabel="#{gedTipoDocumento.nome}"
+							itemValue="#{gedTipoDocumento}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="10"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+					<t2ti:campoTexto styleClass="t2ti-campo-100"
+						idComponente="gedDocumentoDetalheNome" label="Nome"
+						nomeAtributo="#{gedDocumentoCabecalhoController.gedDocumentoDetalhe.nome}"
+						tamanhoMaximo="100" requerido="true" />
+					<t2ti:campoTexto styleClass="t2ti-campo-100"
+						idComponente="gedDocumentoDetalheDescricao" label="Descricao"
+						nomeAtributo="#{gedDocumentoCabecalhoController.gedDocumentoDetalhe.descricao}"
+						tamanhoMaximo="100" requerido="true" />
+					<t2ti:campoTexto styleClass="t2ti-campo-100"
+						idComponente="gedDocumentoDetalhePalavraChave"
+						label="Palavra Chave"
+						nomeAtributo="#{gedDocumentoCabecalhoController.gedDocumentoDetalhe.palavraChave}"
+						tamanhoMaximo="250" requerido="true" />
+
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="gedDocumentoDetalhePodeExcluir" label="Pode Excluir"
+						nomeAtributo="#{gedDocumentoCabecalhoController.gedDocumentoDetalhe.podeExcluir}"
+						itens="#{gedDocumentoCabecalhoController.simNao}" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="gedDocumentoDetalhePodeAlterar" label="Pode Alterar"
+						nomeAtributo="#{gedDocumentoCabecalhoController.gedDocumentoDetalhe.podeAlterar}"
+						itens="#{gedDocumentoCabecalhoController.simNao}" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="gedDocumentoDetalheAssinado" label="Assinado"
+						nomeAtributo="#{gedDocumentoCabecalhoController.gedDocumentoDetalhe.assinado}"
+						itens="#{gedDocumentoCabecalhoController.simNao}" />
+					<t2ti:campoData styleClass="t2ti-campo-20"
+						idComponente="gedDocumentoDetalheDataFimVigencia"
+						label="Data Fim Vigencia"
+						nomeAtributo="#{gedDocumentoCabecalhoController.gedDocumentoDetalhe.dataFimVigencia}" />
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{gedDocumentoCabecalhoController.salvarGedDocumentoDetalhe}"
+						update=":formOutrasTelas:panelGedDocumentoDetalhe,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogGedDocumentoDetalhe').hide();}" />
+					<p:commandButton value="Seleciona Documento"
+						update=":formUploadArquivo:dialogUploadArquivo"
+						oncomplete="PF('dialogUploadArquivo').show()" />
+					<p:commandButton value="Digitalizar Documento"
+						update=":formOutrasTelas3:dialogOutrasTelas3"
+						oncomplete="PF('dialogOutrasTelas3').show()" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogGedDocumentoDetalhe').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas2">
+		<h:form id="formUploadArquivo" enctype="multipart/form-data">
+			<p:dialog id="dialogUploadArquivo" header="Selecionar Arquivo"
+				widgetVar="dialogUploadArquivo" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+				<p:outputPanel id="panelUploadArquivo">
+					<div class="t2ti-campo-100">
+						<p:fileUpload
+							fileUploadListener="#{gedDocumentoCabecalhoController.selecionaDocumento}"
+							mode="advanced" fileLimit="1"
+							update=":form1:growl,:formOutrasTelas:dialogGedDocumentoDetalhe"
+							oncomplete="PF('dialogUploadArquivo').hide();PF('dialogGedDocumentoDetalhe').show();" />
+					</div>
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogUploadArquivo').hide();" process="@this" />
+				</f:facet>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="outrasTelas3">
+		<h:form id="formOutrasTelas3">
+			<p:dialog id="dialogOutrasTelas3" header="Digitalizar Documento"
+				widgetVar="dialogOutrasTelas3" showEffect="slide" hideEffect="slide"
+				resizable="true" modal="true" closable="false" width="500">
+				<p:outputPanel id="panelOutrasTelas3">
+					<div class="t2ti-campo-100">
+						<p:commandButton value="Digitalizar Documento" ajax="false"
+							actionListener="#{gedDocumentoCabecalhoController.digitalizaDocumento}" />
+					</div>
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Fechar"
+						actionListener="#{gedDocumentoCabecalhoController.finalizaDigitalizacao}"
+						oncomplete="PF('dialogOutrasTelas3').hide();" process="@this" />
+				</f:facet>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

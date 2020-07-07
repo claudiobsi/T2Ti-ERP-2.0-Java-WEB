@@ -1,0 +1,16 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:sec="http://www.springframework.org/security/tags">
+
+	<p:toolbar>
+		<f:facet name="right">
+			<p:outputLabel value="Usuário: #{request.getUserPrincipal().getName()}" />
+			<p:separator />
+			<p:clock pattern="dd/MM/yyyy HH:mm:ss " mode="server" />
+		</f:facet>
+	</p:toolbar>
+
+</ui:composition>

@@ -1,0 +1,323 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="WMS Recebimento"
+			rendered="#{!wmsRecebimentoCabecalhoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel
+				rendered="#{wmsRecebimentoCabecalhoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="WMS Recebimento"
+					rendered="#{wmsRecebimentoCabecalhoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableWmsRecebimentoCabecalho" var="obj"
+						value="#{wmsRecebimentoCabecalhoController.dataModel}"
+						paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{wmsRecebimentoCabecalhoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{wmsRecebimentoCabecalhoController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!wmsRecebimentoCabecalhoController.podeInserir()}" />
+							<p:commandButton process="dataTableWmsRecebimentoCabecalho"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{wmsRecebimentoCabecalhoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableWmsRecebimentoCabecalho"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{wmsRecebimentoCabecalhoController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!wmsRecebimentoCabecalhoController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Data Recebimento">
+							<h:outputLabel value="#{obj.dataRecebimento}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+						<p:column headerText="Hora Inicio">
+							<h:outputLabel value="#{obj.horaInicio}" />
+						</p:column>
+						<p:column headerText="Hora Fim">
+							<h:outputLabel value="#{obj.horaFim}" />
+						</p:column>
+						<p:column headerText="Volume Recebido">
+							<h:outputLabel value="#{obj.volumeRecebido}" />
+						</p:column>
+						<p:column headerText="Peso Recebido">
+							<h:outputLabel value="#{obj.pesoRecebido}" />
+						</p:column>
+						<p:column headerText="Inconsistencia">
+							<h:outputLabel
+								value="#{wmsRecebimentoCabecalhoController.keyFromValue(wmsRecebimentoCabecalhoController.simNao, obj.inconsistencia)}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel
+				rendered="#{!wmsRecebimentoCabecalhoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="WMS Recebimento">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty wmsRecebimentoCabecalhoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{wmsRecebimentoCabecalhoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty wmsRecebimentoCabecalhoController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty wmsRecebimentoCabecalhoController.objeto}">
+
+						<p:tabView id="tabViewDetalhes" style="border: 0px;">
+							<p:tab title="Dados Principais">
+
+								<div class="t2ti-campo-30">
+									<p:outputLabel value="Data Agendamento"
+										for="wmsRecebimentoCabecalhoWmsAgendamento" />
+									<br />
+									<p:autoComplete id="wmsRecebimentoCabecalhoWmsAgendamento"
+										value="#{wmsRecebimentoCabecalhoController.objeto.wmsAgendamento}"
+										completeMethod="#{wmsRecebimentoCabecalhoController.getListaWmsAgendamento}"
+										var="wmsAgendamento"
+										itemLabel="#{wmsAgendamento.dataOperacao} | #{wmsAgendamento.horaOperacao} | #{wmsAgendamento.localOperacao}"
+										itemValue="#{wmsAgendamento}"
+										converter="com.t2tierp.model.bean.converter.defaultConverter"
+										forceSelection="true" minQueryLength="3" maxResults="10"
+										required="true" style="width: 100%"
+										emptyMessage="Nenhum registro encontrado">
+
+										<p:column>
+											<p:outputLabel value="#{wmsAgendamento.dataOperacao}" />
+										</p:column>
+										<p:column>
+											<p:outputLabel value="#{wmsAgendamento.horaOperacao}" />
+										</p:column>
+										<p:column>
+											<p:outputLabel value="#{wmsAgendamento.localOperacao}" />
+										</p:column>
+
+									</p:autoComplete>
+								</div>
+
+								<t2ti:campoData styleClass="t2ti-campo-20"
+									idComponente="wmsRecebimentoCabecalhoDataRecebimento"
+									label="Data Recebimento"
+									nomeAtributo="#{wmsRecebimentoCabecalhoController.objeto.dataRecebimento}" />
+								<t2ti:campoMascara styleClass="t2ti-campo-20"
+									idComponente="wmsRecebimentoCabecalhoHoraInicio"
+									label="Hora Inicio"
+									nomeAtributo="#{wmsRecebimentoCabecalhoController.objeto.horaInicio}"
+									mascara="99:99:99" />
+								<t2ti:campoMascara styleClass="t2ti-campo-20"
+									idComponente="wmsRecebimentoCabecalhoHoraFim" label="Hora Fim"
+									nomeAtributo="#{wmsRecebimentoCabecalhoController.objeto.horaFim}"
+									mascara="99:99:99" />
+
+								<t2ti:campoInteiro styleClass="t2ti-campo-20"
+									idComponente="wmsRecebimentoCabecalhoVolumeRecebido"
+									label="Volume Recebido"
+									nomeAtributo="#{wmsRecebimentoCabecalhoController.objeto.volumeRecebido}" />
+								<t2ti:campoDecimal styleClass="t2ti-campo-20"
+									idComponente="wmsRecebimentoCabecalhoPesoRecebido"
+									label="Peso Recebido"
+									nomeAtributo="#{wmsRecebimentoCabecalhoController.objeto.pesoRecebido}" />
+
+								<t2ti:campoSelect styleClass="t2ti-campo-20"
+									idComponente="wmsRecebimentoCabecalhoInconsistencia"
+									label="Inconsistencia"
+									nomeAtributo="#{wmsRecebimentoCabecalhoController.objeto.inconsistencia}"
+									itens="#{wmsRecebimentoCabecalhoController.simNao}" />
+
+								<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+									idComponente="wmsRecebimentoCabecalhoObservacao"
+									label="Observacao"
+									nomeAtributo="#{wmsRecebimentoCabecalhoController.objeto.observacao}" />
+								<p:outputPanel
+									rendered="#{not empty wmsRecebimentoCabecalhoController.objeto}"
+									styleClass="t2ti-campo-100">
+
+									<p:commandButton value="Incluir"
+										rendered="#{empty wmsRecebimentoCabecalhoController.objeto.id}"
+										actionListener="#{wmsRecebimentoCabecalhoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!wmsRecebimentoCabecalhoController.podeInserir()}" />
+									<p:commandButton value="Alterar"
+										rendered="#{not empty wmsRecebimentoCabecalhoController.objeto.id}"
+										actionListener="#{wmsRecebimentoCabecalhoController.salvar}"
+										update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										disabled="#{!wmsRecebimentoCabecalhoController.podeAlterar()}" />
+									<p:commandButton value="Fechar"
+										actionListener="#{wmsRecebimentoCabecalhoController.voltar()}"
+										update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+										process="@this" />
+
+								</p:outputPanel>
+							</p:tab>
+							<p:tab title="Itens Recebimento"
+								disabled="#{empty wmsRecebimentoCabecalhoController.objeto.id}">
+
+								<p:dataTable id="dataTableWmsRecebimentoDetalhe" var="obj"
+									value="#{wmsRecebimentoCabecalhoController.objeto.listaWmsRecebimentoDetalhe}"
+									paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20"
+									selection="#{wmsRecebimentoCabecalhoController.wmsRecebimentoDetalheSelecionado}"
+									selectionMode="single" resizableColumns="true"
+									rowKey="#{obj.id}">
+
+									<f:facet name="header">
+										<p:commandButton title="Novo" icon="ui-icon-plus"
+											actionListener="#{wmsRecebimentoCabecalhoController.incluirWmsRecebimentoDetalhe}"
+											oncomplete="PF('dialogWmsRecebimentoDetalhe').show()"
+											update=":formOutrasTelas:panelWmsRecebimentoDetalhe,dataTableWmsRecebimentoDetalhe" />
+										<p:commandButton process="dataTableWmsRecebimentoDetalhe"
+											title="Detalhes" icon="ui-icon-zoomin"
+											actionListener="#{wmsRecebimentoCabecalhoController.alterarWmsRecebimentoDetalhe}"
+											oncomplete="PF('dialogWmsRecebimentoDetalhe').show()"
+											update=":formOutrasTelas:panelWmsRecebimentoDetalhe,dataTableWmsRecebimentoDetalhe" />
+										<p:commandButton process="dataTableWmsRecebimentoDetalhe"
+											title="Excluir" icon="ui-icon-trash"
+											update="dataTableWmsRecebimentoDetalhe"
+											actionListener="#{wmsRecebimentoCabecalhoController.excluirWmsRecebimentoDetalhe}">
+											<p:confirm header="Confirmação" message="Confirma Exclusão?"
+												icon="ui-icon-alert" />
+										</p:commandButton>
+									</f:facet>
+
+									<p:column headerText="Produto">
+										<h:outputLabel value="#{obj.produto.nome}" />
+									</p:column>
+									<p:column headerText="Qtde Volume">
+										<h:outputLabel value="#{obj.quantidadeVolume}" />
+									</p:column>
+									<p:column headerText="Qtde Item Por Volume">
+										<h:outputLabel value="#{obj.quantidadeItemPorVolume}" />
+									</p:column>
+									<p:column headerText="Qtde Recebida">
+										<h:outputLabel value="#{obj.quantidadeRecebida}" />
+									</p:column>
+									<p:column headerText="Destino">
+										<h:outputLabel
+											value="#{wmsRecebimentoCabecalhoController.keyFromValue(wmsRecebimentoCabecalhoController.wmsDestino, obj.destino)}" />
+									</p:column>
+								</p:dataTable>
+							</p:tab>
+						</p:tabView>
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="outrasTelas">
+		<h:form id="formOutrasTelas">
+
+			<p:dialog id="dialogWmsRecebimentoDetalhe"
+				header="Inclusão/Alteração Item Recebimento"
+				widgetVar="dialogWmsRecebimentoDetalhe" showEffect="slide"
+				hideEffect="slide" resizable="true" modal="true" closable="false"
+				width="800">
+
+				<p:outputPanel id="panelWmsRecebimentoDetalhe">
+					<div class="t2ti-campo-100">
+						<p:outputLabel value="Produto" for="wmsRecebimentoDetalheProduto" />
+						<br />
+						<p:autoComplete id="wmsRecebimentoDetalheProduto"
+							value="#{wmsRecebimentoCabecalhoController.wmsRecebimentoDetalhe.produto}"
+							completeMethod="#{wmsRecebimentoCabecalhoController.getListaProduto}"
+							var="produto" itemLabel="#{produto.nome}" itemValue="#{produto}"
+							converter="com.t2tierp.model.bean.converter.defaultConverter"
+							forceSelection="true" minQueryLength="3" maxResults="10"
+							required="true" style="width: 100%"
+							emptyMessage="Nenhum registro encontrado" />
+					</div>
+
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="wmsRecebimentoDetalheQuantidadeVolume"
+						label="Qtde Volume"
+						nomeAtributo="#{wmsRecebimentoCabecalhoController.wmsRecebimentoDetalhe.quantidadeVolume}" />
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="wmsRecebimentoDetalheQuantidadeItemPorVolume"
+						label="Qtde Item Por Volume"
+						nomeAtributo="#{wmsRecebimentoCabecalhoController.wmsRecebimentoDetalhe.quantidadeItemPorVolume}" />
+					<t2ti:campoInteiro styleClass="t2ti-campo-20"
+						idComponente="wmsRecebimentoDetalheQuantidadeRecebida"
+						label="Qtde Recebida"
+						nomeAtributo="#{wmsRecebimentoCabecalhoController.wmsRecebimentoDetalhe.quantidadeRecebida}" />
+					<t2ti:campoSelect styleClass="t2ti-campo-20"
+						idComponente="wmsRecebimentoDetalheDestino" label="Destino"
+						nomeAtributo="#{wmsRecebimentoCabecalhoController.wmsRecebimentoDetalhe.destino}"
+						itens="#{wmsRecebimentoCabecalhoController.wmsDestino}" />
+				</p:outputPanel>
+				<f:facet name="footer">
+					<p:commandButton value="Salvar"
+						actionListener="#{wmsRecebimentoCabecalhoController.salvarWmsRecebimentoDetalhe}"
+						update=":formOutrasTelas:panelWmsRecebimentoDetalhe,:form1:growl,:form1:outputPanelDetalhe"
+						oncomplete="if (!args.validationFailed) {PF('dialogWmsRecebimentoDetalhe').hide();}" />
+					<p:commandButton value="Cancelar"
+						oncomplete="PF('dialogWmsRecebimentoDetalhe').hide();" />
+				</f:facet>
+
+			</p:dialog>
+		</h:form>
+	</ui:define>
+
+</ui:composition>

@@ -1,0 +1,258 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Fornecedor"
+			rendered="#{!fornecedorController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{fornecedorController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Fornecedor"
+					rendered="#{fornecedorController.podeConsultar()}">
+
+					<p:dataTable id="dataTableFornecedor" var="obj"
+						value="#{fornecedorController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{fornecedorController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{fornecedorController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!fornecedorController.podeInserir()}" />
+							<p:commandButton process="dataTableFornecedor" title="Detalhes"
+								icon="ui-icon-zoomin"
+								actionListener="#{fornecedorController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableFornecedor" title="Excluir"
+								icon="ui-icon-trash"
+								actionListener="#{fornecedorController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!fornecedorController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Pessoa" width="150">
+							<h:outputLabel value="#{obj.pessoa.nome}" />
+						</p:column>
+						<p:column headerText="Atividade For Cli">
+							<h:outputLabel value="#{obj.atividadeForCli.nome}" />
+						</p:column>
+						<p:column headerText="Situacao For Cli">
+							<h:outputLabel value="#{obj.situacaoForCli.nome}" />
+						</p:column>
+						<p:column headerText="Desde">
+							<h:outputLabel value="#{obj.desde}" />
+						</p:column>
+						<p:column headerText="Localizacao">
+							<h:outputLabel
+								value="#{fornecedorController.keyFromValue(fornecedorController.fornecedorLocalizacao, obj.localizacao)}" />
+						</p:column>
+						<p:column headerText="Data Cadastro">
+							<h:outputLabel value="#{obj.dataCadastro}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!fornecedorController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Fornecedor">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty fornecedorController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{fornecedorController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty fornecedorController.objeto}" />
+
+					<p:outputPanel rendered="#{not empty fornecedorController.objeto}">
+
+						<div class="t2ti-campo-100">
+							<p:outputLabel value="Pessoa" for="fornecedorPessoa" />
+							<br />
+							<p:autoComplete id="fornecedorPessoa"
+								value="#{fornecedorController.objeto.pessoa}"
+								completeMethod="#{fornecedorController.getListaPessoa}"
+								var="pessoa" itemLabel="#{pessoa.nome}" itemValue="#{pessoa}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="true" style="width: 100%" />
+						</div>
+
+						<div class="t2ti-campo-50">
+							<p:outputLabel value="Situacao For Cli"
+								for="fornecedorSituacaoForCli" />
+							<br />
+							<p:autoComplete id="fornecedorSituacaoForCli"
+								value="#{fornecedorController.objeto.situacaoForCli}"
+								completeMethod="#{fornecedorController.getListaSituacaoForCli}"
+								var="situacaoForCli" itemLabel="#{situacaoForCli.nome}"
+								itemValue="#{situacaoForCli}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="true" style="width: 100%" />
+						</div>
+						<div class="t2ti-campo-50">
+							<p:outputLabel value="Atividade For Cli"
+								for="fornecedorAtividadeForCli" />
+							<br />
+							<p:autoComplete id="fornecedorAtividadeForCli"
+								value="#{fornecedorController.objeto.atividadeForCli}"
+								completeMethod="#{fornecedorController.getListaAtividadeForCli}"
+								var="atividadeForCli" itemLabel="#{atividadeForCli.nome}"
+								itemValue="#{atividadeForCli}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="true" style="width: 100%" />
+						</div>
+
+						<div class="t2ti-campo-80">
+							<p:outputLabel value="Contabil Conta"
+								for="fornecedorContabilConta" />
+							<br />
+							<p:autoComplete id="fornecedorContabilConta"
+								value="#{fornecedorController.objeto.contabilConta}"
+								completeMethod="#{fornecedorController.getListaContabilConta}"
+								var="contabilConta" itemLabel="#{contabilConta.descricao}"
+								itemValue="#{contabilConta}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="false" style="width: 100%" />
+						</div>
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="fornecedorDataCadastro" label="Data Cadastro"
+							nomeAtributo="#{fornecedorController.objeto.dataCadastro}"
+							somenteLeitura="true" />
+
+						<t2ti:campoData styleClass="t2ti-campo-20"
+							idComponente="fornecedorDesde" label="Desde"
+							nomeAtributo="#{fornecedorController.objeto.desde}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="fornecedorContaRemetente" label="Conta Remetente"
+							nomeAtributo="#{fornecedorController.objeto.contaRemetente}"
+							tamanhoMaximo="30" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="fornecedorGeraFaturamento" label="Gera Faturamento"
+							nomeAtributo="#{fornecedorController.objeto.geraFaturamento}"
+							itens="#{fornecedorController.simNao}" />
+						<t2ti:campoSelect styleClass="t2ti-campo-30"
+							idComponente="fornecedorOptanteSimplesNacional"
+							label="Optante Simples Nacional"
+							nomeAtributo="#{fornecedorController.objeto.optanteSimplesNacional}"
+							itens="#{fornecedorController.simNao}" />
+						
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="fornecedorLocalizacao" label="Localizacao"
+							nomeAtributo="#{fornecedorController.objeto.localizacao}"
+							itens="#{fornecedorController.fornecedorLocalizacao}" />
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="fornecedorSofreRetencao" label="Sofre Retencao"
+							nomeAtributo="#{fornecedorController.objeto.sofreRetencao}"
+							itens="#{fornecedorController.simNao}" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-30"
+							idComponente="fornecedorPrazoMedioEntrega"
+							label="Prazo Medio Entrega"
+							nomeAtributo="#{fornecedorController.objeto.prazoMedioEntrega}" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-30"
+							idComponente="fornecedorNumDiasPrimeiroVencimento"
+							label="Num Dias 1º Vencimento"
+							nomeAtributo="#{fornecedorController.objeto.numDiasPrimeiroVencimento}" />
+						
+						<div class="t2ti-campo-100"></div>
+						
+						<t2ti:campoInteiro styleClass="t2ti-campo-30"
+							idComponente="fornecedorNumDiasIntervalo"
+							label="Num Dias Intervalo"
+							nomeAtributo="#{fornecedorController.objeto.numDiasIntervalo}" />
+						<t2ti:campoInteiro styleClass="t2ti-campo-30"
+							idComponente="fornecedorQuantidadeParcelas"
+							label="Quantidade Parcelas"
+							nomeAtributo="#{fornecedorController.objeto.quantidadeParcelas}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-40"
+							idComponente="fornecedorChequeNominalA" label="Cheque Nominal A"
+							nomeAtributo="#{fornecedorController.objeto.chequeNominalA}"
+							tamanhoMaximo="100" />
+						
+						<t2ti:campoAreaTexto styleClass="t2ti-campo-100"
+							idComponente="fornecedorObservacao" label="Observacao"
+							nomeAtributo="#{fornecedorController.objeto.observacao}" />
+					</p:outputPanel>
+					<p:outputPanel rendered="#{not empty fornecedorController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty fornecedorController.objeto.id}"
+							actionListener="#{fornecedorController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!fornecedorController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty fornecedorController.objeto.id}"
+							actionListener="#{fornecedorController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!fornecedorController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{fornecedorController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,173 @@
+<!--
+/*
+* The MIT License
+* 
+* Copyright: Copyright (C) 2014 T2Ti.COM
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+* 
+* The author may be contacted at: t2ti.com@gmail.com
+*
+* @author Claudio de Barros (T2Ti.com)
+* @version 2.0
+*/
+-->
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t2ti="http://java.sun.com/jsf/composite/t2ti">
+
+	<ui:define name="gridDados">
+		<p:panel style="border: none" header="Centro Resultado"
+			rendered="#{!centroResultadoController.podeConsultar()}">
+			<p:outputLabel value="Você não possui acesso a esta função" />
+		</p:panel>
+
+		<p:outputPanel id="outputPanelGrid">
+
+			<p:outputPanel rendered="#{centroResultadoController.telaGrid}">
+
+				<p:panel id="panelCentroGrid" style="border: none"
+					header="Centro Resultado"
+					rendered="#{centroResultadoController.podeConsultar()}">
+
+					<p:dataTable id="dataTableCentroResultado" var="obj"
+						value="#{centroResultadoController.dataModel}" paginator="true"
+						rows="10" rowsPerPageTemplate="5,10,15,20"
+						selection="#{centroResultadoController.objetoSelecionado}"
+						selectionMode="single" resizableColumns="true" lazy="true">
+
+						<f:facet name="header">
+							<p:commandButton title="Novo" icon="ui-icon-plus"
+								actionListener="#{centroResultadoController.incluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!centroResultadoController.podeInserir()}" />
+							<p:commandButton process="dataTableCentroResultado"
+								title="Detalhes" icon="ui-icon-zoomin"
+								actionListener="#{centroResultadoController.alterar()}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe" />
+							<p:commandButton process="dataTableCentroResultado"
+								title="Excluir" icon="ui-icon-trash"
+								actionListener="#{centroResultadoController.excluir}"
+								update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+								disabled="#{!centroResultadoController.podeExcluir()}">
+								<p:confirm header="Confirmação" message="Confirma Exclusão?"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+						</f:facet>
+
+						<p:column headerText="Classificacao">
+							<h:outputLabel value="#{obj.classificacao}" />
+						</p:column>
+						<p:column headerText="Descricao">
+							<h:outputLabel value="#{obj.descricao}" />
+						</p:column>
+						<p:column headerText="Sofre Rateio">
+							<h:outputLabel
+								value="#{centroResultadoController.keyFromValue(centroResultadoController.simNao, obj.sofreRateiro)}" />
+						</p:column>
+						<p:column headerText="Plano Centro Resultado">
+							<h:outputLabel value="#{obj.planoCentroResultado.nome}" />
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+
+	<ui:define name="telaInclusaoAlteracao">
+
+		<p:outputPanel id="outputPanelDetalhe">
+
+			<p:outputPanel rendered="#{!centroResultadoController.telaGrid}">
+				<p:panel id="panelCentroDetalhe" style="border: none"
+					header="Centro Resultado">
+
+					<p:outputLabel value="Nenhum registro selecionado."
+						rendered="#{empty centroResultadoController.objeto}" />
+					<p:commandButton value="Voltar"
+						actionListener="#{centroResultadoController.voltar()}"
+						update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+						rendered="#{empty centroResultadoController.objeto}" />
+
+					<p:outputPanel
+						rendered="#{not empty centroResultadoController.objeto}">
+
+						<div class="t2ti-campo-100">
+							<p:outputLabel value="Plano Centro Resultado"
+								for="centroResultadoPlanoCentroResultado" />
+							<br />
+							<p:autoComplete id="centroResultadoPlanoCentroResultado"
+								value="#{centroResultadoController.objeto.planoCentroResultado}"
+								completeMethod="#{centroResultadoController.getListaPlanoCentroResultado}"
+								var="planoCentroResultado"
+								itemLabel="#{planoCentroResultado.nome}"
+								itemValue="#{planoCentroResultado}"
+								converter="com.t2tierp.model.bean.converter.defaultConverter"
+								forceSelection="true" minQueryLength="3" maxResults="100"
+								required="true" style="width: 100%"
+								emptyMessage="Nenhum registro encontrado" />
+						</div>
+
+						<t2ti:campoSelect styleClass="t2ti-campo-20"
+							idComponente="centroResultadoSofreRateiro" label="Sofre Rateio"
+							nomeAtributo="#{centroResultadoController.objeto.sofreRateiro}"
+							itens="#{centroResultadoController.simNao}" />
+						<t2ti:campoTexto styleClass="t2ti-campo-30"
+							idComponente="centroResultadoClassificacao" label="Classificacao"
+							nomeAtributo="#{centroResultadoController.objeto.classificacao}"
+							tamanhoMaximo="30" />
+						<t2ti:campoTexto styleClass="t2ti-campo-50"
+							idComponente="centroResultadoDescricao" label="Descricao"
+							nomeAtributo="#{centroResultadoController.objeto.descricao}"
+							tamanhoMaximo="100" />
+					</p:outputPanel>
+					<p:outputPanel
+						rendered="#{not empty centroResultadoController.objeto}"
+						styleClass="t2ti-campo-100">
+
+						<p:commandButton value="Incluir"
+							rendered="#{empty centroResultadoController.objeto.id}"
+							actionListener="#{centroResultadoController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!centroResultadoController.podeInserir()}" />
+						<p:commandButton value="Alterar"
+							rendered="#{not empty centroResultadoController.objeto.id}"
+							actionListener="#{centroResultadoController.salvar}"
+							update=":form1:growl,:form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							disabled="#{!centroResultadoController.podeAlterar()}" />
+						<p:commandButton value="Fechar"
+							actionListener="#{centroResultadoController.voltar()}"
+							update=":form1:outputPanelGrid,:form1:outputPanelDetalhe"
+							process="@this" />
+
+					</p:outputPanel>
+				</p:panel>
+			</p:outputPanel>
+
+		</p:outputPanel>
+
+	</ui:define>
+</ui:composition>
